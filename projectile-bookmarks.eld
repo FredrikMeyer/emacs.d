@@ -1,0 +1,1 @@
+("~/.emacs.d/" "~/datainn/frontend/" "~/Dropbox/FredrikMeyer.github.io/" "~/code/clojure-noob/" "~/testclojure/clojure-noob/")

@@ -1,0 +1,41 @@
+
+;; ----- smex-history -----
+(
+ package-install
+ eshell
+ list-packages
+ eval-buffer
+ uncomment-region
+ comment-region
+ tern-mode
+)
+
+;; ----- smex-data -----
+(
+ (cd . 1)
+ (cider-jack-in . 10)
+ (package-reinstall . 6)
+ (package-install . 30)
+ (eval-buffer . 7)
+ (eval-region . 1)
+ (tetris . 2)
+ (eww . 4)
+ (calc . 1)
+ (eshell . 4)
+ (todo-mode . 1)
+ (shr-browse-url . 1)
+ (elfeed . 5)
+ (elfeed-add-feed . 2)
+ (elfeed-web-start . 2)
+ (package-refresh-contents . 1)
+ (indium-run-node . 3)
+ (getenv . 1)
+ (exec-path-from-shell-initialize . 1)
+ (indium-interaction-mode . 2)
+ (indium-eval-buffer . 2)
+ (auto-complete-mode . 1)
+ (tern-mode . 2)
+ (comment-region . 1)
+ (uncomment-region . 1)
+ (list-packages . 1)
+)
