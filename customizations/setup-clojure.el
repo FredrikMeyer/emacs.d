@@ -80,3 +80,9 @@
      (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
      (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
      (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)))
+
+
+;; Don't prompt and don't save
+(setq cider-save-file-on-load nil)
+;; Just save without prompting
+;;(setq cider-save-file-on-load t)

@@ -1,27 +1,27 @@
 
 ;; ----- smex-history -----
 (
- package-install
- eshell
- list-packages
- eval-buffer
- uncomment-region
+ org-bullets-mode
+ outline-minor-mode
+ restclient-mode
+ query-replace
  comment-region
- tern-mode
+ uncomment-region
+ indent-region
 )
 
 ;; ----- smex-data -----
 (
  (cd . 1)
- (cider-jack-in . 10)
+ (cider-jack-in . 20)
  (package-reinstall . 6)
- (package-install . 30)
- (eval-buffer . 7)
+ (package-install . 33)
+ (eval-buffer . 14)
  (eval-region . 1)
  (tetris . 2)
  (eww . 4)
  (calc . 1)
- (eshell . 4)
+ (eshell . 13)
  (todo-mode . 1)
  (shr-browse-url . 1)
  (elfeed . 5)
@@ -34,8 +34,37 @@
  (indium-interaction-mode . 2)
  (indium-eval-buffer . 2)
  (auto-complete-mode . 1)
- (tern-mode . 2)
- (comment-region . 1)
- (uncomment-region . 1)
- (list-packages . 1)
+ (tern-mode . 3)
+ (comment-region . 3)
+ (uncomment-region . 2)
+ (list-packages . 2)
+ (package-list-packages . 2)
+ (restclient-mode . 7)
+ (package-delete . 18)
+ (query-replace . 3)
+ (replace-string . 1)
+ (run-geiser . 7)
+ (geiser-mode . 6)
+ (indent-code-rigidly . 1)
+ (indent-region . 8)
+ (dired . 1)
+ (run-python . 1)
+ (json-mode . 1)
+ (kill-visual-line . 1)
+ (visual-line-mode . 8)
+ (json-pretty-print-buffer-ordered . 3)
+ (electric-indent-mode . 2)
+ (try . 1)
+ (2048-game . 1)
+ (eval-last-sexp . 2)
+ (package-autoremove . 1)
+ (help . 1)
+ (js2-mode . 2)
+ (customize-group . 1)
+ (electric-pair-mode . 1)
+ (ibuffer . 1)
+ (list-buffers . 3)
+ (run-oz . 2)
+ (outline-minor-mode . 1)
+ (org-bullets-mode . 2)
 )

@@ -6,34 +6,36 @@
       mac-command-modifier 'meta
       x-select-enable-clipboard t)
 
+(setq inhibit-startup-message t
+      initial-scratch-message nil
+      initial-major-mode 'org-mode)
+
 ;; Define package repositories
 (require 'package)
+(setq package-enable-at-startup nil)
 (add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/") t)
+             '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives
-             '("tromey" . "http://tromey.com/elpa/") t)
+             '("tromey" . "http://tromey.com/elpa/"))
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+             '("melpa" . "http://melpa.milkbox.net/packages/"))
 
 (add-to-list 'package-archives
-    '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+             '("melpa-stable" . "http://stable.melpa.org/packages/"))
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
-
-;; (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-;;                          ("marmalade" . "http://marmalade-repo.org/packages/")
-;;                          ("melpa" . "http://melpa-stable.milkbox.net/packages/")))
 
 
 ;; Load and activate emacs packages. Do this first so that the
 ;; packages are loaded before you start trying to modify them.
 ;; This also sets the load path.
+
 (package-initialize)
 
 ;; Download the ELPA archive description if needed.
 ;; This informs Emacs about the latest versions of all packages, and
 ;; makes them available for download.
-(when (not package-archive-contents)
-  (package-refresh-contents))
+;; (when (not package-archive-contents)
+;;   (package-refresh-contents))
 
 ;; Define he following variables to remove the compile-log warnings
 ;; when defining ido-ubiquitous
@@ -46,43 +48,82 @@
 ;; The packages you want installed. You can also install these
 ;; manually with M-x package-install
 ;; Add in your own as you wish:
-(defvar my-packages
-  '(;; makes handling lisp expressions much, much easier
+(unless (package-installed-p 'use-package)
+	(package-refresh-contents)
+	(package-install 'use-package))
+
+(use-package try
+  :ensure t)
+
+(use-package which-key
+             :ensure t
+             :config
+             (which-key-mode))
+
     ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
-    paredit
+(use-package paredit
+    :ensure t)
 
     ;; key bindings and code colorization for Clojure
     ;; https://github.com/clojure-emacs/clojure-mode
-    clojure-mode
+(use-package clojure-mode
+  :ensure t)
 
     ;; extra syntax highlighting for clojure
-    clojure-mode-extra-font-locking
+(use-package clojure-mode-extra-font-locking
+  :ensure t)
 
     ;; integration with a Clojure REPL
     ;; https://github.com/clojure-emacs/cider
-    cider
+(use-package cider 
+  :ensure t)
 
-    ;; allow ido usage in as many contexts as possible. see
+   ;; allow ido usage in as many contexts as possible. see
     ;; customizations/navigation.el line 23 for a description
     ;; of ido
-    ido-ubiquitous
+(use-package ido-completing-read+ 
+  :ensure t)
 
     ;; Enhances M-x to allow easier execution of commands. Provides
     ;; a filterable list of possible commands in the minibuffer
     ;; http://www.emacswiki.org/emacs/Smex
-    smex
+(use-package smex
+  :ensure t)
 
-    ;; project navigation
-    projectile
+(use-package projectile
+  :ensure t)
 
-    ;; colorful parenthesis matching
-    rainbow-delimiters
+(use-package rainbow-delimiters
+  :ensure t)
 
-    ;; edit html tags like sexps
-    tagedit
+(use-package geiser
+  :ensure t)
 
-    ;; git integration
-    magit))
+(use-package ac-geiser
+  :ensure t)
+
+(use-package pretty-lambdada
+  :ensure t)
+
+(use-package magit
+  :ensure t)
+
+(use-package org-bullets
+  :ensure t
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+(use-package js2-mode
+  :ensure t
+  :config
+  (setq-default indent-tabs-mode nil)
+  :config
+  (add-hook 'js-mode-hook 'js2-minor-mode)
+  :config
+  (add-hook 'js-mode-hook 'electric-pair-mode)
+  :config
+  (add-hook 'js-mode-hook 'electric-indent-mode)
+  )
 
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
@@ -92,12 +133,14 @@
 ;; This library works around this problem by copying important
 ;; environment variables from the user's shell.
 ;; https://github.com/purcell/exec-path-from-shell
-(if (eq system-type 'darwin)
-    (add-to-list 'my-packages 'exec-path-from-shell))
+;(if (eq system-type 'darwin)
+ ;   (add-to-list 'my-packages 'exec-path-from-shbell))
 
-(dolist (p my-packages)
-  (when (not (package-installed-p p))
-    (package-install p)))
+;;;;
+
+;; (dolist (p my-packages)
+;;   (when (not (package-installed-p p))
+;;     (package-install p)))
 
 
 ;; Place downloaded elisp files in ~/.emacs.d/vendor. You'll then be able
@@ -145,19 +188,16 @@
 
 ;; Langauage-specific
 (load "setup-clojure.el")
-(load "setup-js.el")
+;;(load "setup-js.el")
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(coffee-tab-width 2)
- '(elfeed-feeds
-   (quote
-    ("https://www.johndcook.com/blog/feed/" "https://news.ycombinator.com/rss")) t)
  '(package-selected-packages
    (quote
-    (racket-mode tern-auto-complete web-beautify ac-js2 tern yasnippet-snippets indium xref-js2 js2-refactor js2-mode json-mode elfeed-web elfeed sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider))))
+    (try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -172,14 +212,6 @@
 ;(if (fboundp 'menu-bar-mode) (menu-bar-mode 1))
 
 
-;;; elfeed
-(setq elfeed-feeds
-      '(
-"https://www.johndcook.com/blog/feed/"
-"https://news.ycombinator.com/rss"
-))
-
-
 ;; javascript mode
 
 (require 'auto-complete)
@@ -192,20 +224,12 @@
 (yas-global-mode 1)
 
 
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-(add-to-list 'interpreter-mode-alist '("node" . js2-mode))
-(add-hook 'js-mode-hook 'js2-minor-mode)
-(add-hook 'js2-mode-hook 'ac-js2-mode)
-(add-hook 'js-mode-hook (lambda () (tern-mode t)))
-(if (eq system-type 'windows-nt)
-    (setq tern-command '("node" "<TERN LOCATION>\\bin\\tern"))
-    )
-(eval-after-load 'tern
-    '(progn
-    (require 'tern-auto-complete)
-    (tern-ac-setup)))
-(add-hook 'js2-mode-hook 'tern-mode)
-(add-hook 'js-mode-hook 'tern-mode)
+;(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+;(add-to-list 'interpreter-mode-alist '("node" . js2-mode))
+;(add-hook 'js-mode-hook 'js2-minor-mode)
+;(add-hook 'js2-mode-hook 'ac-js2-mode)
+;(add-hook 'js-mode-hook (lambda () (tern-mode t)))
+
 
 ;;; auto complete mod
 ;;; should be loaded after yasnippet so that they can work together
@@ -219,3 +243,59 @@
 (ac-set-trigger-key "<tab>")
 
 (add-hook 'prog-mode-hook 'paredit-everywhere-mode)
+
+
+;;; org-mode
+
+(setq org-src-fontify-natively t
+    org-src-tab-acts-natively t
+   org-confirm-babel-evaluate nil
+   org-edit-src-content-indentation 0)
+
+
+
+;;; racket
+
+(require 'ac-geiser)
+(add-hook 'geiser-mode-hook 'ac-geiser-setup)
+(add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
+(eval-after-load "auto-complete"
+  '(add-to-list 'ac-modes 'geiser-repl-mode))
+
+(setq geiser-active-implementations '(racket))
+(show-paren-mode 1)
+
+(add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
+(pretty-lambda-for-modes)
+
+(dolist (mode pretty-lambda-auto-modes)
+  ;; add paredit-mode to all mode-hooks
+  (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
+
+;(add-hook 'racket-repl-mode-hook #'rainbow-delimiters-mode)
+;(add-hook 'racket-repl-mode-hook #'auto-complete-mode)
+
+;(add-hook 'racket-mode (setq tab-always-indent 'complete))
+;(setq tab-always-indent 'complete)
+
+
+;;;;;;;;;; Oz
+
+(or (getenv "OZHOME")
+    (setenv "OZHOME" 
+            "/Applications/Mozart2.app/Contents/Resources/"))   ; or wherever Mozart is installed
+(setenv "PATH" (concat (getenv "OZHOME") "/bin:" (getenv "PATH")))
+ 
+(setq load-path (cons (concat (getenv "OZHOME") "/share/mozart/elisp")
+                      load-path))
+ 
+(setq auto-mode-alist 
+      (append '(("\\.oz\\'" . oz-mode)
+                ("\\.ozg\\'" . oz-gump-mode))
+              auto-mode-alist))
+ 
+(autoload 'run-oz "oz" "" t)
+(autoload 'oz-mode "oz" "" t)
+(autoload 'oz-gump-mode "oz" "" t)
+(autoload 'oz-new-buffer "oz" "" t)
+(add-hook 'oz-mode-hook 'electric-pair-mode 'electric-indent-mode)

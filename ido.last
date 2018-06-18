@@ -2,64 +2,185 @@
 
 ;; ----- ido-last-directory-list -----
 (
+ ("/Users/fredrikmeyer/code/p5js/" . "triangles/")
+ ("/Users/fredrikmeyer/Dropbox/FredrikMeyer.github.io/" . "_posts/")
+ ("/Users/fredrikmeyer/exercism/scheme/" . "hamming/")
+ ("/Users/fredrikmeyer/exercism/" . "scheme/")
+ ("/Users/fredrikmeyer/datainn/datainn/scripts/" . "roadnetelement-quality-check/")
+ ("/Users/fredrikmeyer/datainn/datainn/" . "scripts/")
+ ("/Users/fredrikmeyer/datainn/msr-stations/src/test/resources/" . "__files/")
+ ("/Users/fredrikmeyer/datainn/msr-stations/src/test/" . "resources/")
+ ("/Users/fredrikmeyer/datainn/msr-stations/src/" . "test/")
+ ("/Users/fredrikmeyer/datainn/msr-stations/" . "src/")
+ ("/Users/fredrikmeyer/code/squares/src/" . "squares/")
+ ("/Users/fredrikmeyer/code/squares/" . "src/")
+ ("/Users/fredrikmeyer/code/my-seconds-sketch/src/" . "my_seconds_sketch/")
+ ("/Users/fredrikmeyer/code/my-seconds-sketch/" . "src/")
+ ("/Users/fredrikmeyer/code/hello-quil/src/" . "hello_quil/")
+ ("/Users/fredrikmeyer/code/hello-quil/" . "src/")
  ("/Users/" . "fredrikmeyer/")
  ("/Users/fredrikmeyer/datainn/frontend/adm-web/" . "lib/")
  ("/Users/fredrikmeyer/datainn/frontend/" . "adm-web/")
- ("/Users/fredrikmeyer/datainn/" . "frontend/")
- ("/Users/fredrikmeyer/Dropbox/" . "tale_doktorer/")
+ ("/Users/fredrikmeyer/datainn/" . "datainn/")
+ ("/Users/fredrikmeyer/Dropbox/" . "FredrikMeyer.github.io/")
  ("/Users/fredrikmeyer/code/clojure-noob/src/" . "clojure_noob/")
  ("/Users/fredrikmeyer/code/clojure-noob/" . "src/")
- ("/Users/fredrikmeyer/code/" . "directions/")
+ ("/Users/fredrikmeyer/code/" . "p5js/")
  ("/Users/fredrikmeyer/testclojure/clojure-noob/src/" . "clojure_noob/")
  ("/Users/fredrikmeyer/testclojure/clojure-noob/" . "src/")
  ("/Users/fredrikmeyer/testclojure/" . "clojure-noob/")
- ("/Users/fredrikmeyer/" . "code/")
+ ("/Users/fredrikmeyer/" . "Dropbox/")
  ("/Users/fredrikmeyer/.emacs.d/" . "customizations/")
 )
 
 ;; ----- ido-work-directory-list -----
 (
- "/Users/fredrikmeyer/code/prog-lang/"
- "/Users/fredrikmeyer/code/directions/"
+ "/Users/fredrikmeyer/datainn/"
+ "/Users/fredrikmeyer/code/p5js/triangles/"
+ "/Users/fredrikmeyer/.emacs.d/customizations/"
+ "/Users/fredrikmeyer/Dropbox/org/"
+ "/Users/fredrikmeyer/code/p5js/ch1-vectors/"
+ "/Users/fredrikmeyer/code/p5js/"
  "/Users/fredrikmeyer/.emacs.d/"
+ "/Users/fredrikmeyer/"
+ "/Users/fredrikmeyer/code/prog-lang/"
+ "/Users/fredrikmeyer/.m2/"
+ "/Users/fredrikmeyer/Dropbox/FredrikMeyer.github.io/_posts/"
+ "/Users/fredrikmeyer/exercism/scheme/hamming/"
+ "/Users/fredrikmeyer/exercism/scheme/hello-world/"
+ "/Users/fredrikmeyer/code/"
+ "/Users/fredrikmeyer/Dropbox/FredrikMeyer.github.io/"
+ "/Users/fredrikmeyer/datainn/datainn/scripts/roadnetelement-quality-check/"
+ "/Users/fredrikmeyer/Downloads/algo_week14/box2dHelloWorld/src/"
+ "/Users/fredrikmeyer/code/coursera/proglang/"
+ "/Users/fredrikmeyer/Dropbox/inf2810/"
+ "/Users/fredrikmeyer/code/project-euler-racket/"
+ "/Users/fredrikmeyer/datainn/msr-stations/"
+ "/Users/fredrikmeyer/datainn/msr-stations/src/test/resources/"
+ "/Users/fredrikmeyer/code/squares/src/squares/"
+ "/Users/fredrikmeyer/.lein/"
+ "/Users/fredrikmeyer/code/hello-quil/src/hello_quil/"
+ "/Users/fredrikmeyer/code/my-seconds-sketch/src/my_seconds_sketch/"
+ "/Users/fredrikmeyer/code/my-seconds-sketch/"
+ "/Users/fredrikmeyer/code/hello-quil/"
+ "/Users/fredrikmeyer/code/clojure-noob/src/clojure_noob/"
+ "/Users/fredrikmeyer/code/directions/"
+ "/Users/fredrikmeyer/useful-commands/"
  "/Users/fredrikmeyer/datainn/frontend/adm-web/lib/"
  "/Users/fredrikmeyer/.elfeed/"
- "/Users/fredrikmeyer/datainn/"
- "/Users/fredrikmeyer/code/"
  "/Users/fredrikmeyer/Dropbox/tale_doktorer/"
  "/Users/fredrikmeyer/Dropbox/"
  "/Users/fredrikmeyer/.ssh/"
- "/Users/fredrikmeyer/code/clojure-noob/src/clojure_noob/"
- "/Users/fredrikmeyer/.emacs.d/customizations/"
- "/Users/fredrikmeyer/.lein/"
- "/Users/fredrikmeyer/"
  "/Users/fredrikmeyer/testclojure/clojure-noob/"
  "/Users/fredrikmeyer/testclojure/clojure-noob/src/clojure_noob/"
 )
 
 ;; ----- ido-work-file-list -----
 (
- "test1.sml"
- "ex1.sml"
- "test.sml"
- "index.js"
- "package.json"
- "package-lock.json"
- "ac-comphist.dat"
- "init.el"
- "nvdb.js"
- "api_key.txt"
+ "fagdag.org"
+ "triangles.js"
+ "index.html"
+ "ex1.2.js"
+ "ui.el"
+ "navigation.el"
+ "setup-js.el"
+ "ferie.org"
+ "ex11.js"
+ "sketch.js"
 )
 
 ;; ----- ido-dir-file-cache -----
 (
- ("/Users/fredrikmeyer/code/prog-lang/" (23230 13320 557481 166000) "test1.sml" "ex1.sml" "../" "./")
+ ("/Users/fredrikmeyer/code/p5js/triangles/" (23325 28114 569589 292000) "triangles.js" "index.html" "../" "./")
 
- ("/Users/fredrikmeyer/" (23230 13050 282473 206000) ".account" ".viminfo" ".bash_history" "bootcamp/" ".vimrc~" ".racketrc" ".gitconfig" ".python_history" "Downloads/" ".oh-my-zsh/" ".v8flags.6.1.534.47.dc0ba417c28a2152abb4464ee70fcc86.json" ".gem/" ".bash_profile" ".m2/" ".vscode/" ".racketrc~" ".babel.json" "Documents/" ".exercism.json" ".npm/" ".scala_history" ".jupyter/" "test.txt" "ideaprojects/" ".Trash/" "elm-package.json" "Dropbox/" ".emacs~" ".zsh-update" ".ghci" "fagdag/" "#test#" ".ghc/" ".profile" "Applications/" ".vimrc" "Movies/" ".ssh/" ".lmmsrc.xml" "useful-commands/" ".dropbox/" "Public/" "fredrik_3d_parser/" ".lein/" ".sbt/" "exercism/" ".bash_sessions/" ".cups/" "id_aabel" ".gitignore_global" ".android/" ".elfeed/" ".node_repl_history" "test.scm~" ".emacs.d/" "id_aabel.pub" "elm-stuff/" ".coursier/" ".oracle_jre_usage/" ".lesshst" "elm/" "Library/" "Desktop/" ".ipython/" ".zsh_history" ".v8flags.6.1.534.47.3d8829a49f26d41bfac9b80628435881.json" "code/" ".bundle/" ".nvm/" ".atom/" ".pylint.d/" "Pictures/" ".psql_history" ".local/" ".elm/" ".bash_profile~" ".zshrc" ".zshrc.pre-oh-my-zsh" ".spacemacs.temp" ".emacs.back" ".geiser_history.racket" ".netrc" ".vagrant.d/" ".v8flags.5.1.281.103.dc0ba417c28a2152abb4464ee70fcc86.json" ".hgignore_global" ".CFUserTextEncoding" ".zcompdump-bekk-fmeyer-5.3" ".profil" "VirtualBox VMs/" ".zshrc~" ".DS_Store" ".zcompdump-bekk-fmeyer-5.2" "test.scm" "java-getting-started/" ".vim/" "#.zshrc#" ".node-gyp/" ".racket-geiser" ".ivy2/" "algjulekalender/" "lmms/" ".docker/" ".idea-build/" "javafxtutorial/" "Music/" ".config/" "datainn/" ".stack/" "scala-getting-started/" "../" "./")
+ ("/Users/fredrikmeyer/" (23325 31178 480870 352000) ".account" ".viminfo" ".nbprofiler/" ".bash_history" "bootcamp/" ".vimrc~" ".racketrc" ".gitconfig" ".cache/" ".python_history" "Downloads/" ".oh-my-zsh/" ".v8flags.6.1.534.47.dc0ba417c28a2152abb4464ee70fcc86.json" ".Xauthority" ".gem/" ".bash_profile" ".m2/" ".vscode/" ".racketrc~" ".testcontainers.properties" ".babel.json" "Documents/" ".exercism.json" ".npm/" ".scala_history" ".jupyter/" "test.txt" "ideaprojects/" ".Trash/" "elm-package.json" "Dropbox/" ".emacs~" ".zsh-update" ".ghci" "#test#" ".ghc/" ".profile" "Applications/" ".vimrc" "Movies/" ".ssh/" ".pip/" ".lmmsrc.xml" "useful-commands/" ".dropbox/" "Public/" "fredrik_3d_parser/" ".lein/" ".sbt/" "exercism/" ".bash_sessions/" ".cups/" "id_aabel" ".gitignore_global" ".android/" ".elfeed/" ".node_repl_history" "test.scm~" ".emacs.d/" "id_aabel.pub" "elm-stuff/" ".coursier/" ".oracle_jre_usage/" ".lesshst" "elm/" "Library/" "Desktop/" ".ipython/" ".zsh_history" ".v8flags.6.1.534.47.3d8829a49f26d41bfac9b80628435881.json" ".gnome2/" "code/" ".bundle/" ".nvm/" ".atom/" ".pylint.d/" "Pictures/" ".psql_history" ".local/" ".ideaLibSources/" ".elm/" ".bash_profile~" ".zshrc" ".zshrc.pre-oh-my-zsh" ".spacemacs.temp" "Processing/" ".emacs.back" ".geiser_history.racket" ".netrc" ".vagrant.d/" ".v8flags.5.1.281.103.dc0ba417c28a2152abb4464ee70fcc86.json" ".hgignore_global" ".CFUserTextEncoding" ".zcompdump-bekk-fmeyer-5.3" ".profil" "VirtualBox VMs/" "ghostscript-9.23/" ".zshrc~" ".DS_Store" ".zcompdump-bekk-fmeyer-5.2" "test.scm" "java-getting-started/" ".vim/" "#.zshrc#" ".node-gyp/" ".racket-geiser" ".squirrel-sql/" ".ivy2/" "algjulekalender/" "lmms/" ".docker/" ".expo/" ".idea-build/" "javafxtutorial/" "Music/" ".config/" "datainn/" ".stack/" "../" "./")
 
- ("/Users/fredrikmeyer/.emacs.d/" (23230 12704 186085 303000) ".recentf~" ".smex-items" "cider-history" "backups/" "themes/" "games/" "elpa/" "network-security.data" ".recentf" "README.md" "init.el" "url/" "auto-save-list/" "projectile-bookmarks.eld" "ido.last~" "customizations/" "eshell/" ".DS_Store" "init.el~" "ido.last" "snippets/" "ac-comphist.dat" "../" "./")
+ ("/Users/fredrikmeyer/Dropbox/FredrikMeyer.github.io/" (23325 30837 347741 957000) "assets/" "about.md" "LICENSE.txt" ".git/" "_sass/" "Gemfile.lock" "Gemfile" "_config.yml" "_site/" "index.md" ".gitignore" "README.md" "_layouts/" "404.html" "etc/" ".sass-cache/" "_posts/" "_includes/" "../" "./")
 
- ("/Users/fredrikmeyer/code/directions/" (23229 25428 414442 447000) ".tern-port" "api_key.txt" "package.json" "package-lock.json" "index.js" "node_modules/" "../" "./")
+ ("/Users/fredrikmeyer/Dropbox/FredrikMeyer.github.io/etc/" (23325 30924 762739 118000) "rotating-circles/" "p5.js" "../" "./")
+
+ ("/Users/fredrikmeyer/code/p5js/" (23325 27664 434089 414000) "sketch.js" "p5.js" "introduction/" "ch1-vectors/" "triangles/" "index.html" "../" "./")
+
+ ("/Users/fredrikmeyer/code/" (23324 15410 786987 147000) "my-seconds-sketch/" "test.ps" "hello-quil/" "my-webapp/" "coursera/" "p5js/" "squares/" "elm-graphics/" "rosalind/" "clojure-noob/" "test-react-native/" "euklid/" "project-euler-racket/" "elm-project-template/" "div/" "prog-lang/" "directions/" "node-js-getting-started/" "../" "./")
+
+ ("/Users/fredrikmeyer/.emacs.d/" (23324 9686 952694 507000) ".recentf~" ".smex-items" "cider-history" ".tern-port" "backups/" "themes/" "games/" ".git/" "elpa/" "network-security.data" ".gitignore" ".recentf" "README.md" "init.el" "url/" "auto-save-list/" "projectile-bookmarks.eld" "ido.last~" "customizations/" "eshell/" ".DS_Store" "init.el~" "ido.last" "snippets/" "ac-comphist.dat" "../" "./")
+
+ ("/Users/fredrikmeyer/Dropbox/org/" (23324 6919 636249 928000) "../" "./")
+
+ ("/Users/fredrikmeyer/Dropbox/" (23324 6919 636278 623000) "TIMELISTE MARS.ods" "soknad leve.odt" "post-17-63636-gtameyer.jpg" "iPad kvittering.pdf" "mastervitnemal.pdf" "CV.pdf" "hope.pdf" "Oppsigelse Ullern.odt" "bruksanv kaffetrakter.pdf" "referanser_stip_soknad.odt" "Matematikkihverdagentil RETTET.docx" "FOAGdec2915public.pdf" "tegnebilder/" "MathPhil/" "animation2.gif" "dagbok.pdf" "Apps/" "paper311.pdf" "timeliste katta janfeb.ods" "Matematikkihverdagentil RETTET.odt" "AGbookweb.pdf" "Photos/" "lonnsplassering.pdf" "progboker/" "Mattefiler/" "FitNotes_Backup_2015_05_08_21_51_13.fitnotes" "bevis_gruppelarerseminar.pdf" ".dropbox.cache/" "karakterutskrift.pdf" "inf2810/" "downloadsfragammelmac/" "MDMARTIKKEL.pdf" "soknad_LEVE.pdf" "meg og lovise tusenfryd.jpg" "tale_doktorer.md" "alggeooblig2.pdf" "bildertilfotoalbum/" "Skirball.mp3" "pdf jul 2014/" "IMG_0010.MOV" "TIMELISTE APRIL KATTA.ods" "publication.bib" "FredrikMeyer.github.io/" "Third draft The Passing of the Coffee Maker, and the demise of many other things.docx" "skitch.png" "billetter_fever_ray.pdf" "elliptic_functions_project.pdf" "Tale 001.m4a" "dagbok.out" "tutorial.ps" "matematikk/" "download_worksheets/" "intellijprojects/" "fragammelmob/" "tutor.pdf" "tale_doktorer/" "Matteartikler/" "seven-languages-in-seven-weeks_p5_0.pdf" "MASTEROPPG/" "vitnemalbachelor.pdf" "Gruppelarer/" "13015690_10156937679715691_4669814102961949602_n.jpg" "diplomasupplement.pdf" "StoryAlbum/" "dagbok.tex" "Atiyah and Macdonald - Introduction to Commutative Algebra text.pdf" "nand2tetris/" "AMA9.mp3" "vgsvitnemal.pdf" "jurafsky_martin.pdf" ".dropbox" "Medlemskort.pdf" "Public/" "attest_katta.pdf" "Triprapport2CB.txt" "clojure-noob/" "oblig1.pdf" "SA_2018_01_13_deling.pdf" "skitch2.png" "exercism/" "Kommalg.pdf" "Oppsigelse Ullern.pdf" "Camera Uploads/" "reiseutgifter berlin.ods" "cv.odt" "Univ/" "m2files/" "soknad leve.pdf" "logo_norsk_290_232323.png" "megsvarthvitt.jpg" "eisenbud curves.pdf" "referanser_stip_soknad.pdf" "attest_gruppelarer.pdf" "Hatcher condensed.pdf" "oblig2.pdf" "CohomologyVarieties.pdf" "oblig4400.pdf" "CV.tex" "karakterutskrift_2017.pdf" "on the hilbert scheme compactification.pdf" "stillman_lecturenotes-m2.pdf" "usavitnemal.pdf" "matematikknotater/" "meg/" "cv_ny2.pdf" "books/" "datainn_racket2.rkt" "hjemmeside/" "bootcampbilder/" "attest_ica.pdf" "algpip_konkurranse/" "CurveBook.pdf" "PayPal_ Transaksjonsdetaljer.pdf" "bilder_fra_Marius/" "structure_of_algebraic_threefolds_kollar.pdf" "attest_syzygies_berlin.pdf" "logo_norsk_290_22222.png" "thesis rodland pfaffian.ps" "IMG_0059.JPG" "Untitled 1.odt" "IPIP-NEO Narrative Report.htm" "dagbok.synctex.gz" "stavelsedikt.txt" "cv_eng.odt" "IPIP-NEO Narrative Report_files/" "megfarger.jpg" "workspace/" "gcd.pdf" "videoer/" "algebraic-geometry hartshorne.pdf" "five_factor.md" "attest_ullern.pdf" "trematematikarar.jpg" "org/" "natural operations in differential geometry.pdf" "datainn_racket.rkt" "Programmering/" "scientificamerican0885-16.pdf" "JoinsOfHexagonsAndCalabiYauThreefolds/" "processing/" "Photo Booth-bibliotek/" "dagbok.log" "lyntale_matte_programmering/" "hvordan bor matteundervisning vaere.odt" "profilbilde.jpg" "dagbok.fdb_latexmk" "AMA10.mp3" "dagbok.aux" "IFTTT/" "kreativitet/" "AMA11.mp3" "dagbok.fls" "backupdesktop/" "mattekart.png" "Kil 2.mp4" "Icon
+" "backupfredrikmeyernet/" "Kontakter – 27.11.2013.abbu/" "cv_eng.pdf" "cv_3.pdf" "Joggelogg.ods" "kaggle/" ".DS_Store" "intervju/" "complex-algebraic-geometry.pdf" "trematematikarar.odt" "Screenshots/" "CV.log" "InterviewProblems.pdf" "functional analysis.pdf" "markus.txt" "tale_doktorer_nordnorsk.md" "cv_ny.pdf" "marietilkonfirmasjon/" "notater/" "amatthew algebraic curves notes.pdf" "PictureLanguage/" "Defending the Undefendable_2.pdf" "to ensomme ulver.odt" "Timeliste Katta.ods" "proof picard.pdf" "sam-harris-waking-up-ama11.mp3" "../" "./")
+
+ ("/Users/fredrikmeyer/Dropbox/Programmering/" (23293 61664 918134 439000) "algo2/" "py4e/" "Ruby/" "C/" "algpip/" "permutation_random.py" "hittingtargets.py" "playmidi.py" "NatureOfCode/" "#stockprices.py#" "Untitled.rkt" "sirkeltest.py" "Javascript/" "addtwonumbers/" "chapter2/" "twitterpython/" "PythonPlayground/" "mandeltester.py" "ciphers.txt" ".ipynb_checkpoints/" "sumsquares.py" "r2.in" "viete_pi.py" "testcase.txt" "prolog_facts.pl" "rubycourse/" "scala/" ".gitignore" "Collatz2Tag.py" "practice_encyption.py" "pe.rkt" "adventofcode/" "twistedcubic.py" "fibonaccirep.py" "plott1t2.py" "sounds/" "README.md" "testsum.py" "beautifulracket/" "machinelearning/" "udacityjava/" "Haskell/" "testpy.py" "nodup.java" "peuler1.ss" "elm/" "onetimepad.py" "ProjectEuler/" "Java/" "decryptmessages.ipynb" "tictactoe/" "jvruter.py" "addtwonumbers.java" "christmascalendar/" "scalaworkspace/" "nltk/" "NoDuplicates.class" "testpy.py~" "Python/" "numberfun.py" "p059_cipher.txt" "problemsolving/" "NoDuplicates.java" "SevenLanguages/" "climatechange/" "kaggle/" "racket/" ".DS_Store" "hittingtargets/" "hjorner_heksagon_deltadelta.py" "stockprices.py" "nodup.py" "ufo-alien-spaceship-flying-saucer-260nw-266266613.jpg" "SmithNormalForm/" "ufo-alien-spaceship-flying-saucer-260nw-266266613.png" "tensorflowtest.py" "r2.rb" "primes.py" "SICP/" "redraw.py" "../" "./")
+
+ ("/Users/fredrikmeyer/code/p5js/ch1-vectors/" (23320 60296 399599 191000) "ex1.2.js" "ex11.js" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/" (23319 52167 382548 756000) "datainn-mstr-docker.tar.gz" "phd.org" "post_mortem_deploy.html" "datainn-tck/" "mock-server/" "logger.md" "scheme-evaluator/" "uml.pdf" "test2.json" "msr_workshop.org" "nortraf-data-migrator/" "frontend-shared/" "applications/" "msr_workshop.txt" "datainnfacade/" "vegtrafikkindeks/" "common/" "nordicway-pipeline/" "uml_nortraf.pdf" "msr-stations/" "post_mortem_deploy.org" "test.json" "test_org_mode.org" "traffic-volume/" "chef/" ".swp" "notater_logg.md" "mote_migrering.org" "msr_workshop.html" "frontend/" "nvdb.http" ".DS_Store" "trafikkdata-api/" "notater_msr.md" "test_st.json" "msr.org" "datainn/" "kibana-5.3.2-darwin-x86_64/" "post_mortem_deploy.txt" "../" "./")
+
+ ("/Users/fredrikmeyer/code/prog-lang/" (23313 45164 467166 854000) "hw1test.sml" "lec1.sml" "test1.sml" "ex1.sml" "../" "./")
+
+ ("/Users/fredrikmeyer/.m2/" (23216 49988 781417 282000) "settings.xml" "repository/" "../" "./")
+
+ ("/Users/fredrikmeyer/Dropbox/FredrikMeyer.github.io/_posts/" (23150 6320 513757 253000) "2018-01-04-haskell-notes.markdown" "2018-01-10-permutations-java.markdown" "2017-12-31-discrete-optimization.markdown" "../" "./")
+
+ ("/Users/fredrikmeyer/exercism/scheme/hamming/" (23289 60357 585788 895000) "hamming-test.scm" "README.md" "hamming.scm" "../" "./")
+
+ ("/Users/fredrikmeyer/exercism/scheme/" (23289 59266 580456 430000) "hamming/" "hello-world/" "../" "./")
+
+ ("/Users/fredrikmeyer/exercism/scheme/hello-world/" (23289 59128 356936 201000) "hello-world-test.scm" "hello-world.scm" "README.md" "../" "./")
+
+ ("/Users/fredrikmeyer/exercism/" (23289 59044 55199 915000) "racket/" "scheme/" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/datainn/scripts/roadnetelement-quality-check/" (23206 11381 111211 223000) "get_all_stations_mstr.json" "get_stations_from_nvdb.py" "read_station_documents.py" "fetch_roadref_nvdb.py" "check_quality.py" "import_position_all_stations.py" "make_mpn_and_roadnet_position.py" "get_all_stations_datainn.json" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/datainn/scripts/" (23263 14001 331775 114000) "src/" "missing.rb" "deactivate-alarm.py" "convert-id-mac-casing/" "generate-router-ping-alarm.sh" "operative-events-nortraf/" "roadnetelement-quality-check/" "indexdumper/" "cluster_fork.sh" "completeness/" ".gitignore" "common/" "README.md" "is-receiving-events.py" "pom.xml" "oldest-operational-busboy-timestamp.py" "prune-daughter-events/" "make-operational.sh" "all-stations-excel-export.sh" "fix-is-operational-flags/" "make-normal-stations-operational.sh" "bin/" "extract-ids.sh" "make-mother-points-operational.sh" "remove-busboy-and-completeness-stamps-for-daughters/" "slow-tests.sh" "ssh-login/" "es-mapping-converter/" "driftsrutine/" "rebalance-stations-operational.sh" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/datainn/" (23263 14001 330172 169000) ".idea/" "acceptance-test/" "elasticsearch/" "domain/" "README-testing.md" ".git/" "men-and-mice-mock/" "cross-section/" "README-ops.md" "README-deploy.md" "test-helpers/" "scripts/" "codestyle/" "ua-connections/" ".gitignore" "datainn.iml" "README-credentials.md" "utilities/" "README.md" "dataimport/" "docs/" "shared/" "server/" "pom.xml" "target/" "web/" "ci/" "README-servers.md" "TROUBLESHOOTING.md" "dbexport/" "opcua-cmdline-client/" "datex2-test-server/" "../" "./")
+
+ ("/Users/fredrikmeyer/Downloads/algo_week14/box2dHelloWorld/src/" (23263 13715 0 0) "testApp.h" "main.cpp" "testApp.cpp" "addons/" "../" "./")
+
+ ("/Users/fredrikmeyer/code/coursera/proglang/" (23260 41508 105996 448000) "test.sml" "../" "./")
+
+ ("/Users/fredrikmeyer/Dropbox/inf2810/" (23252 60153 3844 329000) "notater_sicp.org" "prekode3a.scm" "oblig1b.scm" "2-60.scm~" "#oblig1b.scm#" "usefuls.scm~" ".#oblig1.scm" ".git/" "2.63.scm" "repl.rkt" "boks_peker_3b_2.jpg" "usefuls.scm" "huffman.scm~" "huffman.scm" "2.63.scm~" "oblig2b_tester.rkt~" "boks_peker_3a.jpg" "week8.scm" "oblig2b_tester.rkt" "3.3.4.rkt" "oblig2a.scm~" ".projectile" "download (flyttet).pdf" "boks_peker_3b.jpg" "2-60.scm" "3.3.2.rkt" "quicksort.scm" "oblig1.scm~" "chap312.scm~" "week10.scm~" "enviroment_diagram_1b.jpg" "queue.rkt" "week6.scm" "quicksort.scm~" "oblig2b.scm~" "2018-03-18 15.39.44.jpg" "chap312.scm" "week7.scm" "#week6.scm#" "download.pdf" "week7.scm~" "logo_norsk_290.png" "week10.scm" "#oblig1.scm#" "oblig3a.scm" ".DS_Store" "oblig1.scm" "#oblig2b.scm#1#" "oblig2a.scm" "oblig1b.scm~" "oblig2b_tester.scm" "week6.scm~" "oblig2b.scm" "../" "./")
+
+ ("/Users/fredrikmeyer/code/project-euler-racket/" (23249 4827 480464 899000) "Untitled.rkt" "p4.rkt" "p5.rkt" "p7.rkt" "p6.rkt" "p2.rkt" "p3.rkt" "p1.rkt" "p1.rkt~" "p2.rkt~" "p3.rkt~" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/msr-stations/" (23247 5344 569316 831000) "src/" ".idea/" ".git/" ".gitignore" "README.md" "msr-stations.iml" "pom.xml" "target/" "wiremock-standalone-2.16.0.jar" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/msr-stations/src/test/resources/__files/" (23244 37077 397799 303000) "station_3001156.json" "traffic_stations_page1.json" "traffic_stations_page2.json" "station_3001168.json" "utstyrstyper.json" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/msr-stations/src/test/resources/" (23245 46014 640376 778000) "msr.conf" "osteroybrua.json" "__files/" "logback-test.xml" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/msr-stations/src/test/" (23244 37077 395925 78000) "java/" "resources/" "../" "./")
+
+ ("/Users/fredrikmeyer/datainn/msr-stations/src/" (23244 37077 393887 630000) "main/" "test/" "../" "./")
+
+ ("/Users/fredrikmeyer/.emacs.d/customizations/" (23242 18117 904469 901000) "elisp-editing.el" "ui.el~" "setup-js.el" "navigation.el" "editing.el" "setup-clojure.el" "misc.el" "shell-integration.el" "ui.el" "../" "./")
+
+ ("/Users/fredrikmeyer/code/squares/src/squares/" (23242 21126 668130 457000) "core.clj" "../" "./")
+
+ ("/Users/fredrikmeyer/code/squares/src/" (23242 21126 667574 829000) "squares/" "../" "./")
+
+ ("/Users/fredrikmeyer/code/squares/" (23242 21126 671027 979000) "src/" ".gitignore" "README.md" "LICENSE" "project.clj" "../" "./")
+
+ ("/Users/fredrikmeyer/.lein/" (23242 17463 853267 710000) "profiles.clj~" "profiles.clj" "repl-history" "../" "./")
+
+ ("/Users/fredrikmeyer/code/my-seconds-sketch/" (23242 19109 971374 860000) "src/" ".gitignore" ".lein-repl-history" "README.md" ".nrepl-port" "target/" "LICENSE" "project.clj" "../" "./")
+
+ ("/Users/fredrikmeyer/code/my-seconds-sketch/src/my_seconds_sketch/" (23242 19329 135989 356000) "core.clj" "dynamic.clj" "../" "./")
+
+ ("/Users/fredrikmeyer/code/my-seconds-sketch/src/" (23242 14036 475936 572000) "my_seconds_sketch/" "../" "./")
+
+ ("/Users/fredrikmeyer/code/hello-quil/" (23242 13603 505075 661000) "src/" ".gitignore" ".lein-repl-history" "README.md" ".nrepl-port" "target/" "LICENSE" "project.clj" "../" "./")
+
+ ("/Users/fredrikmeyer/code/hello-quil/src/hello_quil/" (23242 11846 398562 69000) "core.clj" "../" "./")
+
+ ("/Users/fredrikmeyer/code/hello-quil/src/" (23242 11846 397820 796000) "hello_quil/" "../" "./")
+
+ ("/Users/fredrikmeyer/code/clojure-noob/" (23207 33183 521983 742000) "src/" "doc/" ".gitignore" ".lein-repl-history" "README.md" "resources/" ".hgignore" "target/" "CHANGELOG.md" "test/" "LICENSE" "project.clj" "../" "./")
+
+ ("/Users/fredrikmeyer/code/directions/" (23242 8618 312798 733000) ".tern-port" "api_key.txt" "package.json" "package-lock.json" "index.js" "node_modules/" "request_test.http" "../" "./")
+
+ ("/Users/fredrikmeyer/useful-commands/" (23199 41339 704914 933000) "shell.md" ".git/" "elasticsearch.md" "git.md" "java.md" ".gitignore" "README.md" "maven.md" "javascript.md" "ssh.md" "vim.md" "../" "./")
 
  ("/Users/fredrikmeyer/datainn/frontend/adm-web/lib/" (23219 28026 774562 184000) "jquery.fileDownload.js" "socket/" "KeyCodes.js" "open.js" "mapFilters.js" "descriptionForAlarm.js" "parseManualLabels.js" "RequestStoreMixin.js" "urlBuilder.js" "pad.js" "parseSystemEvents.js" "sortLanes.js" "createRequestAction.js" "laneDirection.js" "PropTypes.js" "toQuery.js" "numberFormatter.js" "ajax.js" "TimeoutTransitionGroup.js" "PureRenderMixin.js" "nvdb.js" "pluralizers.js" "time-range.js" "searchParams.js" "roadNetElement.js" "store.js" "stationIcon.js" "merge.js" "links.js" "keys.js" "d3-locale-no.js" "logger.js" "timeBuilder.js" "parseAlarms.js" "prop.js" "datainnMap.js" "range.js" "textForImageType.js" "roadReferences.js" "../" "./")
 
@@ -67,32 +188,17 @@
 
  ("/Users/fredrikmeyer/datainn/frontend/" (23218 25646 636484 303000) "src/" ".idea/" "mt-web/" ".eslintrc.json" "npm" "vegkant/" ".git/" "gulp-utv" "node/" "karma.conf.js" "frontend.iml" "package.json" "package-lock.json" ".gitignore" "visualizations/" "gulpfile.babel.js" "gulp-files/" "README.md" "run.sh" ".bowerrc" ".jshintrc" "pom.xml" "etc/" "node_modules/" "build-and-run.sh" "target/" "karma.conf.ci.js" "gulp" "karma.mt.conf.js" "adm-web/" ".babelrc" "../" "./")
 
- ("/Users/fredrikmeyer/datainn/" (23221 3237 164432 62000) "datainn-tck/" "mock-server/" "logger.md" "untitled/" "frontend-shared/" "vegtrafikkindeks/" "common/" "nordicway-pipeline/" "msr-stations/" "traffic-volume/" "chef/" "frontend/" ".DS_Store" "datainn/" "kibana-5.3.2-darwin-x86_64/" "../" "./")
-
- ("/Users/fredrikmeyer/code/" (23228 52962 348668 799000) "my-webapp/" "elm-graphics/" "rosalind/" "clojure-noob/" "euklid/" "project-euler-racket/" "directions/" "node-js-getting-started/" "../" "./")
-
  ("/Users/fredrikmeyer/.elfeed/" (23227 65237 380290 146000) "index" "../" "./")
 
  ("/Users/fredrikmeyer/.emacs.d/games/" (23227 64700 667694 841000) "tetris-scores" "../" "./")
 
- ("/Users/fredrikmeyer/Dropbox/FredrikMeyer.github.io/" (23150 3090 271363 509000) "assets/" "about.md" "LICENSE.txt" ".git/" "_sass/" "Gemfile.lock" "Gemfile" "_config.yml" "_site/" "index.md" ".gitignore" "README.md" "_layouts/" "404.html" ".sass-cache/" "_posts/" "_includes/" "../" "./")
-
  ("/Users/fredrikmeyer/Dropbox/tale_doktorer/" (23209 35572 363172 332000) "tale_doktorer_nordnorsk.log" "tale_doktorer_nordnorsk.aux" "tale_doktorer_nordnorsk.html" "tale_doktorer.md" "pandoc.css" "tale_doktorer_nordnorsk.out" "tale_doktorer.html" "tale_doktorer_nordnorsk.tex" "tale_doktorer_nordnorsk.pdf" "tale_doktorer_nordnorsk.md" "../" "./")
-
- ("/Users/fredrikmeyer/Dropbox/" (23209 35236 704167 471000) "TIMELISTE MARS.ods" "soknad leve.odt" "post-17-63636-gtameyer.jpg" "iPad kvittering.pdf" "mastervitnemal.pdf" "CV.pdf" "hope.pdf" "Oppsigelse Ullern.odt" "bruksanv kaffetrakter.pdf" "referanser_stip_soknad.odt" "Matematikkihverdagentil RETTET.docx" "FOAGdec2915public.pdf" "tegnebilder/" "MathPhil/" "animation2.gif" "dagbok.pdf" "Apps/" "paper311.pdf" "timeliste katta janfeb.ods" "Matematikkihverdagentil RETTET.odt" "AGbookweb.pdf" "Photos/" "lonnsplassering.pdf" "progboker/" "Mattefiler/" "FitNotes_Backup_2015_05_08_21_51_13.fitnotes" "bevis_gruppelarerseminar.pdf" ".dropbox.cache/" "karakterutskrift.pdf" "inf2810/" "downloadsfragammelmac/" "MDMARTIKKEL.pdf" "soknad_LEVE.pdf" "meg og lovise tusenfryd.jpg" "tale_doktorer.md" "alggeooblig2.pdf" "bildertilfotoalbum/" "pdf jul 2014/" "IMG_0010.MOV" "TIMELISTE APRIL KATTA.ods" "publication.bib" "FredrikMeyer.github.io/" "Third draft The Passing of the Coffee Maker, and the demise of many other things.docx" "skitch.png" "billetter_fever_ray.pdf" "elliptic_functions_project.pdf" "Tale 001.m4a" "dagbok.out" "tutorial.ps" "matematikk/" "download_worksheets/" "intellijprojects/" "fragammelmob/" "tutor.pdf" "tale_doktorer/" "Matteartikler/" "seven-languages-in-seven-weeks_p5_0.pdf" "MASTEROPPG/" "vitnemalbachelor.pdf" "Gruppelarer/" "13015690_10156937679715691_4669814102961949602_n.jpg" "diplomasupplement.pdf" "dagbok.tex" "Atiyah and Macdonald - Introduction to Commutative Algebra text.pdf" "nand2tetris/" "AMA9.mp3" "vgsvitnemal.pdf" "jurafsky_martin.pdf" ".dropbox" "Medlemskort.pdf" "Public/" "attest_katta.pdf" "Triprapport2CB.txt" "clojure-noob/" "oblig1.pdf" "SA_2018_01_13_deling.pdf" "skitch2.png" "exercism/" "Kommalg.pdf" "Oppsigelse Ullern.pdf" "Camera Uploads/" "reiseutgifter berlin.ods" "cv.odt" "Univ/" "m2files/" "soknad leve.pdf" "megsvarthvitt.jpg" "eisenbud curves.pdf" "referanser_stip_soknad.pdf" "attest_gruppelarer.pdf" "Hatcher condensed.pdf" "oblig2.pdf" "CohomologyVarieties.pdf" "oblig4400.pdf" "CV.tex" "karakterutskrift_2017.pdf" "on the hilbert scheme compactification.pdf" "stillman_lecturenotes-m2.pdf" "usavitnemal.pdf" "matematikknotater/" "meg/" "cv_ny2.pdf" "books/" "hjemmeside/" "bootcampbilder/" "attest_ica.pdf" "algpip_konkurranse/" "CurveBook.pdf" "PayPal_ Transaksjonsdetaljer.pdf" "bilder_fra_Marius/" "structure_of_algebraic_threefolds_kollar.pdf" "attest_syzygies_berlin.pdf" "thesis rodland pfaffian.ps" "Untitled 1.odt" "IPIP-NEO Narrative Report.htm" "dagbok.synctex.gz" "stavelsedikt.txt" "cv_eng.odt" "IPIP-NEO Narrative Report_files/" "megfarger.jpg" "workspace/" "gcd.pdf" "videoer/" "algebraic-geometry hartshorne.pdf" "five_factor.md" "attest_ullern.pdf" "trematematikarar.jpg" "natural operations in differential geometry.pdf" "Programmering/" "scientificamerican0885-16.pdf" "JoinsOfHexagonsAndCalabiYauThreefolds/" "processing/" "Photo Booth-bibliotek/" "dagbok.log" "lyntale_matte_programmering/" "hvordan bor matteundervisning vaere.odt" "profilbilde.jpg" "dagbok.fdb_latexmk" "AMA10.mp3" "dagbok.aux" "IFTTT/" "kreativitet/" "dagbok.fls" "backupdesktop/" "mattekart.png" "Kil 2.mp4" "Icon
-" "backupfredrikmeyernet/" "Kontakter – 27.11.2013.abbu/" "cv_eng.pdf" "cv_3.pdf" "Joggelogg.ods" "kaggle/" ".DS_Store" "intervju/" "complex-algebraic-geometry.pdf" "trematematikarar.odt" "Screenshots/" "CV.log" "InterviewProblems.pdf" "functional analysis.pdf" "markus.txt" "tale_doktorer_nordnorsk.md" "cv_ny.pdf" "marietilkonfirmasjon/" "notater/" "amatthew algebraic curves notes.pdf" "PictureLanguage/" "Defending the Undefendable_2.pdf" "to ensomme ulver.odt" "Timeliste Katta.ods" "proof picard.pdf" "../" "./")
 
  ("/Users/fredrikmeyer/.ssh/" (23206 47197 552122 825000) "known_hosts" "id_rsa_fredrikmeyerbekk.pub" "id_aabel" "id_aabel.pub" "id_rsa.pub" "id_rsa_fredrikmeyerbekk" "id_rsa" "config" "config~" "../" "./")
 
- ("/Users/fredrikmeyer/code/clojure-noob/" (23206 63353 210792 570000) "src/" "doc/" ".gitignore" ".lein-repl-history" "README.md" ".nrepl-port" "resources/" ".hgignore" "target/" "CHANGELOG.md" "test/" "LICENSE" "project.clj" "../" "./")
-
  ("/Users/fredrikmeyer/code/clojure-noob/src/clojure_noob/" (23206 63358 642441 760000) "core.clj" "../" "./")
 
- ("/Users/fredrikmeyer/.emacs.d/customizations/" (23206 51254 494551 284000) "elisp-editing.el" "ui.el~" "setup-js.el" "navigation.el" "editing.el" "setup-clojure.el" "misc.el" "shell-integration.el" "ui.el" "../" "./")
-
  ("/Users/fredrikmeyer/.emacs.d/elpa/" (23206 62998 338167 456000) "paredit-20171126.1805/" "ghub-20180312.1025/" "with-editor-20180217.548/" "smex-20151212.1409/" "exec-path-from-shell-20180224.1916/" "clojure-mode-extra-font-locking-20180114.911/" "pkg-info-20150517.443/" "spinner-1.7.3/" "async-20180119.533/" "queue-0.2/" "ido-completing-read+-20180222.1504/" "git-commit-20180202.321/" "tagedit-20161121.55/" "clojure-mode-20180312.1037/" "archives/" "cider-0.16.0/" "memoize-20170720.1802/" "magit-20180307.631/" "ido-ubiquitous-20180216.949/" "epl-20180205.1249/" "magit-popup-20180217.910/" "s-20180227.51/" "let-alist-1.0.5/" "dash-20180310.1317/" "projectile-20180227.1743/" "rainbow-delimiters-20170929.432/" "seq-2.20/" "../" "./")
-
- ("/Users/fredrikmeyer/.lein/" (23206 50799 799601 606000) "profiles.clj" "repl-history" "../" "./")
 
  ("/Users/fredrikmeyer/code/clojure-noob/src/" (23206 50373 287310 767000) "clojure_noob/" "../" "./")
 

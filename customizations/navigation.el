@@ -47,7 +47,7 @@
 (ido-ubiquitous-mode 1)
 
 ;; Shows a list of buffers
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+(defalias 'list-buffers  'ibuffer)
 
 
 ;; Enhances M-x to allow easier execution of commands. Provides

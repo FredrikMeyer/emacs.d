@@ -2,4 +2,4 @@
 ;; Automatically written history of CIDER REPL session
 ;; Edit at your own risk
 
-nil
+("b" "(-main)" "(refresh)" "updae" "(update)" "(refresh)" "(-main)" "(setup)" "(+ 1 2)" "(-main)")
