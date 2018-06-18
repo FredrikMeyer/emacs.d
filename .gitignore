@@ -43,3 +43,16 @@ flycheck_*.el
 
 # directory configuration
 .dir-locals.el
+
+# cider history
+/cider-history/
+
+#backups
+/backups/
+/games/
+
+
+# div
+ido.last
+network-security.data
+projectile-bookmarks.eld
