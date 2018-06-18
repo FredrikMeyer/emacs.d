@@ -56,3 +56,6 @@ flycheck_*.el
 ido.last
 network-security.data
 projectile-bookmarks.eld
+.recentf
+.smex-items
+ac-comphist.dat
