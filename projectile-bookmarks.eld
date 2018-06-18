@@ -1,1 +1,0 @@
-("~/.emacs.d/" "~/Dropbox/FredrikMeyer.github.io/" "~/datainn/datainn/" "~/Dropbox/inf2810/" "/Applications/Racket v6.10.1/collects/racket/" "~/datainn/msr-stations/" "~/code/squares/" "~/code/hello-quil/" "~/code/my-seconds-sketch/" "~/code/clojure-noob/" "~/useful-commands/" "~/datainn/frontend/" "~/testclojure/clojure-noob/")
