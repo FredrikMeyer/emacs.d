@@ -26,7 +26,8 @@
 ;; for a more technical explanation.
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
 (add-to-list 'load-path "~/.emacs.d/themes")
-(load-theme 'tomorrow-night t)
+;;(load-theme 'tomorrow-night t)
+(load-theme 'solarized-dark)
 
 ;; increase font size for better readability
 (set-face-attribute 'default nil :height 140)
@@ -60,7 +61,7 @@
 (blink-cursor-mode 0)
 
 ;; full path in title bar
-(setq-default frame-title-format "%b (%f)")
+(setq-default frame-title-format "Emacs %b (%f)")
 
 ;; don't pop up font menu
 (global-set-key (kbd "s-t") '(lambda () (interactive)))

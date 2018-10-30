@@ -2,19 +2,35 @@
 ;; Packages
 ;;;;
 
+(server-start)
+
+(setq user-full-name "Fredrik Meyer"
+      user-mail-address "hrmeyer@gmail.com")
+
+(setq ns-pop-up-frames nil)
+
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
       x-select-enable-clipboard t)
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
-      initial-major-mode 'org-mode)
+;b      initial-major-mode 'org-mode
+      )
 
 ;; Define package repositories
 (require 'package)
+
+;; Load and activate emacs packages. Do this first so that the
+;; packages are loaded before you start trying to modify them.
+;; This also sets the load path.
+
+(package-initialize)
+
 (setq package-enable-at-startup nil)
+(setq tls-checktrust 't)
 (add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/"))
+             '("marmalade" . "https//marmalade-repo.org/packages/"))
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/"))
 (add-to-list 'package-archives
@@ -22,14 +38,11 @@
 
 (add-to-list 'package-archives
              '("melpa-stable" . "http://stable.melpa.org/packages/"))
+
+
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
 
-;; Load and activate emacs packages. Do this first so that the
-;; packages are loaded before you start trying to modify them.
-;; This also sets the load path.
-
-(package-initialize)
 
 ;; Download the ELPA archive description if needed.
 ;; This informs Emacs about the latest versions of all packages, and
@@ -62,7 +75,9 @@
 
     ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
-    :ensure t)
+    :ensure t
+    :config
+    (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
 
     ;; key bindings and code colorization for Clojure
     ;; https://github.com/clojure-emacs/clojure-mode
@@ -93,6 +108,17 @@
 (use-package projectile
   :ensure t)
 
+(use-package neotree
+  :ensure t
+  :config
+  (global-set-key (kbd "C-x t") 'neotree-toggle)
+  :config
+  (progn
+    (setq neo-smart-open t)
+    (setq neo-show-hidden-files t))
+  )
+
+
 (use-package rainbow-delimiters
   :ensure t)
 
@@ -106,7 +132,18 @@
   :ensure t)
 
 (use-package magit
-  :ensure t)
+  :ensure t
+  :config
+  (global-set-key (kbd "C-x g") 'magit-status))
+
+(use-package org
+  :ensure t
+  :config
+  (progn
+    (add-hook 'org-mode-hook 'visual-line-mode)
+    (add-hook 'org-mode-hook 'auto-save-mode)
+    )
+  )
 
 (use-package org-bullets
   :ensure t
@@ -125,6 +162,117 @@
   (add-hook 'js-mode-hook 'electric-indent-mode)
   )
 
+(use-package company
+  :ensure t
+;  :config comment until company works for elm
+  ;; (add-to-list 'company-backends 'company-elm)
+  :config
+  (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (setq company-idle-delay 0.1)
+  )
+
+(use-package elm-mode
+  :ensure t
+  :config
+  (setq-default indent-tabs-mode nil)
+  :config
+  (add-hook 'elm-mode-hook 'electric-pair-mode)
+  :config
+  (add-hook 'elm-mode-hook 'electric-indent-mode)
+;  :config
+                                        ;  (add-hook 'elm-mode-hook 'turn-off-elm-indent)
+  :config
+  (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
+  :config
+  (add-hook 'elm-mode-hook 'company-mode)
+  :config
+  (setq elm-format-on-save t)
+  :config
+  (setq elm-interactive-command '("elm" "repl")
+        elm-reactor-command '("elm" "reactor")
+        elm-reactor-arguments '("--port" "8000")
+        elm-compile-command '("elm" "make")
+        elm-compile-arguments '("--output=elm.js" "--debug")
+        elm-package-command '("elm" "package")
+        elm-package-json "elm.json")
+  )
+
+(use-package slime
+  :ensure t
+  :init
+  (load (expand-file-name "~/quicklisp/slime-helper.el"))
+  :config
+  (setq inferior-lisp-program "/usr/local/bin/ccl")
+  :config
+  (setq slime-contribs '(slime-fancy slime-repl))
+  )
+
+(use-package ruby-mode
+  :ensure t
+  :config
+  (add-hook 'ruby-mode-hook 'ruby-electric-mode))
+
+(use-package ruby-electric
+  :ensure t
+)
+
+(use-package seeing-is-believing
+  :ensure t
+  :config
+  (add-hook 'ruby-mode-hook 'seeing-is-believing)
+)
+
+(use-package inf-ruby
+  :ensure t
+  :config
+  (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode))
+
+(use-package haskell-mode
+  :ensure t
+  :config
+  (add-hook 'haskell-mode-hook 'haskell-mode))
+
+(use-package go-mode
+  :ensure t
+  :config
+  (add-hook 'before-save-hook 'gofmt-before-save)
+  :config
+  (if (not (string-match "go" compile-command))
+      (set (make-local-variable 'compile-command)
+           "go build -v && go test -v && go vet"))
+  :config
+  (add-hook 'go-mode-hook 'electric-pair-mode)
+  :config
+  (add-hook 'go-mode-hook 'electric-indent-mode)
+  :config
+  (add-hook 'go-mode-hook (lambda ()
+            (setq indent-tabs-mode 1)
+            (setq tab-width 4)))
+)
+
+
+(use-package markdown-mode
+  :ensure t
+  :config
+  (progn (add-hook 'markdown-mode-hook 'visual-line-mode)
+         (add-hook 'markdown-mode-hook  (lambda ()
+                                          (let ((file (file-name-nondirectory buffer-file-name)))
+                                            (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
+                                                    (file-name-sans-extension file)
+                                                    file)))
+                                          )
+                                          
+   )  
+  :mode ("\\.md$"))
+
+
+(add-hook 'doc-view-mode-hook 'auto-revert-mode)
+
+(use-package solarized-theme
+  :ensure t
+  )
+
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
 ;; terminal window, because OS X does not run a shell during the
@@ -133,29 +281,11 @@
 ;; This library works around this problem by copying important
 ;; environment variables from the user's shell.
 ;; https://github.com/purcell/exec-path-from-shell
-;(if (eq system-type 'darwin)
- ;   (add-to-list 'my-packages 'exec-path-from-shbell))
 
-;;;;
-
-;; (dolist (p my-packages)
-;;   (when (not (package-installed-p p))
-;;     (package-install p)))
-
-
-;; Place downloaded elisp files in ~/.emacs.d/vendor. You'll then be able
-;; to load them.
-;;
-;; For example, if you download yaml-mode.el to ~/.emacs.d/vendor,
-;; then you can add the following code to this file:
-;;
-;; (require 'yaml-mode)
-;; (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
-;; 
-;; Adding this code will make Emacs enter yaml mode whenever you open
-;; a .yml file
-(add-to-list 'load-path "~/.emacs.d/vendor")
-
+(if (eq system-type 'darwin)
+    (use-package exec-path-from-shell
+      :ensure t)
+)
 
 ;;;;
 ;; Customization
@@ -188,16 +318,20 @@
 
 ;; Langauage-specific
 (load "setup-clojure.el")
-;;(load "setup-js.el")
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(coffee-tab-width 2)
+ '(custom-safe-themes
+   (quote
+    ("8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default)))
+ '(debug-on-error nil)
  '(package-selected-packages
    (quote
-    (try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider))))
+    (solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -214,12 +348,6 @@
 
 ;; javascript mode
 
-(require 'auto-complete)
-; do default config for auto-complete
-(require 'auto-complete-config)
-(ac-config-default)
-;; start yasnippet with emacs
-
 (require 'yasnippet)
 (yas-global-mode 1)
 
@@ -233,16 +361,16 @@
 
 ;;; auto complete mod
 ;;; should be loaded after yasnippet so that they can work together
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
+;;(require 'auto-complete-config)
+;(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+;(ac-config-default)
 ;;; set the trigger key so that it can work together with yasnippet on tab key,
 ;;; if the word exists in yasnippet, pressing tab will cause yasnippet to
 ;;; activate, otherwise, auto-complete will
-(ac-set-trigger-key "TAB")
-(ac-set-trigger-key "<tab>")
+;(ac-set-trigger-key "TAB")
+;(ac-set-trigger-key "<tab>")
 
-(add-hook 'prog-mode-hook 'paredit-everywhere-mode)
+
 
 
 ;;; org-mode
@@ -262,7 +390,7 @@
 (eval-after-load "auto-complete"
   '(add-to-list 'ac-modes 'geiser-repl-mode))
 
-(setq geiser-active-implementations '(racket))
+(setq geiser-active-implementations '(chicken racket))
 (show-paren-mode 1)
 
 (add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
