@@ -49,10 +49,9 @@
   "comment or uncomment current line"
   (interactive)
   (comment-or-uncomment-region (line-beginning-position) (line-end-position)))
+
 (global-set-key (kbd "C-;") 'toggle-comment-on-line)
 
-;; yay rainbows!
-;;(global-rainbow-delimiters-mode t)
 
 ;; use 2 spaces for tabs
 (defun die-tabs ()
@@ -69,4 +68,5 @@
       (ns-get-selection-internal 'CLIPBOARD)
     (quit nil)))
 
-(setq electric-indent-mode nil)
+
+

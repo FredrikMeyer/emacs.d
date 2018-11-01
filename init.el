@@ -9,13 +9,19 @@
 
 (setq ns-pop-up-frames nil)
 
+;; Go straight to scratch buffer on startup
+(setq inhibit-startup-message t)
+
+;; No need for ~ files when editing
+(setq create-lockfiles nil)
+
+
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
       x-select-enable-clipboard t)
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
-;b      initial-major-mode 'org-mode
       )
 
 ;; Define package repositories
@@ -49,13 +55,6 @@
 ;; (when (not package-archive-contents)
 ;;   (package-refresh-contents))
 
-;; Define he following variables to remove the compile-log warnings
-;; when defining ido-ubiquitous
-(defvar ido-cur-item nil)
-(defvar ido-default-item nil)
-(defvar ido-cur-list nil)
-(defvar predicate nil)
-(defvar inherit-input-method nil)
 
 ;; The packages you want installed. You can also install these
 ;; manually with M-x package-install
@@ -91,6 +90,32 @@
     ;; https://github.com/clojure-emacs/cider
 (use-package cider 
   :ensure t)
+
+;; http://www.emacswiki.org/emacs/InteractivelyDoThings
+(use-package ido
+  :ensure t
+  :init
+  (progn (ido-mode t)
+         (ido-ubiquitous-mode 1))
+  :config
+  ;; This allows partial matches, e.g. "tl" will match "Tyrion Lannister"
+  (setq ido-enable-flex-matching t)
+  ;; Includes buffer names of recently open files, even if they're not open now
+  (setq ido-use-virtual-buffers t)
+  ;; Turn this behavior off because it's annoying
+  (setq ido-use-filename-at-point nil)
+  ;; Don't try to match file across all "work" directories; only match files
+  ;; in the current directory displayed in the minibuffer
+  ;;(setq ido-auto-merge-work-directories-length -1)
+  (progn
+    ;; Define he following variables to remove the compile-log warnings
+    ;; when defining ido-ubiquitous
+    (defvar ido-cur-item nil)
+    (defvar ido-default-item nil)
+    (defvar ido-cur-list nil)
+    (defvar predicate nil)
+    (defvar inherit-input-method nil))
+  )
 
    ;; allow ido usage in as many contexts as possible. see
     ;; customizations/navigation.el line 23 for a description
@@ -291,7 +316,13 @@
 (use-package minions
   :ensure t
   :config (minions-mode 1)
-)
+  )
+
+(use-package yasnippet
+  :ensure t
+  :init
+  (yas-global-mode 1)
+  )
 
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
@@ -307,17 +338,32 @@
       :ensure t)
 )
 
+
+
+;; Shows a list of buffers
+(defalias 'list-buffers  'ibuffer)
+
+
+;; Sets up exec-path-from shell
+;; https://github.com/purcell/exec-path-from-shell
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs
+   '("PATH")))
+
+
+(rainbow-delimiters-mode t)
+
+;;(setq electric-indent-mode nil)
+
 ;;;;
 ;; Customization
 ;;;;
 
+
 ;; Add a directory to our load path so that when you `load` things
 ;; below, Emacs knows where to look for the corresponding file.
 (add-to-list 'load-path "~/.emacs.d/customizations")
-
-;; Sets up exec-path-from-shell so that Emacs will use the correct
-;; environment variables
-(load "shell-integration.el")
 
 ;; These customizations make it easier for you to navigate files,
 ;; switch buffers, and choose options from the minibuffer.
@@ -336,7 +382,7 @@
 ;; For editing lisps
 (load "elisp-editing.el")
 
-;; Langauage-specific
+;; Language-specific
 (load "setup-clojure.el")
 
 (custom-set-variables
@@ -371,8 +417,6 @@
 
 ;; javascript mode
 
-(require 'yasnippet)
-(yas-global-mode 1)
 
 
 ;(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
