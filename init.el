@@ -1,5 +1,5 @@
 ;;;;
-;; Packages
+;; EMACS config
 ;;;;
 
 (server-start)
@@ -90,6 +90,10 @@
     ;; https://github.com/clojure-emacs/cider
 (use-package cider 
   :ensure t)
+
+(use-package restclient
+  :ensure t
+  :config)
 
 ;; http://www.emacswiki.org/emacs/InteractivelyDoThings
 (use-package ido
