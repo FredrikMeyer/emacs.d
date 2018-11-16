@@ -22,6 +22,7 @@
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
+      calendar-week-start-day 1
       )
 
 ;; Define package repositories
@@ -44,6 +45,9 @@
 
 (add-to-list 'package-archives
              '("melpa-stable" . "http://stable.melpa.org/packages/"))
+
+(add-to-list 'package-archives
+             '("org" . "https://orgmode.org/elpa/"))
 
 
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
@@ -94,6 +98,10 @@
 (use-package restclient
   :ensure t
   :config)
+
+(use-package ox-reveal
+  :ensure t
+  )
 
 ;; http://www.emacswiki.org/emacs/InteractivelyDoThings
 (use-package ido
@@ -162,16 +170,29 @@
 (use-package magit
   :ensure t
   :config
-  (global-set-key (kbd "C-x g") 'magit-status))
+  (global-set-key (kbd "C-x g") 'magit-status)
+  (global-set-key (kbd "C-x C-g") 'magit-list-repositories)
+  (setq magit-repository-directories
+        `(("~/code" . 1)
+          ("~/datainn" . 1)
+          (,user-emacs-directory              . 1)))
+  )
 
 (use-package org
   :ensure t
+  :pin org
+
   :config
   (progn
     (add-hook 'org-mode-hook 'visual-line-mode)
     (add-hook 'org-mode-hook 'auto-save-mode)
     )
   )
+
+(use-package ox-reveal
+  :ensure t)
+
+
 
 (use-package org-bullets
   :ensure t
@@ -226,6 +247,9 @@
         elm-package-json "elm.json")
   )
 
+(use-package elm-yasnippets
+  :ensure t)
+
 (use-package slime
   :ensure t
   :init
@@ -245,6 +269,8 @@
   :ensure t
 )
 
+;; https://github.com/JoshCheek/seeing_is_believing
+;; https://github.com/jcinnamond/seeing-is-believing
 (use-package seeing-is-believing
   :ensure t
   :config
@@ -405,10 +431,12 @@
    (quote
     ("aaffceb9b0f539b6ad6becb8e96a04f2140c8faa1de8039a343a4f1e009174fb" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default)))
  '(debug-on-error nil)
+ '(electric-indent-mode nil)
  '(minions-mode t)
  '(package-selected-packages
    (quote
-    (minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider))))
+    (elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+ '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -447,17 +475,19 @@
 
 
 
-
 ;;; org-mode
 
 (setq org-src-fontify-natively t
     org-src-tab-acts-natively t
    org-confirm-babel-evaluate nil
-   org-edit-src-content-indentation 0)
+   org-edit-src-content-indentation 0
+   )
 
+(org-babel-do-load-languages
+ 'org-babel-load-languages '((python . t)
+                             ))
 
-
-;;; racket
+;;;
 
 (require 'ac-geiser)
 (add-hook 'geiser-mode-hook 'ac-geiser-setup)

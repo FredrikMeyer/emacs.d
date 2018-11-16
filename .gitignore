@@ -45,7 +45,7 @@ flycheck_*.el
 .dir-locals.el
 
 # cider history
-/cider-history/
+cider-history
 
 #backups
 /backups/
