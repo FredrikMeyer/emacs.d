@@ -433,6 +433,7 @@
  '(debug-on-error nil)
  '(electric-indent-mode nil)
  '(minions-mode t)
+ '(org-agenda-files (quote ("~/datainn/todo.org")))
  '(package-selected-packages
    (quote
     (elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))

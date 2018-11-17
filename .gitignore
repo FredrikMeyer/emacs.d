@@ -47,6 +47,7 @@ flycheck_*.el
 # cider history
 cider-history
 
+
 #backups
 /backups/
 /games/
