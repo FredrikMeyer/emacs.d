@@ -75,6 +75,11 @@
              :config
              (which-key-mode))
 
+(use-package expand-region
+  :ensure t
+  :config
+  (global-set-key (kbd "C-=") 'er/expand-region))
+
     ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
     :ensure t
@@ -139,7 +144,21 @@
     ;; a filterable list of possible commands in the minibuffer
     ;; http://www.emacswiki.org/emacs/Smex
 (use-package smex
-  :ensure t)
+  :ensure t
+  :config
+  (setq smex-save-file (concat user-emacs-directory ".smex-items")))
+
+(smex-initialize)
+(global-set-key (kbd "M-x") 'smex)
+
+;; https://github.com/hrehfeld/emacs-smart-hungry-delete
+(use-package smart-hungry-delete
+  :ensure t
+  :bind (("<backspace>" . smart-hungry-delete-backward-char)
+		 ("C-d" . smart-hungry-delete-forward-char))
+  :defer nil ;; dont defer so we can add our functions to hooks 
+  :config (smart-hungry-delete-add-default-hooks)
+  )
 
 (use-package projectile
   :ensure t)
@@ -193,7 +212,6 @@
   :ensure t)
 
 
-
 (use-package org-bullets
   :ensure t
   :config
@@ -205,11 +223,24 @@
   (setq-default indent-tabs-mode nil)
   :config
   (add-hook 'js-mode-hook 'js2-minor-mode)
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :config
   (add-hook 'js-mode-hook 'electric-pair-mode)
   :config
   (add-hook 'js-mode-hook 'electric-indent-mode)
   )
+
+(use-package tern
+  :ensure t)
+
+(use-package company-tern
+  :ensure t
+  :config
+  (add-to-list 'company-backends 'company-tern)
+  :config
+  (add-hook 'js2-mode-hook (lambda ()
+                           (tern-mode)
+                           (company-mode))))
 
 (use-package company
   :ensure t
@@ -219,7 +250,13 @@
   (add-hook 'after-init-hook 'global-company-mode)
   :config
   (setq company-idle-delay 0.1)
+  (setq company-dabbrev-downcase nil)
   )
+
+(use-package glsl-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.glsl\\'" . glsl-mode)))
 
 (use-package elm-mode
   :ensure t
@@ -303,7 +340,16 @@
   (add-hook 'go-mode-hook (lambda ()
             (setq indent-tabs-mode 1)
             (setq tab-width 4)))
-)
+  )
+
+
+
+(use-package minimap
+  :ensure t
+  :config
+  (setq minimap-window-location 'right)
+  :config
+  (global-set-key (kbd "C-x w") 'minimap-mode))
 
 
 (use-package markdown-mode
@@ -357,6 +403,14 @@
 (use-package yasnippet-snippets
   :ensure t)
 
+;; https://github.com/magnars/multiple-cursors.el
+(use-package multiple-cursors
+  :ensure t
+  :config
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
@@ -372,10 +426,26 @@
       :ensure t)
 )
 
-
+;; https://www.emacswiki.org/emacs/WinnerMode
+(winner-mode)
 
 ;; Shows a list of buffers
-(defalias 'list-buffers  'ibuffer)
+(defalias 'list-buffers  'ibuffer
+(setq ibuffer-saved-filter-groups
+      (quote (("default"
+               ("dired" (mode . dired-mode))
+               ("PDF" (mode . pdf-view-mode))
+               ("python" (mode . python-mode))
+               ("org" (or (mode . org-mode)
+                          (mode . org-agenda-mode)
+                          ))
+               ("emacs" (or
+                         (name . "^\\*scratch\\*$")
+                         (name . "^\\*Messages\\*$")))))))
+
+(add-hook 'ibuffer-mode-hook
+          (lambda ()
+            (ibuffer-switch-to-saved-filter-groups "default")))
 
 
 ;; Sets up exec-path-from shell
@@ -387,8 +457,7 @@
 
 
 (rainbow-delimiters-mode t)
-
-;;(setq electric-indent-mode nil)
+(electric-indent-mode)
 
 ;;;;
 ;; Customization
@@ -436,7 +505,7 @@
  '(org-agenda-files (quote ("~/datainn/todo.org")))
  '(package-selected-packages
    (quote
-    (elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -480,9 +549,8 @@
 
 (setq org-src-fontify-natively t
     org-src-tab-acts-natively t
-   org-confirm-babel-evaluate nil
-   org-edit-src-content-indentation 0
-   )
+    org-confirm-babel-evaluate nil
+    org-edit-src-content-indentation 0)
 
 (org-babel-do-load-languages
  'org-babel-load-languages '((python . t)
