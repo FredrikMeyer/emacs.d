@@ -221,7 +221,10 @@
   (setq org-default-notes-file "~/Dropbox/org/tasks.org")
   (global-set-key (kbd "C-c c") 'org-capture))
 
-
+(setq org-capture-templates '(("w" "Work todo" entry (file "~/datainn/notes.org")
+                               "* TODO %?\n%U" :empty-lines 1)
+                              ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
+                               "* TODO %?\n%U" :empty-lines 1)))
 
 (use-package ox-reveal
   :ensure t)
