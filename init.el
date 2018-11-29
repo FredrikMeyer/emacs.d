@@ -161,7 +161,9 @@
   )
 
 (use-package projectile
-  :ensure t)
+  :ensure t
+  :config
+  (projectile-global-mode))
 
 (use-package neotree
   :ensure t
@@ -183,6 +185,10 @@
 (use-package ac-geiser
   :ensure t)
 
+;; https://github.com/TeMPOraL/nyan-mode
+;; (use-package :nyan-mode
+  ;; :ensure t)
+
 (use-package pretty-lambdada
   :ensure t)
 
@@ -194,19 +200,28 @@
   (setq magit-repository-directories
         `(("~/code" . 1)
           ("~/datainn" . 1)
-          (,user-emacs-directory              . 1)))
-  )
+          (,user-emacs-directory              . 1))))
 
 (use-package org
   :ensure t
   :pin org
-
   :config
   (progn
     (add-hook 'org-mode-hook 'visual-line-mode)
-    (add-hook 'org-mode-hook 'auto-save-mode)
-    )
-  )
+    (add-hook 'org-mode-hook 'auto-save-mode))
+  :config
+  (setq org-src-fontify-natively t
+        org-src-tab-acts-natively t
+        org-confirm-babel-evaluate nil
+        org-edit-src-content-indentation 0)
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages '((python . t)))
+  :config
+  (setq org-default-notes-file "~/Dropbox/org/tasks.org")
+  (global-set-key (kbd "C-c c") 'org-capture))
+
+
 
 (use-package ox-reveal
   :ensure t)
@@ -227,8 +242,7 @@
   :config
   (add-hook 'js-mode-hook 'electric-pair-mode)
   :config
-  (add-hook 'js-mode-hook 'electric-indent-mode)
-  )
+  (add-hook 'js-mode-hook 'electric-indent-mode))
 
 (use-package tern
   :ensure t)
@@ -244,8 +258,6 @@
 
 (use-package company
   :ensure t
-;  :config comment until company works for elm
-  ;; (add-to-list 'company-backends 'company-elm)
   :config
   (add-hook 'after-init-hook 'global-company-mode)
   :config
@@ -266,10 +278,10 @@
   (add-hook 'elm-mode-hook 'electric-pair-mode)
   :config
   (add-hook 'elm-mode-hook 'electric-indent-mode)
-;  :config
-                                        ;  (add-hook 'elm-mode-hook 'turn-off-elm-indent)
   :config
   (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
+;  :config
+;  (add-to-list 'company-backends 'company-elm)
   :config
   (add-hook 'elm-mode-hook 'company-mode)
   :config
@@ -281,8 +293,7 @@
         elm-compile-command '("elm" "make")
         elm-compile-arguments '("--output=elm.js" "--debug")
         elm-package-command '("elm" "package")
-        elm-package-json "elm.json")
-  )
+        elm-package-json "elm.json"))
 
 (use-package elm-yasnippets
   :ensure t)
@@ -348,6 +359,7 @@
   :ensure t
   :config
   (setq minimap-window-location 'right)
+  (setq minimap-automatically-delete-window nil)
   :config
   (global-set-key (kbd "C-x w") 'minimap-mode))
 
@@ -430,7 +442,7 @@
 (winner-mode)
 
 ;; Shows a list of buffers
-(defalias 'list-buffers  'ibuffer
+(defalias 'list-buffers  'ibuffer)
 (setq ibuffer-saved-filter-groups
       (quote (("default"
                ("dired" (mode . dired-mode))
@@ -463,14 +475,45 @@
 ;; Customization
 ;;;;
 
+(defun toggle-comment-on-line ()
+  "comment or uncomment current line"
+  (interactive)
+  (if (region-active-p)
+      (comment-or-uncomment-region (region-beginning) (region-end))
+    (comment-or-uncomment-region (line-beginning-position) (line-end-position))))
+
+
+(global-set-key (kbd "C-æ") 'toggle-comment-on-line)
 
 ;; Add a directory to our load path so that when you `load` things
 ;; below, Emacs knows where to look for the corresponding file.
 (add-to-list 'load-path "~/.emacs.d/customizations")
 
-;; These customizations make it easier for you to navigate files,
-;; switch buffers, and choose options from the minibuffer.
-(load "navigation.el")
+
+
+;; "When several buffers visit identically-named files,
+;; Emacs must give the buffers distinct names. The usual method
+;; for making buffer names unique adds ‘<2>’, ‘<3>’, etc. to the end
+;; of the buffer names (all but one of them).
+;; The forward naming method includes part of the file's directory
+;; name at the beginning of the buffer name
+;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
+
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
+
+;; Turn on recent file mode so that you can more easily switch to
+;; recently edited files when you first start emacs
+(setq recentf-save-file (concat user-emacs-directory ".recentf"))
+(require 'recentf)
+(recentf-mode 1)
+(setq recentf-max-menu-items 40)
+
+
+
+;; projectile everywhere!
+
+
 
 ;; These customizations change the way emacs looks and disable/enable
 ;; some user interface elements
@@ -505,7 +548,7 @@
  '(org-agenda-files (quote ("~/datainn/todo.org")))
  '(package-selected-packages
    (quote
-    (smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -545,16 +588,6 @@
 
 
 
-;;; org-mode
-
-(setq org-src-fontify-natively t
-    org-src-tab-acts-natively t
-    org-confirm-babel-evaluate nil
-    org-edit-src-content-indentation 0)
-
-(org-babel-do-load-languages
- 'org-babel-load-languages '((python . t)
-                             ))
 
 ;;;
 
