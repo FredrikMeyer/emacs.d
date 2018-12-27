@@ -63,6 +63,7 @@
 ;; The packages you want installed. You can also install these
 ;; manually with M-x package-install
 ;; Add in your own as you wish:
+;; https://github.com/jwiegley/use-package
 (unless (package-installed-p 'use-package)
 	(package-refresh-contents)
 	(package-install 'use-package))
@@ -226,6 +227,9 @@
                               ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
                                "* TODO %?\n%U" :empty-lines 1)))
 
+(global-set-key (kbd "C-c o") 
+                (lambda () (interactive) (find-file "~/Dropbox/org/notes.org")))
+
 (use-package ox-reveal
   :ensure t)
 
@@ -379,7 +383,15 @@
                                           )
                                           
    )  
-  :mode ("\\.md$"))
+  :mode ("\\.md$")
+  :config
+  (setq markdown-header-scaling 1)
+  :config
+  (setq markdown-command
+      (concat
+       "/usr/local/bin/pandoc"
+       " --from=markdown --to=html"
+       " --standalone --mathjax --highlight-style=pygments")))
 
 
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -390,6 +402,15 @@
   (setq x-underline-at-descent-line t)
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode))
+
+(use-package fireplace
+  :ensure t)
+
+;; https://github.com/abo-abo/ace-window
+(use-package ace-window
+  :ensure t
+  :config
+  (global-set-key (kbd "M-o") 'ace-window))
 
 (use-package solarized-theme
   :ensure t
@@ -551,7 +572,7 @@
  '(org-agenda-files (quote ("~/datainn/todo.org")))
  '(package-selected-packages
    (quote
-    (nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
