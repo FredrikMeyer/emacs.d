@@ -36,8 +36,8 @@
 
 (setq package-enable-at-startup nil)
 (setq tls-checktrust 't)
-(add-to-list 'package-archives
-             '("marmalade" . "https//marmalade-repo.org/packages/"))
+;(add-to-list 'package-archives
+;             '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/"))
 (add-to-list 'package-archives
@@ -82,9 +82,9 @@
 
     ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
-    :ensure t
-    :config
-    (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
+    :ensure t)
+;    :config
+;    (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
 
     ;; key bindings and code colorization for Clojure
     ;; https://github.com/clojure-emacs/clojure-mode
@@ -189,8 +189,8 @@
 ;; (use-package :nyan-mode
   ;; :ensure t)
 
-(use-package pretty-lambdada
-  :ensure t)
+;(use-package pretty-lambdada
+;  :ensure t)
 
 (use-package magit
   :ensure t
@@ -199,8 +199,10 @@
   (global-set-key (kbd "C-x C-g") 'magit-list-repositories)
   (setq magit-repository-directories
         `(("~/code" . 1)
-          ("~/datainn" . 1)
           (,user-emacs-directory              . 1))))
+
+(use-package undo-tree
+  :ensure t)
 
 (use-package org
   :ensure t
@@ -296,20 +298,12 @@
         elm-compile-command '("elm" "make")
         elm-compile-arguments '("--output=elm.js" "--debug")
         elm-package-command '("elm" "package")
-        elm-package-json "elm.json"))
+        elm-package-json "elm.json"
+        elm-format-command "/home/fredrik/.npm-global/bin/elm-format"))
 
 (use-package elm-yasnippets
   :ensure t)
 
-(use-package slime
-  :ensure t
-  :init
-  (load (expand-file-name "~/quicklisp/slime-helper.el"))
-  :config
-  (setq inferior-lisp-program "/usr/local/bin/ccl")
-  :config
-  (setq slime-contribs '(slime-fancy slime-repl))
-  )
 
 (use-package ruby-mode
   :ensure t
@@ -426,6 +420,11 @@
   (global-set-key (kbd "C->") 'mc/mark-next-like-this)
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
   (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+
+(use-package ace-window
+  :ensure t
+  :config
+  (global-set-key (kbd "M-o") 'ace-window))
 
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
@@ -551,7 +550,7 @@
  '(org-agenda-files (quote ("~/datainn/todo.org")))
  '(package-selected-packages
    (quote
-    (nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (undo-tree git-gutter nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -603,12 +602,12 @@
 (setq geiser-active-implementations '(chicken racket))
 (show-paren-mode 1)
 
-(add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
-(pretty-lambda-for-modes)
+;(add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
+;(pretty-lambda-for-modes)
 
-(dolist (mode pretty-lambda-auto-modes)
+;(dolist (mode pretty-lambda-auto-modes)
   ;; add paredit-mode to all mode-hooks
-  (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
+;  (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
 
 ;(add-hook 'racket-repl-mode-hook #'rainbow-delimiters-mode)
 ;(add-hook 'racket-repl-mode-hook #'auto-complete-mode)
