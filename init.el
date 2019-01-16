@@ -25,29 +25,37 @@
       calendar-week-start-day 1
       )
 
+(setq url-proxy-services
+      '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+        ("http" . "proxy.vegvesen.no:8080")
+        ("https" . "proxy.vegvesen.no:8080")))
+
 ;; Define package repositories
 (require 'package)
+;; (setq package-check-signature nil)
 
 ;; Load and activate emacs packages. Do this first so that the
 ;; packages are loaded before you start trying to modify them.
 ;; This also sets the load path.
 
-(package-initialize)
 
+
+(package-initialize)
 (setq package-enable-at-startup nil)
 (setq tls-checktrust 't)
 ;(add-to-list 'package-archives
 ;             '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/"))
+
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/"))
+             '("melpa" . "http://melpa.org/packages/"))
 
 (add-to-list 'package-archives
              '("melpa-stable" . "http://stable.melpa.org/packages/"))
 
-(add-to-list 'package-archives
-             '("org" . "https://orgmode.org/elpa/"))
+;(add-to-list 'package-archives
+;             '("org" . "http://orgmode.org/elpa/"))
 
 
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
@@ -292,16 +300,19 @@
   :config
   (setq elm-format-on-save t)
   :config
-  (setq elm-interactive-command '("elm" "repl")
-        elm-reactor-command '("elm" "reactor")
+  (setq elm-interactive-command '("/home/fredrik/.npm-global/bin/elm" "repl")
+        elm-reactor-command '("" "reactor")
         elm-reactor-arguments '("--port" "8000")
-        elm-compile-command '("elm" "make")
+        elm-compile-command '("/home/fredrik/.npm-global/bin/elm" "make")
         elm-compile-arguments '("--output=elm.js" "--debug")
-        elm-package-command '("elm" "package")
+        elm-package-command '("/home/fredrik/.npm-global/bin/elm" "package")
         elm-package-json "elm.json"
         elm-format-command "/home/fredrik/.npm-global/bin/elm-format"))
 
 (use-package elm-yasnippets
+  :ensure t)
+
+(use-package groovy-mode
   :ensure t)
 
 
@@ -550,7 +561,7 @@
  '(org-agenda-files (quote ("~/datainn/todo.org")))
  '(package-selected-packages
    (quote
-    (undo-tree git-gutter nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (groovy-mode elm-mode ghub git-commit moody undo-tree git-gutter nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
