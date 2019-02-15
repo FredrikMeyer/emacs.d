@@ -1,23 +1,7 @@
-;;;;
-;; Clojure
-;;;;
-
-;; Enable paredit for Clojure
-(add-hook 'clojure-mode-hook 'enable-paredit-mode)
-
-;; This is useful for working with camel-case tokens, like names of
-;; Java classes (e.g. JavaClassName)
-(add-hook 'clojure-mode-hook 'subword-mode)
-
-;; electric-indent
-(add-hook 'clojure-mode-hook 'electric-indent-mode)
-
-;; A little more syntax highlighting
-(require 'clojure-mode-extra-font-locking)
-
 ;; syntax hilighting for midje
 (add-hook 'clojure-mode-hook
           (lambda ()
+            (add-to-list 'company-backends 'company-dabbrev)
             (setq inferior-lisp-program "lein repl")
             (font-lock-add-keywords
              nil
@@ -32,8 +16,8 @@
 ;; Cider
 ;;;;
 
-;; provides minibuffer documentation for the code you're typing into the repl
-(add-hook 'cider-mode-hook 'eldoc-mode)
+
+
 
 ;; go right to the REPL buffer when it's finished connecting
 (setq cider-repl-pop-to-buffer-on-connect t)

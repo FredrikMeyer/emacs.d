@@ -37,7 +37,7 @@
 (setq package-enable-at-startup nil)
 (setq tls-checktrust 't)
 (add-to-list 'package-archives
-             '("marmalade" . "https//marmalade-repo.org/packages/"))
+             '("marmalade" . "https://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/"))
 (add-to-list 'package-archives
@@ -81,33 +81,64 @@
   :config
   (global-set-key (kbd "C-=") 'er/expand-region))
 
-    ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
+;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
     :ensure t
     :config
     (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
 
-    ;; key bindings and code colorization for Clojure
-    ;; https://github.com/clojure-emacs/clojure-mode
+;; key bindings and code colorization for Clojure
+;; https://github.com/clojure-emacs/clojure-mode
 (use-package clojure-mode
-  :ensure t)
+  :ensure t
+  :config
+  ;; Enable paredit for Clojure
+  (add-hook 'clojure-mode-hook 'enable-paredit-mode)
+  :config
+  ;; Java classes (e.g. JavaClassName)
+  (add-hook 'clojure-mode-hook 'subword-mode)
+  :config
+  (add-hook 'clojure-mode-hook 'electric-indent-mode))
 
-    ;; extra syntax highlighting for clojure
+
+;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
   :ensure t)
 
-    ;; integration with a Clojure REPL
-    ;; https://github.com/clojure-emacs/cider
+;; integration with a Clojure REPL
+;; https://github.com/clojure-emacs/cider
 (use-package cider 
-  :ensure t)
+  :ensure t
+  :config
+  ;; provides minibuffer documentation for the code you're typing into the repl
+  (add-hook 'cider-mode-hook 'eldoc-mode)
+  :config
+  (add-hook 'cider-repl-mode-hook #'company-mode)
+  :config
+  (add-hook 'cider-mode-hook #'company-mode))
 
 (use-package restclient
   :ensure t
   :config)
 
-(use-package ox-reveal
-  :ensure t
+(dotimes (n 10)
+  (global-unset-key (kbd (format "C-%d" n)))
+  (global-unset-key (kbd (format "M-%d" n)))
   )
+
+;; https://github.com/wasamasa/eyebrowse
+(use-package eyebrowse
+  :ensure t
+  :config (progn
+            (define-key eyebrowse-mode-map (kbd "M-1") 'eyebrowse-switch-to-window-config-1)
+            (define-key eyebrowse-mode-map (kbd "M-2") 'eyebrowse-switch-to-window-config-2)
+            (define-key eyebrowse-mode-map (kbd "M-3") 'eyebrowse-switch-to-window-config-3)
+            (define-key eyebrowse-mode-map (kbd "M-4") 'eyebrowse-switch-to-window-config-4)
+            (eyebrowse-mode t)
+            (setq eyebrowse-new-workspace t)))
+
+;; (use-package ox-reveal
+;;   :ensure t)
 
 ;; http://www.emacswiki.org/emacs/InteractivelyDoThings
 (use-package ido
@@ -201,7 +232,7 @@
   (setq magit-repository-directories
         `(("~/code" . 1)
           ("~/datainn" . 1)
-          (,user-emacs-directory              . 1))))
+          (,user-emacs-directory . 1))))
 
 (use-package org
   :ensure t
@@ -220,7 +251,9 @@
    'org-babel-load-languages '((python . t)))
   :config
   (setq org-default-notes-file "~/Dropbox/org/tasks.org")
-  (global-set-key (kbd "C-c c") 'org-capture))
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (require 'org-tempo))
+
 
 (setq org-capture-templates '(("w" "Work todo" entry (file "~/datainn/notes.org")
                                "* TODO %?\n%U" :empty-lines 1)
@@ -230,14 +263,29 @@
 (global-set-key (kbd "C-c o") 
                 (lambda () (interactive) (find-file "~/Dropbox/org/notes.org")))
 
-(use-package ox-reveal
-  :ensure t)
+;; (use-package ox-reveal
+;;   :ensure t)
 
 
 (use-package org-bullets
   :ensure t
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+
+(use-package company
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (setq company-idle-delay 0.1)
+  (setq company-dabbrev-downcase nil)
+  )
+
+;; (use-package xref-js2
+;;   :ensure t
+;;   :config
+;;   (define-key js-mode-map (kbd "M-.") nil))
 
 (use-package js2-mode
   :ensure t
@@ -256,21 +304,16 @@
 
 (use-package company-tern
   :ensure t
-  :config
-  (add-to-list 'company-backends 'company-tern)
+  :after (tern)
   :config
   (add-hook 'js2-mode-hook (lambda ()
-                           (tern-mode)
-                           (company-mode))))
-
-(use-package company
-  :ensure t
+                             (add-to-list (make-local-variable 'company-backends)
+                                  '(company-tern company-dabbrev))))
   :config
-  (add-hook 'after-init-hook 'global-company-mode)
-  :config
-  (setq company-idle-delay 0.1)
-  (setq company-dabbrev-downcase nil)
-  )
+  (add-hook 'js2-mode-hook (lambda ()
+                             (setq company-idle-delay 0)
+                             (tern-mode t)
+                             (company-mode))))
 
 (use-package glsl-mode
   :ensure t
@@ -379,10 +422,7 @@
                                           (let ((file (file-name-nondirectory buffer-file-name)))
                                             (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
                                                     (file-name-sans-extension file)
-                                                    file)))
-                                          )
-                                          
-   )  
+                                                    file)))))  
   :mode ("\\.md$")
   :config
   (setq markdown-header-scaling 1)
@@ -422,13 +462,13 @@
     (set-face-attribute 'mode-line-inactive nil :underline  line)
     (set-face-attribute 'mode-line          nil :box        nil)
     (set-face-attribute 'mode-line-inactive nil :box        nil)
-    (set-face-attribute 'mode-line-inactive nil :background "#f9f2d9"))
-  )
+    (set-face-attribute 'mode-line-inactive nil :background "#f9f2d9")))
 
 (use-package minions
   :ensure t
   :config (minions-mode 1)
   )
+
 
 (use-package yasnippet
   :ensure t
@@ -507,6 +547,10 @@
     (comment-or-uncomment-region (line-beginning-position) (line-end-position))))
 
 
+;; html
+;; (setq sgml-quick-keys 'close)
+
+
 (global-set-key (kbd "C-æ") 'toggle-comment-on-line)
 
 ;; Add a directory to our load path so that when you `load` things
@@ -570,9 +614,21 @@
  '(electric-indent-mode nil)
  '(minions-mode t)
  '(org-agenda-files (quote ("~/datainn/todo.org")))
+ '(org-structure-template-alist
+   (quote
+    (("a" . "export ascii")
+     ("c" . "center")
+     ("C" . "comment")
+     ("e" . "example")
+     ("E" . "export")
+     ("h" . "export html")
+     ("l" . "export latex")
+     ("q" . "quote")
+     ("s" . "src")
+     ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal ox-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
