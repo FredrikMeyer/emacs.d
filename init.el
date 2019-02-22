@@ -135,6 +135,7 @@
             (define-key eyebrowse-mode-map (kbd "M-3") 'eyebrowse-switch-to-window-config-3)
             (define-key eyebrowse-mode-map (kbd "M-4") 'eyebrowse-switch-to-window-config-4)
             (eyebrowse-mode t)
+            (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
             (setq eyebrowse-new-workspace t)))
 
 ;; (use-package ox-reveal
