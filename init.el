@@ -25,6 +25,10 @@
       calendar-week-start-day 1
       )
 
+;; Changes all yes/no questions to y/n type
+(fset 'yes-or-no-p 'y-or-n-p)
+
+
 ;; Define package repositories
 (require 'package)
 
@@ -40,6 +44,7 @@
              '("marmalade" . "https://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/"))
+
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/"))
 
@@ -53,17 +58,6 @@
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
 
-;; Download the ELPA archive description if needed.
-;; This informs Emacs about the latest versions of all packages, and
-;; makes them available for download.
-;; (when (not package-archive-contents)
-;;   (package-refresh-contents))
-
-
-;; The packages you want installed. You can also install these
-;; manually with M-x package-install
-;; Add in your own as you wish:
-;; https://github.com/jwiegley/use-package
 (unless (package-installed-p 'use-package)
 	(package-refresh-contents)
 	(package-install 'use-package))
@@ -105,7 +99,7 @@
 (use-package clojure-mode-extra-font-locking
   :ensure t)
 
-;; integration with a Clojure REPL
+;; Integration with a Clojure REPL
 ;; https://github.com/clojure-emacs/cider
 (use-package cider 
   :ensure t
@@ -138,6 +132,7 @@
             (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
             (setq eyebrowse-new-workspace t)))
 
+;; Disabled because it does not conform with the newest org mode version
 ;; (use-package ox-reveal
 ;;   :ensure t)
 
@@ -158,7 +153,7 @@
   ;; in the current directory displayed in the minibuffer
   ;;(setq ido-auto-merge-work-directories-length -1)
   (progn
-    ;; Define he following variables to remove the compile-log warnings
+    ;; Define the following variables to remove the compile-log warnings
     ;; when defining ido-ubiquitous
     (defvar ido-cur-item nil)
     (defvar ido-default-item nil)
@@ -167,22 +162,20 @@
     (defvar inherit-input-method nil))
   )
 
-   ;; allow ido usage in as many contexts as possible. see
-    ;; customizations/navigation.el line 23 for a description
-    ;; of ido
+;; Allow ido usage in as many contexts as possible.
 (use-package ido-completing-read+ 
   :ensure t)
 
-    ;; Enhances M-x to allow easier execution of commands. Provides
-    ;; a filterable list of possible commands in the minibuffer
-    ;; http://www.emacswiki.org/emacs/Smex
+;; Enhances M-x to allow easier execution of commands. Provides
+;; a filterable list of possible commands in the minibuffer
+;; http://www.emacswiki.org/emacs/Smex
 (use-package smex
   :ensure t
   :config
-  (setq smex-save-file (concat user-emacs-directory ".smex-items")))
-
-(smex-initialize)
-(global-set-key (kbd "M-x") 'smex)
+  (progn 
+    (setq smex-save-file (concat user-emacs-directory ".smex-items"))
+    (smex-initialize)
+    (global-set-key (kbd "M-x") 'smex)))
 
 ;; https://github.com/hrehfeld/emacs-smart-hungry-delete
 (use-package smart-hungry-delete
@@ -196,7 +189,11 @@
 (use-package projectile
   :ensure t
   :config
-  (projectile-global-mode))
+  (projectile-global-mode +1)
+  :config
+  (define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
+  :config
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
 (use-package neotree
   :ensure t
@@ -205,12 +202,14 @@
   :config
   (progn
     (setq neo-smart-open t)
-    (setq neo-show-hidden-files t))
-  )
+    (setq neo-show-hidden-files t)))
 
 
 (use-package rainbow-delimiters
-  :ensure t)
+  :ensure t
+  :config
+  (rainbow-delimiters-mode t))
+
 
 (use-package geiser
   :ensure t)
@@ -219,9 +218,13 @@
   :ensure t)
 
 ;; https://github.com/TeMPOraL/nyan-mode
-;; (use-package :nyan-mode
-  ;; :ensure t)
+(use-package nyan-mode
+  :ensure t
+  :config
+  (setq nyan-wavy-trail 1))
 
+
+;; lambda
 (use-package pretty-lambdada
   :ensure t)
 
@@ -232,7 +235,7 @@
   (global-set-key (kbd "C-x C-g") 'magit-list-repositories)
   (setq magit-repository-directories
         `(("~/code" . 1)
-          ("~/datainn" . 1)
+          ("~/entur" . 1)
           (,user-emacs-directory . 1))))
 
 (use-package org
@@ -249,24 +252,21 @@
         org-edit-src-content-indentation 0)
   :config
   (org-babel-do-load-languages
-   'org-babel-load-languages '((python . t)))
+   'org-babel-load-languages '((python . t)
+                               (calc . t)))
   :config
   (setq org-default-notes-file "~/Dropbox/org/tasks.org")
   (global-set-key (kbd "C-c c") 'org-capture)
   (require 'org-tempo))
 
 
-(setq org-capture-templates '(("w" "Work todo" entry (file "~/datainn/notes.org")
+(setq org-capture-templates '(("w" "Work todo" entry (file "~/entur/notes.org")
                                "* TODO %?\n%U" :empty-lines 1)
                               ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
                                "* TODO %?\n%U" :empty-lines 1)))
 
 (global-set-key (kbd "C-c o") 
-                (lambda () (interactive) (find-file "~/Dropbox/org/notes.org")))
-
-;; (use-package ox-reveal
-;;   :ensure t)
-
+                (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
 (use-package org-bullets
   :ensure t
@@ -282,11 +282,6 @@
   (setq company-idle-delay 0.1)
   (setq company-dabbrev-downcase nil)
   )
-
-;; (use-package xref-js2
-;;   :ensure t
-;;   :config
-;;   (define-key js-mode-map (kbd "M-.") nil))
 
 (use-package js2-mode
   :ensure t
@@ -365,16 +360,14 @@
   (add-hook 'ruby-mode-hook 'ruby-electric-mode))
 
 (use-package ruby-electric
-  :ensure t
-)
+  :ensure t)
 
 ;; https://github.com/JoshCheek/seeing_is_believing
 ;; https://github.com/jcinnamond/seeing-is-believing
 (use-package seeing-is-believing
   :ensure t
   :config
-  (add-hook 'ruby-mode-hook 'seeing-is-believing)
-)
+  (add-hook 'ruby-mode-hook 'seeing-is-believing))
 
 (use-package inf-ruby
   :ensure t
@@ -435,8 +428,21 @@
        " --standalone --mathjax --highlight-style=pygments")))
 
 
+;; Automatically refreshes PDF 
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
+(add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
 
+
+(use-package company-auctex
+  :ensure t
+  :config
+  (add-hook 'latex-mode-hook (company-auctex-init))
+  :config
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t))
+
+;; Tabs and ribbons for the mode line
+;; https://github.com/tarsius/moody
 (use-package moody
   :ensure t
   :config
@@ -444,6 +450,7 @@
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode))
 
+;; https://github.com/johanvts/emacs-fireplace
 (use-package fireplace
   :ensure t)
 
@@ -465,17 +472,17 @@
     (set-face-attribute 'mode-line-inactive nil :box        nil)
     (set-face-attribute 'mode-line-inactive nil :background "#f9f2d9")))
 
+;; This package implements a menu that lists enabled minor-modes, as well as commonly but not currently enabled minor-modes.
+;; https://github.com/tarsius/minions
 (use-package minions
   :ensure t
-  :config (minions-mode 1)
-  )
+  :config (minions-mode 1))
 
-
+;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
   :ensure t
   :init
-  (yas-global-mode 1)
-  )
+  (yas-global-mode 1))
 
 (use-package yasnippet-snippets
   :ensure t)
@@ -500,10 +507,17 @@
 
 (if (eq system-type 'darwin)
     (use-package exec-path-from-shell
-      :ensure t)
-)
+      :ensure t))
+
+;; Sets up exec-path-from shell
+;; https://github.com/purcell/exec-path-from-shell
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs
+   '("PATH")))
 
 ;; https://www.emacswiki.org/emacs/WinnerMode
+;; Winner Mode is a global minor mode. When activated, it allows you to “undo” (and “redo”) changes in the window configuration with the key commands ‘C-c left’ and ‘C-c right’
 (winner-mode)
 
 ;; Shows a list of buffers
@@ -524,33 +538,21 @@
           (lambda ()
             (ibuffer-switch-to-saved-filter-groups "default")))
 
-
-;; Sets up exec-path-from shell
-;; https://github.com/purcell/exec-path-from-shell
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-envs
-   '("PATH")))
+;; Indent region better:
+(global-set-key (kbd "M-i") 'indent-region)
 
 
-(rainbow-delimiters-mode t)
-(electric-indent-mode)
+;; https://www.emacswiki.org/emacs/AutoIndentation
+(electric-indent-mode 1)
 
-;;;;
-;; Customization
-;;;;
+
 
 (defun toggle-comment-on-line ()
-  "comment or uncomment current line"
+  "Comment or uncomment current line"
   (interactive)
   (if (region-active-p)
       (comment-or-uncomment-region (region-beginning) (region-end))
     (comment-or-uncomment-region (line-beginning-position) (line-end-position))))
-
-
-;; html
-;; (setq sgml-quick-keys 'close)
-
 
 (global-set-key (kbd "C-æ") 'toggle-comment-on-line)
 
@@ -579,9 +581,9 @@
 (setq recentf-max-menu-items 40)
 
 
-
-;; projectile everywhere!
-
+;; shell scripts
+(setq-default sh-basic-offset 2)
+(setq-default sh-indentation 2)
 
 
 ;; These customizations change the way emacs looks and disable/enable
@@ -590,9 +592,6 @@
 
 ;; These customizations make editing a bit nicer.
 (load "editing.el")
-
-;; Hard-to-categorize customizations
-(load "misc.el")
 
 ;; For editing lisps
 (load "elisp-editing.el")
@@ -629,7 +628,7 @@
      ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (:nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -643,31 +642,6 @@
 ;; (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 ;(if (fboundp 'menu-bar-mode) (menu-bar-mode 1))
-
-
-;; javascript mode
-
-
-
-;(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-;(add-to-list 'interpreter-mode-alist '("node" . js2-mode))
-;(add-hook 'js-mode-hook 'js2-minor-mode)
-;(add-hook 'js2-mode-hook 'ac-js2-mode)
-;(add-hook 'js-mode-hook (lambda () (tern-mode t)))
-
-
-;;; auto complete mod
-;;; should be loaded after yasnippet so that they can work together
-;;(require 'auto-complete-config)
-;(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-;(ac-config-default)
-;;; set the trigger key so that it can work together with yasnippet on tab key,
-;;; if the word exists in yasnippet, pressing tab will cause yasnippet to
-;;; activate, otherwise, auto-complete will
-;(ac-set-trigger-key "TAB")
-;(ac-set-trigger-key "<tab>")
-
-
 
 
 ;;;
