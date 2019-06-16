@@ -221,7 +221,8 @@
 (use-package nyan-mode
   :ensure t
   :config
-  (setq nyan-wavy-trail 1))
+  (setq nyan-wavy-trail 1)
+  (nyan-mode))
 
 
 ;; lambda
