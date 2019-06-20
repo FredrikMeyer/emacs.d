@@ -61,7 +61,7 @@
 ;; No cursor blinking, it's distracting
 (blink-cursor-mode 0)
 
-;; full path in title bar
+;; Full path in title bar
 (setq-default frame-title-format "Emacs %b (%f)")
 
 ;; don't pop up font menu

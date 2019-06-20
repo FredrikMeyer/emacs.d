@@ -2,7 +2,10 @@
 ;; EMACS config
 ;;;;
 
+;; (toggle-debug-on-error 1)
 (server-start)
+
+(setq lexical-binding t)
 
 (setq user-full-name "Fredrik Meyer"
       user-mail-address "hrmeyer@gmail.com")
@@ -75,11 +78,19 @@
   :config
   (global-set-key (kbd "C-=") 'er/expand-region))
 
+(use-package flycheck
+  :ensure t)
+
+(global-flycheck-mode)
+
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
     :ensure t
     :config
     (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
+
+(use-package flycheck-clj-kondo
+  :ensure t)
 
 ;; key bindings and code colorization for Clojure
 ;; https://github.com/clojure-emacs/clojure-mode
@@ -92,7 +103,9 @@
   ;; Java classes (e.g. JavaClassName)
   (add-hook 'clojure-mode-hook 'subword-mode)
   :config
-  (add-hook 'clojure-mode-hook 'electric-indent-mode))
+  (add-hook 'clojure-mode-hook 'electric-indent-mode)
+  :config
+  (add-hook 'clojure-mode-hook 'flycheck-clj-kondo))
 
 ;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
@@ -100,7 +113,7 @@
 
 ;; Integration with a Clojure REPL
 ;; https://github.com/clojure-emacs/cider
-(use-package cider 
+(use-package cider
   :ensure t
   :config
   ;; provides minibuffer documentation for the code you're typing into the repl
@@ -109,7 +122,6 @@
   (add-hook 'cider-repl-mode-hook #'company-mode)
   :config
   (add-hook 'cider-mode-hook #'company-mode))
-
 
 
 (use-package restclient
@@ -190,7 +202,7 @@
 (use-package projectile
   :ensure t
   :config
-  (projectile-global-mode +1)
+  (projectile-mode)
   :config
   (define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
   :config
