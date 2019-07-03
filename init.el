@@ -79,7 +79,17 @@
   (global-set-key (kbd "C-=") 'er/expand-region))
 
 (use-package flycheck
-  :ensure t)
+  :ensure t
+  :config
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (add-hook 'flycheck-mode-hook 'add-node-modules-path))
+
+(defun eslint-fix-file ()
+  (interactive)
+  (message "yarn eslinteslint --fixing the file" (buffer-file-name))
+  (shell-command (concat "yarn eslint --fix " (buffer-file-name))))
+
+(setq js2-strict-missing-semi-warning nil)
 
 (global-flycheck-mode)
 
@@ -250,7 +260,14 @@
   (setq magit-repository-directories
         `(("~/code" . 1)
           ("~/entur" . 1)
-          (,user-emacs-directory . 1))))
+          (,user-emacs-directory . 1)))
+  (setq magit-list-refs-sortby "-creatordate"))
+
+;; https://github.com/nonsequitur/git-gutter-plus
+(use-package git-gutter+
+  :ensure t
+  :config
+  (global-git-gutter+-mode))
 
 (use-package org
   :ensure t
@@ -296,6 +313,16 @@
   (setq company-idle-delay 0.1)
   (setq company-dabbrev-downcase nil)
   )
+
+(use-package web-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
+  (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+  )
+
+(use-package add-node-modules-path
+  :ensure t)
 
 (use-package js2-mode
   :ensure t
@@ -411,6 +438,16 @@
             (setq tab-width 4)))
   )
 
+;; https://www.racket-mode.com/#racket_002dinsert_002dlambda
+(use-package racket-mode
+  :ensure t
+  :config
+  (setq racket-program "/usr/local/bin/racket")
+  :config
+  (add-to-list 'auto-mode-alist '("\\.rkt\\'" . racket-mode))
+  :config
+  (add-hook 'racket-mode-hook (lambda ()
+                                (electric-indent-mode t))))
 
 
 (use-package minimap
@@ -562,7 +599,7 @@
 
 
 (defun toggle-comment-on-line ()
-  "Comment or uncomment current line"
+  "Comment or uncomment current line."
   (interactive)
   (if (region-active-p)
       (comment-or-uncomment-region (region-beginning) (region-end))
@@ -599,6 +636,8 @@
 (setq-default sh-basic-offset 2)
 (setq-default sh-indentation 2)
 
+
+(setq sgml-quick-keys 'close)
 
 ;; These customizations change the way emacs looks and disable/enable
 ;; some user interface elements
@@ -642,7 +681,7 @@
      ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -660,16 +699,17 @@
 
 ;;;
 
-(require 'ac-geiser)
-(add-hook 'geiser-mode-hook 'ac-geiser-setup)
-(add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
-(eval-after-load "auto-complete"
-  '(add-to-list 'ac-modes 'geiser-repl-mode))
+;; (require 'ac-geiser)
+;; (add-hook 'geiser-mode-hook 'ac-geiser-setup)
+;; (add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
+;; (eval-after-load "auto-complete"
+  ;; '(add-to-list 'ac-modes 'geiser-repl-mode))
 
-(setq geiser-active-implementations '(chicken racket))
+;; (setq geiser-active-implementations '(chicken racket))
+
 (show-paren-mode 1)
 
-(add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
+;; (add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
 (pretty-lambda-for-modes)
 
 (dolist (mode pretty-lambda-auto-modes)
