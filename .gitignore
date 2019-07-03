@@ -61,5 +61,11 @@ projectile-bookmarks.eld
 .smex-items
 ac-comphist.dat
 cider-history
+recentf
+places
+url/
+
+#Multiple cursors
+.mc-lists.el
 
 .tern-port
