@@ -218,6 +218,11 @@
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
+(use-package rg
+  :ensure t
+  :config
+  (rg-enable-default-bindings))
+
 (use-package neotree
   :ensure t
   :config
@@ -225,7 +230,10 @@
   :config
   (progn
     (setq neo-smart-open t)
-    (setq neo-show-hidden-files t)))
+    (setq neo-window-fixed-size nil)
+    (setq neo-show-hidden-files t))
+  ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
+  (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
 
 
 (use-package rainbow-delimiters
@@ -325,6 +333,7 @@
   :ensure t)
 
 (use-package js2-mode
+  :disabled
   :ensure t
   :config
   (setq-default indent-tabs-mode nil)
@@ -681,7 +690,7 @@
      ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
