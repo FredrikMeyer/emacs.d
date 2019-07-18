@@ -176,6 +176,8 @@
   ;; Don't try to match file across all "work" directories; only match files
   ;; in the current directory displayed in the minibuffer
   ;;(setq ido-auto-merge-work-directories-length -1)
+  ;;
+  (setq ido-create-new-buffer 'always)
   (progn
     ;; Define the following variables to remove the compile-log warnings
     ;; when defining ido-ubiquitous
@@ -277,6 +279,13 @@
           (,user-emacs-directory . 1)))
   (setq magit-list-refs-sortby "-creatordate"))
 
+;; https://github.com/syohex/emacs-git-messenger
+(use-package git-messenger
+  :bind ("C-c M" . git-messenger:popup-message)
+  :config
+  (setq git-messenger:show-detail t
+        git-messenger:use-magit-popup t))
+
 ;; https://github.com/nonsequitur/git-gutter-plus
 (use-package git-gutter+
   :ensure t
@@ -310,7 +319,7 @@
                               ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
                                "* TODO %?\n%U" :empty-lines 1)))
 
-(global-set-key (kbd "C-c o") 
+(global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
 (use-package org-bullets
@@ -495,7 +504,7 @@
                                           (let ((file (file-name-nondirectory buffer-file-name)))
                                             (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
                                                     (file-name-sans-extension file)
-                                                    file)))))  
+                                                    file)))))
   :mode ("\\.md$")
   :config
   (setq markdown-header-scaling 1)
