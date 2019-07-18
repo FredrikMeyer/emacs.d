@@ -82,7 +82,9 @@
   :ensure t
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (add-hook 'flycheck-mode-hook 'add-node-modules-path))
+  (add-hook 'flycheck-mode-hook 'add-node-modules-path)
+  (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
+
 
 (defun eslint-fix-file ()
   (interactive)
@@ -107,15 +109,14 @@
 (use-package clojure-mode
   :ensure t
   :config
+  (require 'flycheck-clj-kondo)
   ;; Enable paredit for Clojure
   (add-hook 'clojure-mode-hook 'enable-paredit-mode)
   :config
   ;; Java classes (e.g. JavaClassName)
   (add-hook 'clojure-mode-hook 'subword-mode)
-  :config
   (add-hook 'clojure-mode-hook 'electric-indent-mode)
-  :config
-  (add-hook 'clojure-mode-hook 'flycheck-clj-kondo))
+  (add-hook 'clojure-mode-hook 'electric-pair-mode))
 
 ;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
@@ -186,7 +187,7 @@
   )
 
 ;; Allow ido usage in as many contexts as possible.
-(use-package ido-completing-read+ 
+(use-package ido-completing-read+
   :ensure t)
 
 ;; Enhances M-x to allow easier execution of commands. Provides
@@ -195,7 +196,7 @@
 (use-package smex
   :ensure t
   :config
-  (progn 
+  (progn
     (setq smex-save-file (concat user-emacs-directory ".smex-items"))
     (smex-initialize)
     (global-set-key (kbd "M-x") 'smex)))
@@ -205,7 +206,7 @@
   :ensure t
   :bind (("<backspace>" . smart-hungry-delete-backward-char)
 		 ("C-d" . smart-hungry-delete-forward-char))
-  :defer nil ;; dont defer so we can add our functions to hooks 
+  :defer nil ;; dont defer so we can add our functions to hooks
   :config (smart-hungry-delete-add-default-hooks)
   )
 
@@ -218,10 +219,15 @@
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
+(use-package projectile-ripgrep
+  :ensure t)
+
+;; https://github.com/dajva/rg.el
 (use-package rg
   :ensure t
   :config
-  (rg-enable-default-bindings))
+  (rg-enable-default-bindings)
+  (setq rg-executable "/usr/local/bin/rg"))
 
 (use-package neotree
   :ensure t
@@ -318,16 +324,24 @@
   :config
   (add-hook 'after-init-hook 'global-company-mode)
   :config
-  (setq company-idle-delay 0.1)
+  (setq company-idle-delay 0)
   (setq company-dabbrev-downcase nil)
-  )
+  (add-to-list 'company-backends 'company-flow))
+
+(use-package company-flow
+  :ensure t)
 
 (use-package web-mode
   :ensure t
   :config
   (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
-  )
+  (add-hook 'web-mode-hook (lambda () (tern-mode))))
+
+(use-package flow-minor-mode
+  :ensure t
+  :config
+  (add-hook 'web-mode-hook 'flow-minor-enable-automatically))
 
 (use-package add-node-modules-path
   :ensure t)
@@ -348,9 +362,14 @@
 (use-package tern
   :ensure t)
 
+(use-package company-tabnine
+  :ensure t
+  :config
+  (add-to-list 'company-backends #'company-tabnine))
+
 (use-package company-tern
   :ensure t
-  :after (tern)
+  :after tern
   :config
   (add-hook 'js2-mode-hook (lambda ()
                              (add-to-list (make-local-variable 'company-backends)
@@ -635,10 +654,14 @@
 
 ;; Turn on recent file mode so that you can more easily switch to
 ;; recently edited files when you first start emacs
-(setq recentf-save-file (concat user-emacs-directory ".recentf"))
-(require 'recentf)
-(recentf-mode 1)
-(setq recentf-max-menu-items 40)
+
+
+(use-package recentf
+  :ensure t
+  :config
+  (recentf-mode 1)
+  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
+  (setq recentf-max-menu-items 100))
 
 
 ;; shell scripts
@@ -690,7 +713,7 @@
      ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
