@@ -219,7 +219,9 @@
   :config
   (define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
   :config
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+  :config
+  (setq projectile-project-compilation-cmd ""))
 
 (use-package projectile-ripgrep
   :ensure t)
@@ -322,6 +324,9 @@
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
+(global-set-key (kbd "C-c ø")
+                (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
+
 (use-package org-bullets
   :ensure t
   :config
@@ -343,9 +348,14 @@
 (use-package web-mode
   :ensure t
   :config
-  (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
-  (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
-  (add-hook 'web-mode-hook (lambda () (tern-mode))))
+  (progn
+    (setq web-mode-indentation-params '("lineup-calls" . nil))
+    (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
+    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+    (add-hook 'web-mode-hook (lambda ()
+                               (progn (tern-mode)
+                                      (electric-indent-mode t)
+                                      (electric-pair-mode t))))))
 
 (use-package flow-minor-mode
   :ensure t
@@ -372,6 +382,7 @@
   :ensure t)
 
 (use-package company-tabnine
+  :disabled
   :ensure t
   :config
   (add-to-list 'company-backends #'company-tabnine))
@@ -618,6 +629,7 @@
                ("org" (or (mode . org-mode)
                           (mode . org-agenda-mode)
                           ))
+               ("web" (mode . web-mode))
                ("emacs" (or
                          (name . "^\\*scratch\\*$")
                          (name . "^\\*Messages\\*$")))))))
@@ -668,9 +680,10 @@
 (use-package recentf
   :ensure t
   :config
-  (recentf-mode 1)
-  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
-  (setq recentf-max-menu-items 100))
+  (progn
+    (setq recentf-save-file (concat user-emacs-directory ".recentf"))
+    (recentf-mode 1)
+    (setq recentf-max-menu-items 100)))
 
 
 ;; shell scripts
@@ -784,3 +797,9 @@
 (autoload 'oz-gump-mode "oz" "" t)
 (autoload 'oz-new-buffer "oz" "" t)
 (add-hook 'oz-mode-hook 'electric-pair-mode 'electric-indent-mode)
+
+
+;;;;
+
+(defun insert-current-date () (interactive)
+    (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
