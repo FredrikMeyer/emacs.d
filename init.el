@@ -203,6 +203,22 @@
     (smex-initialize)
     (global-set-key (kbd "M-x") 'smex)))
 
+;; https://github.com/hrs/engine-mode
+(use-package engine-mode
+  :ensure t
+  :config (engine-mode t)
+  :config
+  (defengine github
+    "https://github.com/search?ref=simplesearch&q=%s"
+    :keybinding "G")
+  (defengine google
+    "http://www.google.com/search?ie=utf-8&oe=utf-8&q=%s"
+    :keybinding "g")
+  (defengine wikipedia
+    "http://www.wikipedia.org/search-redirect.php?language=en&go=Go&search=%s"
+    :keybinding "w"
+    :docstring "Searchin' the wikis."))
+
 ;; https://github.com/hrehfeld/emacs-smart-hungry-delete
 (use-package smart-hungry-delete
   :ensure t
@@ -618,6 +634,11 @@
 ;; https://www.emacswiki.org/emacs/WinnerMode
 ;; Winner Mode is a global minor mode. When activated, it allows you to “undo” (and “redo”) changes in the window configuration with the key commands ‘C-c left’ and ‘C-c right’
 (winner-mode)
+(global-set-key (kbd "C-S-c <left>") 'shrink-window-horizontally)
+(global-set-key (kbd "C-S-c <right>") 'enlarge-window-horizontally)
+(global-set-key (kbd "C-S-c <up>") 'enlarge-window)
+(global-set-key (kbd "C-S-c <down>") 'shrink-window)
+
 
 ;; Shows a list of buffers
 (defalias 'list-buffers  'ibuffer)
@@ -683,7 +704,7 @@
   (progn
     (setq recentf-save-file (concat user-emacs-directory ".recentf"))
     (recentf-mode 1)
-    (setq recentf-max-menu-items 100)))
+    (setq recentf-max-menu-items 200)))
 
 
 ;; shell scripts
@@ -735,7 +756,7 @@
      ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
