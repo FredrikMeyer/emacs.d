@@ -1,8 +1,8 @@
-;;;;
+;;;
 ;; EMACS config
-;;;;
+;;;
 
-;; (toggle-debug-on-error 1)
+(toggle-debug-on-error 1)
 (server-start)
 
 (setq lexical-binding t)
@@ -45,6 +45,7 @@
 (setq tls-checktrust 't)
 (add-to-list 'package-archives
              '("marmalade" . "https://marmalade-repo.org/packages/"))
+
 (add-to-list 'package-archives
              '("tromey" . "http://tromey.com/elpa/"))
 
@@ -65,6 +66,7 @@
 	(package-refresh-contents)
 	(package-install 'use-package))
 
+
 (use-package try
   :ensure t)
 
@@ -81,8 +83,9 @@
 (use-package flycheck
   :ensure t
   :config
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (global-flycheck-mode)
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
 
 
@@ -93,8 +96,6 @@
 
 (setq js2-strict-missing-semi-warning nil)
 
-(global-flycheck-mode)
-
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
     :ensure t
@@ -102,7 +103,8 @@
     (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
 
 (use-package flycheck-clj-kondo
-  :ensure t)
+  :ensure t
+  :after (flycheck))
 
 ;; key bindings and code colorization for Clojure
 ;; https://github.com/clojure-emacs/clojure-mode
@@ -134,6 +136,14 @@
   :config
   (add-hook 'cider-mode-hook #'company-mode))
 
+(use-package clj-refactor
+  :ensure t
+  :config
+  (add-hook 'clojure-mode-hook (lambda ()
+                                 (clj-refactor-mode 1)
+                                 (yas-minor-mode 1)
+                                 (cljr-add-keybindings-with-prefix "C-c C-m"))))
+
 
 (use-package restclient
   :ensure t
@@ -160,48 +170,41 @@
 ;; (use-package ox-reveal
 ;;   :ensure t)
 
-;; http://www.emacswiki.org/emacs/InteractivelyDoThings
-(use-package ido
+(use-package counsel
   :ensure t
-  :init
-  (progn (ido-mode t)
-         (ido-ubiquitous-mode 1))
+  :bind
+  (("M-y" . counsel-yank-pop)
+   :map ivy-minibuffer-map
+   ("M-y" . ivy-next-line)))
+
+(use-package ivy
+  :ensure t
+  :diminish (ivy-mode)
+  :bind (("C-x b" . ivy-switch-buffer))
   :config
-  ;; This allows partial matches, e.g. "tl" will match "Tyrion Lannister"
-  (setq ido-enable-flex-matching t)
-  ;; Includes buffer names of recently open files, even if they're not open now
-  (setq ido-use-virtual-buffers t)
-  ;; Turn this behavior off because it's annoying
-  (setq ido-use-filename-at-point nil)
-  ;; Don't try to match file across all "work" directories; only match files
-  ;; in the current directory displayed in the minibuffer
-  ;;(setq ido-auto-merge-work-directories-length -1)
-  ;;
-  (setq ido-create-new-buffer 'always)
-  (progn
-    ;; Define the following variables to remove the compile-log warnings
-    ;; when defining ido-ubiquitous
-    (defvar ido-cur-item nil)
-    (defvar ido-default-item nil)
-    (defvar ido-cur-list nil)
-    (defvar predicate nil)
-    (defvar inherit-input-method nil))
-  )
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (setq enable-recursive-minibuffers t)
+  (setq ivy-count-format "%d/%d ")
+  (setq ivy-display-style 'fancy)
+  ;; Fuzzy matching is the best
+  (setq ivy-re-builders-alist
+        '((t . ivy--regex-fuzzy))))
 
-;; Allow ido usage in as many contexts as possible.
-(use-package ido-completing-read+
-  :ensure t)
-
-;; Enhances M-x to allow easier execution of commands. Provides
-;; a filterable list of possible commands in the minibuffer
-;; http://www.emacswiki.org/emacs/Smex
-(use-package smex
+(use-package swiper
   :ensure t
+  :bind (("C-s" . swiper-isearch)
+	 ("C-r" . swiper-isearch)
+	 ("C-c C-r" . ivy-resume)
+	 ("M-x" . counsel-M-x)
+	 ("C-x C-f" . counsel-find-file))
   :config
   (progn
-    (setq smex-save-file (concat user-emacs-directory ".smex-items"))
-    (smex-initialize)
-    (global-set-key (kbd "M-x") 'smex)))
+    (ivy-mode 1)
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-display-style 'fancy)
+    (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+    ))
 
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
@@ -325,12 +328,17 @@
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
-                               (calc . t)))
+                               (calc . t)
+                               (clojure . t)))
+  (setq org-babel-clojure-backend 'cider)
   :config
   (setq org-default-notes-file "~/Dropbox/org/tasks.org")
   (global-set-key (kbd "C-c c") 'org-capture)
   (require 'org-tempo))
 
+;; In order for org mode / gnuplot to work
+(use-package gnuplot
+  :ensure t)
 
 (setq org-capture-templates '(("w" "Work todo" entry (file "~/entur/notes.org")
                                "* TODO %?\n%U" :empty-lines 1)
@@ -363,15 +371,25 @@
 
 (use-package web-mode
   :ensure t
+  :after (add-node-modules-path)
   :config
   (progn
     (setq web-mode-indentation-params '("lineup-calls" . nil))
     (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
     (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-mode))
     (add-hook 'web-mode-hook (lambda ()
                                (progn (tern-mode)
                                       (electric-indent-mode t)
-                                      (electric-pair-mode t))))))
+                                      (electric-pair-mode t))))
+    (setq web-mode-enable-auto-quoting nil)))
+
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-formater-before-save)))
 
 (use-package flow-minor-mode
   :ensure t
@@ -459,6 +477,8 @@
   (setq slime-contribs '(slime-fancy slime-repl))
   )
 
+;; RUBY 
+
 (use-package ruby-mode
   :ensure t
   :config
@@ -479,10 +499,14 @@
   :config
   (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode))
 
+;; HASKELL
+
 (use-package haskell-mode
   :ensure t
   :config
   (add-hook 'haskell-mode-hook 'haskell-mode))
+
+;; GO
 
 (use-package go-mode
   :ensure t
@@ -501,6 +525,8 @@
             (setq indent-tabs-mode 1)
             (setq tab-width 4)))
   )
+
+;; RACKET
 
 ;; https://www.racket-mode.com/#racket_002dinsert_002dlambda
 (use-package racket-mode
@@ -547,6 +573,7 @@
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 (add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
 
+;; LATEX
 
 (use-package company-auctex
   :ensure t
@@ -755,8 +782,8 @@
      ("s" . "src")
      ("v" . "verse"))))
  '(package-selected-packages
-   (quote
-    (engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit smex rainbow-delimiters projectile paredit magit ido-ubiquitous exec-path-from-shell clojure-mode-extra-font-locking cider)))
+   (quote 
+    (gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
