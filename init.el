@@ -175,7 +175,9 @@
   :bind
   (("M-y" . counsel-yank-pop)
    :map ivy-minibuffer-map
-   ("M-y" . ivy-next-line)))
+   ("M-y" . ivy-next-line)
+   ("RET" . ivy-alt-done)
+   ("<backspace>" . 'ivy-backward-delete-char)))
 
 (use-package ivy
   :ensure t
