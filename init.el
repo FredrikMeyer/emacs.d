@@ -170,6 +170,9 @@
 ;; (use-package ox-reveal
 ;;   :ensure t)
 
+(use-package smex
+  :ensure t)
+
 (use-package counsel
   :ensure t
   :bind
@@ -189,9 +192,15 @@
   (setq enable-recursive-minibuffers t)
   (setq ivy-count-format "%d/%d ")
   (setq ivy-display-style 'fancy)
+  (setq ivy-wrap t)
   ;; Fuzzy matching is the best
   (setq ivy-re-builders-alist
-        '((t . ivy--regex-fuzzy))))
+        '((counsel-ag . ivy--regex-plus)
+          (counsel-rg . ivy--regex-plus)
+          (swiper-isearch . ivy--regex-plus)
+          (counsel-projectile-find-file . ivy--regex-plus)
+          (t . ivy--regex-fuzzy)))
+  (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) ""))
 
 (use-package swiper
   :ensure t
@@ -207,6 +216,12 @@
     (setq ivy-display-style 'fancy)
     (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
     ))
+
+;; https://github.com/asok/all-the-icons-ivy
+(use-package all-the-icons-ivy
+  :ensure t
+  :config
+  (all-the-icons-ivy-setup))
 
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
@@ -235,14 +250,20 @@
 
 (use-package projectile
   :ensure t
-  :config
-  (projectile-mode)
+;  :config ;; Use counsel-projectile
+;  (projectile-mode)
   :config
   (define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
   :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   :config
   (setq projectile-project-compilation-cmd ""))
+
+; https://github.com/ericdanan/counsel-projectile
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (counsel-projectile-mode))
 
 (use-package projectile-ripgrep
   :ensure t)
@@ -261,11 +282,20 @@
   :config
   (progn
     (setq neo-smart-open t)
+    (setq neo-theme 'icons)
     (setq neo-window-fixed-size nil)
     (setq neo-show-hidden-files t))
   ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
   (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
 
+;; https://github.com/domtronn/all-the-icons.el
+(use-package all-the-icons
+  :ensure t)
+
+(use-package all-the-icons-dired
+  :ensure t
+  :config
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
 (use-package rainbow-delimiters
   :ensure t
@@ -331,12 +361,14 @@
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
                                (calc . t)
-                               (clojure . t)))
+                               (clojure . t)
+                               (gnuplot . t)))
   (setq org-babel-clojure-backend 'cider)
   :config
   (setq org-default-notes-file "~/Dropbox/org/tasks.org")
   (global-set-key (kbd "C-c c") 'org-capture)
-  (require 'org-tempo))
+  (require 'org-tempo)
+  (require 'ox-md))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
@@ -506,7 +538,19 @@
 (use-package haskell-mode
   :ensure t
   :config
-  (add-hook 'haskell-mode-hook 'haskell-mode))
+  (add-hook 'haskell-mode-hook 'haskell-mode)
+  (setq haskell-process-type 'stack-ghci)
+  (add-hook 'haskell-mode-hook
+            (lambda ()
+              (set (make-local-variable 'company-backends)
+                   (append '((company-capf company-dabbrev-code))
+                           company-backends)))))
+
+(use-package intero
+  :ensure t
+  :disabled
+  :config
+  (add-hook 'haskell-mode-hook 'intero-mode))
 
 ;; GO
 
@@ -684,6 +728,20 @@
                          (name . "^\\*scratch\\*$")
                          (name . "^\\*Messages\\*$")))))))
 
+(setq ibuffer-formats 
+      '((mark modified read-only " "
+              (name 30 30 :left :elide) ; change: 30s were originally 18s
+              " "
+              (size 9 -1 :right)
+              " "
+              (mode 16 16 :left :elide)
+              " " filename-and-process)
+        (mark " "
+              (name 16 -1)
+              " " filename)))
+
+
+
 (add-hook 'ibuffer-mode-hook
           (lambda ()
             (ibuffer-switch-to-saved-filter-groups "default")))
@@ -705,6 +763,13 @@
     (comment-or-uncomment-region (line-beginning-position) (line-end-position))))
 
 (global-set-key (kbd "C-æ") 'toggle-comment-on-line)
+
+(defun indent-buffer ()
+  "Indent buffer."
+  (interactive)
+  (save-excursion
+    (indent-region (point-min) (point-max) nil)))
+(global-set-key [f12] 'indent-buffer)
 
 ;; Add a directory to our load path so that when you `load` things
 ;; below, Emacs knows where to look for the corresponding file.
@@ -735,6 +800,9 @@
     (recentf-mode 1)
     (setq recentf-max-menu-items 200)))
 
+
+
+(setq-default cursor-type 'bar)
 
 ;; shell scripts
 (setq-default sh-basic-offset 2)
@@ -784,8 +852,8 @@
      ("s" . "src")
      ("v" . "verse"))))
  '(package-selected-packages
-   (quote 
-    (gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
+   (quote
+    (all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(save-place-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
