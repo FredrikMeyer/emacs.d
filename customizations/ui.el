@@ -38,10 +38,8 @@
 
 ;; These settings relate to how emacs interacts with your operating system
 (setq ;; makes killing/yanking interact with the clipboard
-      x-select-enable-clipboard t
-
       ;; I'm actually not sure what this does but it's recommended?
-      x-select-enable-primary t
+      select-enable-primary t
 
       ;; Save clipboard strings into kill ring before replacing them.
       ;; When one selects something in another program to paste it into Emacs,

@@ -2,7 +2,10 @@
 ;; EMACS config
 ;;;
 
-(toggle-debug-on-error 1)
+
+;;; Code:
+
+(toggle-debug-on-error t)
 (server-start)
 
 (setq lexical-binding t)
@@ -11,6 +14,10 @@
       user-mail-address "hrmeyer@gmail.com")
 
 (setq ns-pop-up-frames nil)
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
 
 ;; Go straight to scratch buffer on startup
 (setq inhibit-startup-message t)
@@ -18,10 +25,16 @@
 ;; No need for ~ files when editing
 (setq create-lockfiles nil)
 
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
-      x-select-enable-clipboard t)
+      select-enable-clipboard t)
+
+;; Removes tool-bar
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
@@ -31,14 +44,31 @@
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; EDITING
+
+;; Highlights matching parenthesis
+(show-paren-mode 1)
+
+;; Don't use hard tabs
+(setq-default indent-tabs-mode nil)
+
+;; HippieExpand: M-n for å fullføre noe
+;; http://www.emacswiki.org/emacs/HippieExpand
+(setq hippie-expand-try-functions-list
+      '(try-expand-dabbrev
+        try-expand-dabbrev-from-kill
+        try-expand-dabbrev-all-buffers
+        try-expand-whole-kill
+        try-complete-file-name
+        try-expand-line
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol))
+(global-set-key (kbd "M-/") 'hippie-expand)
+(global-set-key (kbd "M-n") 'hippie-expand)
 
 ;; Define package repositories
 (require 'package)
-
-;; Load and activate emacs packages. Do this first so that the
-;; packages are loaded before you start trying to modify them.
-;; This also sets the load path.
-
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (package-initialize)
 
 (setq package-enable-at-startup nil)
@@ -50,7 +80,7 @@
              '("tromey" . "http://tromey.com/elpa/"))
 
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/"))
+             '("melpa" . "http://melpa.org/packages/"))
 
 (add-to-list 'package-archives
              '("melpa-stable" . "http://stable.melpa.org/packages/"))
@@ -88,8 +118,11 @@
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
 
+(use-package flycheck-flow
+  :ensure t)
 
 (defun eslint-fix-file ()
+  "Run eslint fix current file."
   (interactive)
   (message "yarn eslinteslint --fixing the file" (buffer-file-name))
   (shell-command (concat "yarn eslint --fix " (buffer-file-name))))
@@ -139,15 +172,14 @@
 (use-package clj-refactor
   :ensure t
   :config
-  (add-hook 'clojure-mode-hook (lambda ()
-                                 (clj-refactor-mode 1)
-                                 (yas-minor-mode 1)
-                                 (cljr-add-keybindings-with-prefix "C-c C-m"))))
-
+  (add-hook 'clojure-mode-hook
+            (lambda ()
+              (clj-refactor-mode 1)
+              (yas-minor-mode 1)
+              (cljr-add-keybindings-with-prefix "C-c C-m"))))
 
 (use-package restclient
-  :ensure t
-  :config)
+  :ensure t)
 
 (dotimes (n 10)
   (global-unset-key (kbd (format "C-%d" n)))
@@ -165,6 +197,11 @@
             (eyebrowse-mode t)
             (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
             (setq eyebrowse-new-workspace t)))
+
+(use-package windmove
+  :ensure t
+  :config
+  (windmove-default-keybindings))
 
 ;; Disabled because it does not conform with the newest org mode version
 ;; (use-package ox-reveal
@@ -184,6 +221,7 @@
 
 (use-package ivy
   :ensure t
+  :pin melpa
   :diminish (ivy-mode)
   :bind (("C-x b" . ivy-switch-buffer))
   :config
@@ -223,6 +261,12 @@
   :config
   (all-the-icons-ivy-setup))
 
+(use-package ivy-rich
+  :ensure t
+  :config
+  :disabled
+  (ivy-rich-mode 1))
+
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
   :ensure t
@@ -245,8 +289,14 @@
   :bind (("<backspace>" . smart-hungry-delete-backward-char)
 		 ("C-d" . smart-hungry-delete-forward-char))
   :defer nil ;; dont defer so we can add our functions to hooks
-  :config (smart-hungry-delete-add-default-hooks)
-  )
+  :config (smart-hungry-delete-add-default-hooks))
+
+(use-package anzu
+  :ensure t
+  :bind (("C-1" . anzu-query-replace)
+         ("C-!" . anzu-query-replace-regexp))
+  :config
+  (global-anzu-mode))
 
 (use-package projectile
   :ensure t
@@ -300,8 +350,7 @@
 (use-package rainbow-delimiters
   :ensure t
   :config
-  (rainbow-delimiters-mode t))
-
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 
 (use-package geiser
   :ensure t)
@@ -312,6 +361,7 @@
 ;; https://github.com/TeMPOraL/nyan-mode
 (use-package nyan-mode
   :ensure t
+  :disabled
   :config
   (setq nyan-wavy-trail 1)
   (nyan-mode))
@@ -321,11 +371,20 @@
 (use-package pretty-lambdada
   :ensure t)
 
+(use-package undo-tree
+  :ensure t
+  :disabled
+  :init
+  (global-undo-tree-mode)
+  :config
+  (undo-tree))
+
 (use-package magit
   :ensure t
   :config
   (global-set-key (kbd "C-x g") 'magit-status)
   (global-set-key (kbd "C-x C-g") 'magit-list-repositories)
+  (global-set-key (kbd "C-x C-B") 'magit-blame-addition)
   (setq magit-repository-directories
         `(("~/code" . 1)
           ("~/entur" . 1)
@@ -334,6 +393,7 @@
 
 ;; https://github.com/syohex/emacs-git-messenger
 (use-package git-messenger
+  :ensure t
   :bind ("C-c M" . git-messenger:popup-message)
   :config
   (setq git-messenger:show-detail t
@@ -367,17 +427,21 @@
   :config
   (setq org-default-notes-file "~/Dropbox/org/tasks.org")
   (global-set-key (kbd "C-c c") 'org-capture)
+  (setq org-capture-templates '(("w" "Work todo" entry (file "~/entur/notes.org")
+                               "* TODO %?\n%U" :empty-lines 1)
+                              ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
+                               "* TODO %?\n%U" :empty-lines 1)))
   (require 'org-tempo)
   (require 'ox-md))
+
+(use-package org-bullets
+  :ensure t
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
   :ensure t)
-
-(setq org-capture-templates '(("w" "Work todo" entry (file "~/entur/notes.org")
-                               "* TODO %?\n%U" :empty-lines 1)
-                              ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
-                               "* TODO %?\n%U" :empty-lines 1)))
 
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
@@ -385,10 +449,8 @@
 (global-set-key (kbd "C-c ø")
                 (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
 
-(use-package org-bullets
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+(global-set-key (kbd "C-c i")
+                (lambda () (interactive (find-file "~/.emacs.d/init.el"))))
 
 
 (use-package company
@@ -414,9 +476,11 @@
     (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-mode))
     (add-hook 'web-mode-hook (lambda ()
                                (progn (tern-mode)
+                                      (flycheck-mode 1)
                                       (electric-indent-mode t)
                                       (electric-pair-mode t))))
-    (setq web-mode-enable-auto-quoting nil)))
+    (setq web-mode-enable-auto-quoting nil))
+  )
 
 (use-package tide
   :ensure t
@@ -511,8 +575,7 @@
   (setq slime-contribs '(slime-fancy slime-repl))
   )
 
-;; RUBY 
-
+;; Ruby
 (use-package ruby-mode
   :ensure t
   :config
@@ -533,8 +596,7 @@
   :config
   (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode))
 
-;; HASKELL
-
+;; Haskell
 (use-package haskell-mode
   :ensure t
   :config
@@ -552,8 +614,7 @@
   :config
   (add-hook 'haskell-mode-hook 'intero-mode))
 
-;; GO
-
+;; Go
 (use-package go-mode
   :ensure t
   :config
@@ -572,8 +633,6 @@
             (setq tab-width 4)))
   )
 
-;; RACKET
-
 ;; https://www.racket-mode.com/#racket_002dinsert_002dlambda
 (use-package racket-mode
   :ensure t
@@ -582,9 +641,8 @@
   :config
   (add-to-list 'auto-mode-alist '("\\.rkt\\'" . racket-mode))
   :config
-  (add-hook 'racket-mode-hook (lambda ()
-                                (electric-indent-mode t))))
-
+  (add-hook 'racket-mode-hook
+            (lambda () (electric-indent-mode t))))
 
 (use-package minimap
   :ensure t
@@ -648,8 +706,14 @@
   :config
   (global-set-key (kbd "M-o") 'ace-window))
 
+(use-package spacemacs-common
+  :ensure spacemacs-theme
+  :config
+  (load-theme 'spacemacs-light t))
+
 (use-package solarized-theme
   :ensure t
+  :disabled
   :config
   (load-theme 'solarized-light t)
   (let ((line (face-attribute 'mode-line :underline)))
@@ -712,6 +776,11 @@
 (global-set-key (kbd "C-S-c <up>") 'enlarge-window)
 (global-set-key (kbd "C-S-c <down>") 'shrink-window)
 
+(use-package dired-subtree
+  :ensure t
+  :after dired
+  :config
+  (bind-key "<tab>" 'dired-subtree-toggle dired-mode-map))
 
 ;; Shows a list of buffers
 (defalias 'list-buffers  'ibuffer)
@@ -753,24 +822,6 @@
 ;; https://www.emacswiki.org/emacs/AutoIndentation
 (electric-indent-mode 1)
 
-
-
-(defun toggle-comment-on-line ()
-  "Comment or uncomment current line."
-  (interactive)
-  (if (region-active-p)
-      (comment-or-uncomment-region (region-beginning) (region-end))
-    (comment-or-uncomment-region (line-beginning-position) (line-end-position))))
-
-(global-set-key (kbd "C-æ") 'toggle-comment-on-line)
-
-(defun indent-buffer ()
-  "Indent buffer."
-  (interactive)
-  (save-excursion
-    (indent-region (point-min) (point-max) nil)))
-(global-set-key [f12] 'indent-buffer)
-
 ;; Add a directory to our load path so that when you `load` things
 ;; below, Emacs knows where to look for the corresponding file.
 (add-to-list 'load-path "~/.emacs.d/customizations")
@@ -790,8 +841,6 @@
 
 ;; Turn on recent file mode so that you can more easily switch to
 ;; recently edited files when you first start emacs
-
-
 (use-package recentf
   :ensure t
   :config
@@ -824,60 +873,6 @@
 ;; Language-specific
 (load "setup-clojure.el")
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ansi-color-faces-vector
-   [default bold shadow italic underline bold bold-italic bold])
- '(coffee-tab-width 2)
- '(custom-safe-themes
-   (quote
-    ("aaffceb9b0f539b6ad6becb8e96a04f2140c8faa1de8039a343a4f1e009174fb" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default)))
- '(debug-on-error nil)
- '(electric-indent-mode nil)
- '(minions-mode t)
- '(org-agenda-files (quote ("~/datainn/todo.org")))
- '(org-structure-template-alist
-   (quote
-    (("a" . "export ascii")
-     ("c" . "center")
-     ("C" . "comment")
-     ("e" . "example")
-     ("E" . "export")
-     ("h" . "export html")
-     ("l" . "export latex")
-     ("q" . "quote")
-     ("s" . "src")
-     ("v" . "verse"))))
- '(package-selected-packages
-   (quote
-    (all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex auctex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient yasnippet-snippets json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
- '(save-place-mode t))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
-
-;; Removes tool-bar
-;; (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-;(if (fboundp 'menu-bar-mode) (menu-bar-mode 1))
-
-
-;;;
-
-;; (require 'ac-geiser)
-;; (add-hook 'geiser-mode-hook 'ac-geiser-setup)
-;; (add-hook 'geiser-repl-mode-hook 'ac-geiser-setup)
-;; (eval-after-load "auto-complete"
-  ;; '(add-to-list 'ac-modes 'geiser-repl-mode))
-
-;; (setq geiser-active-implementations '(chicken racket))
 
 (show-paren-mode 1)
 
@@ -887,12 +882,6 @@
 (dolist (mode pretty-lambda-auto-modes)
   ;; add paredit-mode to all mode-hooks
   (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
-
-;(add-hook 'racket-repl-mode-hook #'rainbow-delimiters-mode)
-;(add-hook 'racket-repl-mode-hook #'auto-complete-mode)
-
-;(add-hook 'racket-mode (setq tab-always-indent 'complete))
-;(setq tab-always-indent 'complete)
 
 
 ;;;;;;;;;; Oz
@@ -917,7 +906,36 @@
 (add-hook 'oz-mode-hook 'electric-pair-mode 'electric-indent-mode)
 
 
-;;;;
+;;;; Useful functions 
 
-(defun insert-current-date () (interactive)
-    (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
+(defun insert-current-date ()
+  "Insert current date."
+  (interactive)
+  (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
+
+(defun die-tabs ()
+  "Replace all tabs in buffer with spaces."
+  (interactive)
+  (set-variable 'tab-width 4)
+  (mark-whole-buffer)
+  (untabify (region-beginning) (region-end))
+  (keyboard-quit))
+
+(defun toggle-comment-on-line ()
+  "Comment or uncomment current line."
+  (interactive)
+  (if (region-active-p)
+      (comment-or-uncomment-region (region-beginning) (region-end))
+    (comment-or-uncomment-region (line-beginning-position) (line-end-position))))
+
+(global-set-key (kbd "C-æ") 'toggle-comment-on-line)
+
+(defun indent-buffer ()
+  "Indent buffer."
+  (interactive)
+  (save-excursion
+    (indent-region (point-min) (point-max) nil)))
+(global-set-key [f12] 'indent-buffer)
+
+
+;;; init.el ends here
