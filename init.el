@@ -55,7 +55,8 @@
 ;; HippieExpand: M-n for å fullføre noe
 ;; http://www.emacswiki.org/emacs/HippieExpand
 (setq hippie-expand-try-functions-list
-      '(try-expand-dabbrev
+      '(yas-hippie-try-expand
+        try-expand-dabbrev
         try-expand-dabbrev-from-kill
         try-expand-dabbrev-all-buffers
         try-expand-whole-kill
@@ -126,6 +127,11 @@
   (interactive)
   (message "yarn eslinteslint --fixing the file" (buffer-file-name))
   (shell-command (concat "yarn eslint --fix " (buffer-file-name))))
+
+(defun eslint-fix-file-and-revert ()
+  (interactive)
+  (eslint-fix-file)
+  (revert-buffer t t))
 
 (setq js2-strict-missing-semi-warning nil)
 
@@ -237,7 +243,7 @@
           (counsel-rg . ivy--regex-plus)
           (swiper-isearch . ivy--regex-plus)
           (counsel-projectile-find-file . ivy--regex-plus)
-          (t . ivy--regex-fuzzy)))
+          (t . ivy--regex-plus)))
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) ""))
 
 (use-package swiper
@@ -478,6 +484,7 @@
                                (progn (tern-mode)
                                       (flycheck-mode 1)
                                       (electric-indent-mode t)
+;                                      (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
                                       (electric-pair-mode t))))
     (setq web-mode-enable-auto-quoting nil))
   )
@@ -691,10 +698,18 @@
 ;; https://github.com/tarsius/moody
 (use-package moody
   :ensure t
+  :disabled
   :config
   (setq x-underline-at-descent-line t)
   (moody-replace-mode-line-buffer-identification)
   (moody-replace-vc-mode))
+
+(use-package doom-modeline
+  :ensure t
+  :hook (after-init . doom-modeline-mode)
+  :config
+  (setq doom-modeline-buffer-encoding nil)
+  (setq doom-modeline-buffer-file-name-style 'buffer-name))
 
 ;; https://github.com/johanvts/emacs-fireplace
 (use-package fireplace
@@ -709,7 +724,7 @@
 (use-package spacemacs-common
   :ensure spacemacs-theme
   :config
-  (load-theme 'spacemacs-light t))
+  (load-theme 'spacemacs-dark t))
 
 (use-package solarized-theme
   :ensure t
