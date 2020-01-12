@@ -243,6 +243,7 @@
           (counsel-rg . ivy--regex-plus)
           (swiper-isearch . ivy--regex-plus)
           (counsel-projectile-find-file . ivy--regex-plus)
+          (counsel-M-x . ivy--regex-fuzzy)
           (t . ivy--regex-plus)))
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) ""))
 
@@ -723,12 +724,13 @@
 
 (use-package spacemacs-common
   :ensure spacemacs-theme
+  :disabled
   :config
   (load-theme 'spacemacs-dark t))
 
 (use-package solarized-theme
   :ensure t
-  :disabled
+  ;; :disabled
   :config
   (load-theme 'solarized-light t)
   (let ((line (face-attribute 'mode-line :underline)))
@@ -762,6 +764,29 @@
   (global-set-key (kbd "C->") 'mc/mark-next-like-this)
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
   (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+
+(use-package elfeed
+  :ensure t
+  :init
+  (setq elfeed-feeds
+        '(
+          ("http://blag.xkcd.com/feed/" blog)
+          ("http://jvns.ca/atom.xml" blog)
+          ("https://www.johndcook.com/blog/feed" blog math)
+          ("https://www.newth.net/eirik/feed/" blog)
+          )))
+
+;; https://github.com/emacs-dashboard/emacs-dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-items '((recents  . 5)
+                          (projects . 5)
+                          (bookmarks . 5)
+                          (agenda . 5))))
 
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
