@@ -681,7 +681,10 @@
        " --standalone --mathjax --highlight-style=pygments")))
 
 
-;; Automatically refreshes PDF 
+;; (use-package pdf-tools
+;;   :ensure t)
+
+;; Automatically refreshes PDF
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 (add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
 
@@ -810,7 +813,8 @@
 
 ;; https://www.emacswiki.org/emacs/WinnerMode
 ;; Winner Mode is a global minor mode. When activated, it allows you to “undo” (and “redo”) changes in the window configuration with the key commands ‘C-c left’ and ‘C-c right’
-(winner-mode)
+;; (winner-mode) Disabled, since I don't use this.
+
 (global-set-key (kbd "C-S-c <left>") 'shrink-window-horizontally)
 (global-set-key (kbd "C-S-c <right>") 'enlarge-window-horizontally)
 (global-set-key (kbd "C-S-c <up>") 'enlarge-window)
@@ -837,7 +841,7 @@
                          (name . "^\\*scratch\\*$")
                          (name . "^\\*Messages\\*$")))))))
 
-(setq ibuffer-formats 
+(setq ibuffer-formats
       '((mark modified read-only " "
               (name 30 30 :left :elide) ; change: 30s were originally 18s
               " "
