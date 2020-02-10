@@ -59,7 +59,7 @@
      ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (dashboard pdf-tools doom-modeline anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree flycheck-flow graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode company-tern tern elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (indium company-tern tern json-navigator yaml-mode dashboard pdf-tools doom-modeline anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree flycheck-flow graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
  '(safe-local-variable-values
@@ -70,6 +70,7 @@
  '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#eee8d5" 0.2))
  '(term-default-bg-color "#fdf6e3")
  '(term-default-fg-color "#657b83")
+ '(typescript-indent-level 2)
  '(vc-annotate-background nil)
  '(vc-annotate-background-mode nil)
  '(vc-annotate-color-map
@@ -106,4 +107,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(aw-leading-char-face ((t (:foreground "red" :height 2.9)))))

@@ -117,11 +117,13 @@
   (global-flycheck-mode)
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
+  ;; (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
 
 (use-package flycheck-flow
   :ensure t)
 
+;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
 (defun eslint-fix-file ()
   "Run eslint fix current file."
   (interactive)
@@ -472,6 +474,9 @@
 (use-package company-flow
   :ensure t)
 
+(use-package prettier-js
+  :ensure t)
+
 (use-package web-mode
   :ensure t
   :after (add-node-modules-path)
@@ -480,10 +485,12 @@
     (setq web-mode-indentation-params '("lineup-calls" . nil))
     (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
     (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
-    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . typescript-mode))
+    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
     (add-hook 'web-mode-hook (lambda ()
-                               (progn (tern-mode)
-                                      (flycheck-mode 1)
+                               (progn ;;(tern-mode)
+                                 (tide-setup)
+                                 (flycheck-mode 1)
+                                 (prettier-js-mode 1)
                                       (electric-indent-mode t)
 ;                                      (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
                                       (electric-pair-mode t))))
@@ -494,6 +501,7 @@
   :ensure t
   :after (typescript-mode company flycheck)
   :hook ((typescript-mode . tide-setup)
+         (typescript-mode . flycheck-mode)
          (typescript-mode . tide-hl-identifier-mode)
          (before-save . tide-formater-before-save)))
 
@@ -774,9 +782,13 @@
   (setq elfeed-feeds
         '(
           ("http://blag.xkcd.com/feed/" blog)
+          ("https://xkcd.com/rss.xml" blog cartoon)
           ("http://jvns.ca/atom.xml" blog)
           ("https://www.johndcook.com/blog/feed" blog math)
           ("https://www.newth.net/eirik/feed/" blog)
+          ("https://nullprogram.com/feed/" blog)
+          ("https://nrkbeta.no/feed/" blog tech)
+          ("https://slatestarcodex.com/feed/" blog skeptic)
           )))
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
@@ -893,6 +905,7 @@
     (recentf-mode 1)
     (setq recentf-max-menu-items 200)))
 
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
 
 (setq-default cursor-type 'bar)
