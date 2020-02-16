@@ -489,6 +489,8 @@
     (add-hook 'web-mode-hook (lambda ()
                                (progn ;;(tern-mode)
                                  (tide-setup)
+                                 (tide-hl-identifier-mode t)
+                                 (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
                                  (flycheck-mode 1)
                                  (prettier-js-mode 1)
                                       (electric-indent-mode t)
@@ -721,6 +723,7 @@
   :hook (after-init . doom-modeline-mode)
   :config
   (setq doom-modeline-buffer-encoding nil)
+  (setq doom-modeline-minor-modes t)
   (setq doom-modeline-buffer-file-name-style 'buffer-name))
 
 ;; https://github.com/johanvts/emacs-fireplace
@@ -803,6 +806,15 @@
                           (bookmarks . 5)
                           (agenda . 5))))
 
+;; https://github.com/gonewest818/dimmer.el
+(use-package dimmer
+  :ensure t
+  :config
+  (dimmer-configure-which-key)
+  (setq dimmer-buffer-exclusion-regexps '("magit-diff"))
+  (setq dimmer-fraction 0.3) ;; Originally 0.2
+  (dimmer-mode t))
+
 ;; On OS X, an Emacs instance started from the graphical user
 ;; interface will have a different environment than a shell in a
 ;; terminal window, because OS X does not run a shell during the
@@ -831,6 +843,11 @@
 (global-set-key (kbd "C-S-c <right>") 'enlarge-window-horizontally)
 (global-set-key (kbd "C-S-c <up>") 'enlarge-window)
 (global-set-key (kbd "C-S-c <down>") 'shrink-window)
+
+
+;; Yaml
+(add-hook 'yaml-mode-hook
+          (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent)))
 
 (use-package dired-subtree
   :ensure t
