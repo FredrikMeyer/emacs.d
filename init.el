@@ -811,7 +811,8 @@
   :ensure t
   :config
   (dimmer-configure-which-key)
-  (setq dimmer-buffer-exclusion-regexps '("magit-diff"))
+  (setq dimmer-exclusion-predicates '(window-minibuffer-p))
+  (setq dimmer-buffer-exclusion-regexps '("magit-diff" "*LV*" "^*Messages"))
   (setq dimmer-fraction 0.3) ;; Originally 0.2
   (dimmer-mode t))
 
