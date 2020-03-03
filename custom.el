@@ -44,7 +44,7 @@
  '(nrepl-message-colors
    (quote
     ("#dc322f" "#cb4b16" "#b58900" "#5b7300" "#b3c34d" "#0061a8" "#2aa198" "#d33682" "#6c71c4")))
- '(org-agenda-files (quote ("~/datainn/todo.org")))
+ '(org-agenda-files nil)
  '(org-structure-template-alist
    (quote
     (("a" . "export ascii")
@@ -59,7 +59,7 @@
      ("v" . "verse"))))
  '(package-selected-packages
    (quote
-    (dimmer indium company-tern tern json-navigator yaml-mode dashboard pdf-tools doom-modeline anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree flycheck-flow graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path web-mode flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
+    (paredit-everywhere paredit-everywhere-mode org-plus-contrib web-mode company-box smartparens dimmer indium company-tern tern json-navigator yaml-mode dashboard pdf-tools doom-modeline anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree flycheck-flow graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot tide clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path flycheck-clj-kondo :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider)))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
  '(safe-local-variable-values

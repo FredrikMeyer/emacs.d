@@ -113,6 +113,7 @@
 
 (use-package flycheck
   :ensure t
+  :after (add-node-modules-path)
   :config
   (global-flycheck-mode)
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
@@ -139,9 +140,24 @@
 
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
-    :ensure t
-    :config
-    (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
+  :ensure t
+  :config
+  (dolist (m '(emacs-lisp-mode-hook
+	       racket-mode-hook
+	       racket-repl-mode-hook))
+    (add-hook m #'paredit-mode))
+  (bind-keys :map paredit-mode-map
+	     ("{"   . paredit-open-curly)
+	     ("}"   . paredit-close-curly))
+  (unless terminal-frame
+    (bind-keys :map paredit-mode-map
+	       ("M-[" . paredit-wrap-square)
+	       ("M-{" . paredit-wrap-curly))))
+
+(use-package paredit-everywhere
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
 
 (use-package flycheck-clj-kondo
   :ensure t
@@ -393,7 +409,7 @@
   :config
   (global-set-key (kbd "C-x g") 'magit-status)
   (global-set-key (kbd "C-x C-g") 'magit-list-repositories)
-  (global-set-key (kbd "C-x C-B") 'magit-blame-addition)
+  (global-set-key (kbd "C-x C-S-B") 'magit-blame-addition)
   (setq magit-repository-directories
         `(("~/code" . 1)
           ("~/entur" . 1)
@@ -415,7 +431,7 @@
   (global-git-gutter+-mode))
 
 (use-package org
-  :ensure t
+  :ensure org-plus-contrib
   :pin org
   :config
   (progn
@@ -471,7 +487,14 @@
   (setq company-dabbrev-downcase nil)
   (add-to-list 'company-backends 'company-flow))
 
+(use-package company-box
+  :ensure t
+  :hook (company-mode . company-box-mode))
+
 (use-package company-flow
+  :ensure t)
+
+(use-package json-mode
   :ensure t)
 
 (use-package prettier-js
@@ -479,33 +502,48 @@
 
 (use-package web-mode
   :ensure t
-  :after (add-node-modules-path)
+  :after (add-node-modules-path flycheck)
   :config
   (progn
     (setq web-mode-indentation-params '("lineup-calls" . nil))
-    (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode)) ;; auto-enable for .js/.jsx files
-    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
-    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.[t|j]sx?$" . web-mode)) ;; auto-enable for .js/.jsx files
+    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
+    (add-to-list 'auto-mode-alist '("\\.tsx?$\\'" . web-mode))
     (add-hook 'web-mode-hook (lambda ()
                                (progn ;;(tern-mode)
                                  (tide-setup)
                                  (tide-hl-identifier-mode t)
                                  (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
                                  (flycheck-mode 1)
-                                 (prettier-js-mode 1)
-                                      (electric-indent-mode t)
-;                                      (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
-                                      (electric-pair-mode t))))
-    (setq web-mode-enable-auto-quoting nil))
-  )
+                                 (if (string= (file-name-extension buffer-file-name) "ts")
+                                     (flycheck-add-mode 'typescript-tide 'web-mode))
+                                 (if (and (locate-dominating-file default-directory ".prettier.rc") (string= (file-name-extension buffer-file-name) "ts"))
+                                     (prettier-js-mode 1)
+                                   ;; (add-hook 'before-save-hook 'tide-format-before-save)
+                                   )
+                                 (electric-indent-mode t)
+                                 ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
+                                 (electric-pair-mode t))))
+    (setq web-mode-enable-auto-quoting nil)))
 
 (use-package tide
   :ensure t
   :after (typescript-mode company flycheck)
   :hook ((typescript-mode . tide-setup)
          (typescript-mode . flycheck-mode)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-formater-before-save)))
+         (typescript-mode . tide-hl-identifier-mode)))
+         ;; (before-save . tide-formater-before-save)))
+
+(use-package smartparens
+  :ensure t
+  :config
+  (require 'smartparens-config)
+  :config
+  (add-hook 'web-mode-hook #'smartparens-mode)
+  )
+
+(use-package sml-mode
+  :ensure t)
 
 (use-package flow-minor-mode
   :ensure t
@@ -584,6 +622,7 @@
   :ensure t)
 
 (use-package slime
+  :disabled
   :ensure t
   :init
   (load (expand-file-name "~/quicklisp/slime-helper.el"))
@@ -660,7 +699,10 @@
   (add-to-list 'auto-mode-alist '("\\.rkt\\'" . racket-mode))
   :config
   (add-hook 'racket-mode-hook
-            (lambda () (electric-indent-mode t))))
+            (lambda ()
+              (electric-indent-mode t)
+              (electric-pair-mode t)
+              )))
 
 (use-package minimap
   :ensure t
@@ -680,7 +722,7 @@
                                             (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
                                                     (file-name-sans-extension file)
                                                     file)))))
-  :mode ("\\.md$")
+  :mode ("\\.md[x]?$")
   :config
   (setq markdown-header-scaling 1)
   :config
@@ -811,8 +853,16 @@
   :ensure t
   :config
   (dimmer-configure-which-key)
-  (setq dimmer-exclusion-predicates '(window-minibuffer-p))
-  (setq dimmer-buffer-exclusion-regexps '("magit-diff" "*LV*" "^*Messages"))
+  (setq dimmer-prevent-dimming-predicates '(window-minibuffer-p))
+  (setq dimmer-buffer-exclusion-regexps '("magit-diff"
+                                          "*LV*"
+                                          "\\*\\(LV\\|transient\\)\\*"
+                                          "^*Messages*"
+                                          "^\\*Minibuf-[0-9]+\\*"
+                                          "transient"
+                                          ".*Minib.*"
+                                          "^.\\*Echo.*\\*"
+                                          "Help"))
   (setq dimmer-fraction 0.3) ;; Originally 0.2
   (dimmer-mode t))
 
@@ -855,6 +905,18 @@
   :after dired
   :config
   (bind-key "<tab>" 'dired-subtree-toggle dired-mode-map))
+
+(use-package ibuffer
+  :bind ("C-x C-b" . ibuffer))
+
+(use-package ibuffer-projectile
+  :hook (ibuffer . ibuffer-projectile-init)
+  :commands ibuffer-projectile-init
+  :config
+  (defun ibuffer-projectile-init()
+    (ibuffer-projectile-set-filter-groups)
+    (unless (eq ibuffer-sorting-mode 'alphabetic)
+      (ibuffer-do-sort-by-alphabetic)))) 
 
 ;; Shows a list of buffers
 (defalias 'list-buffers  'ibuffer)
