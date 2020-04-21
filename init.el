@@ -52,6 +52,9 @@
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
 
+(setq-default show-trailing-whitespace 't)
+(setq-default indicate-empty-lines 't)
+
 ;; HippieExpand: M-n for å fullføre noe
 ;; http://www.emacswiki.org/emacs/HippieExpand
 (setq hippie-expand-try-functions-list
@@ -115,6 +118,7 @@
   :ensure t
   :after (add-node-modules-path)
   :config
+  (put 'flycheck-python-pylint-executable 'safe-local-variable #'stringp)
   (global-flycheck-mode)
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
@@ -123,6 +127,7 @@
 
 (use-package flycheck-flow
   :ensure t)
+
 
 ;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
 (defun eslint-fix-file ()
@@ -292,6 +297,13 @@
   :disabled
   (ivy-rich-mode 1))
 
+;; http://www.emacswiki.org/emacs/SavePlace
+(use-package saveplace
+  :ensure t
+  :config
+  (setq-default save-place t)
+  (setq save-place-file (concat user-emacs-directory "places")))
+
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
   :ensure t
@@ -367,6 +379,7 @@
 (use-package all-the-icons
   :ensure t)
 
+;; https://github.com/jtbm37/all-the-icons-dired
 (use-package all-the-icons-dired
   :ensure t
   :config
@@ -412,7 +425,6 @@
   (global-set-key (kbd "C-x C-S-B") 'magit-blame-addition)
   (setq magit-repository-directories
         `(("~/code" . 1)
-          ("~/entur" . 1)
           (,user-emacs-directory . 1)))
   (setq magit-list-refs-sortby "-creatordate"))
 
@@ -435,13 +447,19 @@
   :pin org
   :config
   (progn
-    (add-hook 'org-mode-hook 'visual-line-mode)
-    (add-hook 'org-mode-hook 'auto-save-mode))
+    (add-hook 'org-mode-hook (lambda ()
+                               (visual-line-mode t)
+                               (auto-save-mode t)
+                               (electric-pair-mode nil))))
   :config
   (setq org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-confirm-babel-evaluate nil
         org-edit-src-content-indentation 0)
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (add-hook 'after-save-hook 'org-preview-latex-fragment nil 'make-it-local)))
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
@@ -450,14 +468,15 @@
                                (gnuplot . t)))
   (setq org-babel-clojure-backend 'cider)
   :config
-  (setq org-default-notes-file "~/Dropbox/org/tasks.org")
+  (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
   (global-set-key (kbd "C-c c") 'org-capture)
-  (setq org-capture-templates '(("w" "Work todo" entry (file "~/entur/notes.org")
-                               "* TODO %?\n%U" :empty-lines 1)
-                              ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
+  (setq org-capture-templates '(
+                                ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
+                                ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
                                "* TODO %?\n%U" :empty-lines 1)))
   (require 'org-tempo)
   (require 'ox-md))
+
 
 (use-package org-bullets
   :ensure t
@@ -471,11 +490,14 @@
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
+(global-set-key (kbd "C-c n")
+                (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
+
 (global-set-key (kbd "C-c ø")
                 (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
 
 (global-set-key (kbd "C-c i")
-                (lambda () (interactive (find-file "~/.emacs.d/init.el"))))
+                (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
 
 (use-package company
@@ -690,7 +712,7 @@
             (setq tab-width 4)))
   )
 
-;; https://www.racket-mode.com/#racket_002dinsert_002dlambda
+;; https://www.racket-mode.com
 (use-package racket-mode
   :ensure t
   :config
@@ -703,6 +725,30 @@
               (electric-indent-mode t)
               (electric-pair-mode t)
               )))
+
+(use-package elpy
+  :ensure t
+  :after pyenv-mode
+  :init (elpy-enable)
+  :config
+  (add-hook 'elpy-mode-hook 'flycheck-mode)
+  (when (load "flycheck" t t)
+    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+    )
+  )
+
+(setq python-shell-interpreter "python3")
+
+(use-package pyenv-mode
+  :disabled
+  :ensure t
+  :config
+  (add-hook 'python-mode-hook 'pyenv-mode))
+
+(use-package dockerfile-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 
 (use-package minimap
   :ensure t
@@ -732,13 +778,47 @@
        " --from=markdown --to=html"
        " --standalone --mathjax --highlight-style=pygments")))
 
-
-;; (use-package pdf-tools
-;;   :ensure t)
+;; TODO få dette til å virke en gang
+(use-package pdf-tools
+  ;; :load-path "pdf-tools"
+  :pin manual
+  :config
+  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+  (setq pdf-view-display-size 'fit-page)
+  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+  (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
+  (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
+  (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
+  (pdf-tools-install))
 
 ;; Automatically refreshes PDF
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 (add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
+;; Requires `brew install ghostscript`
+
+
+(use-package lsp-mode
+  :ensure t
+  :init (setq lsp-keymap-prefix "C-c l"))
+
+(use-package company-lsp
+  :ensure t)
+
+(use-package lsp-ui
+  :ensure t)
+
+(use-package lsp-java :ensure t :after lsp
+  :config (add-hook 'java-mode-hook 'lsp))
+
+
+(use-package dap-mode
+  :ensure t :after lsp-mode
+  :config
+  (dap-mode t)
+  (dap-ui-mode t))
+
+(use-package dap-java :after (lsp-java))
+
 
 ;; LATEX
 
@@ -784,9 +864,14 @@
   :config
   (load-theme 'spacemacs-dark t))
 
+(use-package leuven-theme
+  :ensure t
+  :config
+  (load-theme 'leuven t))
+
 (use-package solarized-theme
   :ensure t
-  ;; :disabled
+  :disabled
   :config
   (load-theme 'solarized-light t)
   (let ((line (face-attribute 'mode-line :underline)))
@@ -806,8 +891,8 @@
 ;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
   :ensure t
-  :init
-  (yas-global-mode 1))
+  :defer t
+  :hook (prog-mode . yas-global-mode))
 
 (use-package yasnippet-snippets
   :ensure t)
@@ -834,6 +919,7 @@
           ("https://nullprogram.com/feed/" blog)
           ("https://nrkbeta.no/feed/" blog tech)
           ("https://slatestarcodex.com/feed/" blog skeptic)
+          ("https://lichess.org/blog.atom" chess blog)
           )))
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
@@ -897,8 +983,11 @@
 
 
 ;; Yaml
-(add-hook 'yaml-mode-hook
-          (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent)))
+(use-package yaml-mode
+  :ensure t
+  :config
+  (add-hook 'yaml-mode-hook
+            (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent))))
 
 (use-package dired-subtree
   :ensure t
@@ -916,7 +1005,7 @@
   (defun ibuffer-projectile-init()
     (ibuffer-projectile-set-filter-groups)
     (unless (eq ibuffer-sorting-mode 'alphabetic)
-      (ibuffer-do-sort-by-alphabetic)))) 
+      (ibuffer-do-sort-by-alphabetic))))
 
 ;; Shows a list of buffers
 (defalias 'list-buffers  'ibuffer)
@@ -1001,9 +1090,6 @@
 ;; some user interface elements
 (load "ui.el")
 
-;; These customizations make editing a bit nicer.
-(load "editing.el")
-
 ;; For editing lisps
 (load "elisp-editing.el")
 
@@ -1019,6 +1105,11 @@
 (dolist (mode pretty-lambda-auto-modes)
   ;; add paredit-mode to all mode-hooks
   (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
+
+
+(setq backup-directory-alist `(("." . ,(concat user-emacs-directory
+                                               "backups"))))
+(setq auto-save-default nil)
 
 
 ;;;;;;;;;; Oz
