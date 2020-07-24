@@ -48,6 +48,7 @@
 
 ;; Highlights matching parenthesis
 (show-paren-mode 1)
+(global-hl-line-mode 1)
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
@@ -100,6 +101,11 @@
 	(package-refresh-contents)
 	(package-install 'use-package))
 
+(use-package benchmark-init
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (use-package try
   :ensure t)
@@ -592,10 +598,12 @@
   :ensure t)
 
 (use-package company-tabnine
-  :disabled
+  ;; :disabled
   :ensure t
   :config
-  (add-to-list 'company-backends #'company-tabnine))
+  (add-hook 'python-mode-hook '(lambda ()
+                                 (add-to-list (make-local-variable 'company-backends) #'company-tabnine))))
+  ;; (add-to-list 'company-backends #'company-tabnine))
 
 (use-package company-tern
   :ensure t
@@ -731,11 +739,10 @@
   :after pyenv-mode
   :init (elpy-enable)
   :config
+  (add-hook 'pyenv-mode-hook (lambda () (elpy-enable)))
   (add-hook 'elpy-mode-hook 'flycheck-mode)
   (when (load "flycheck" t t)
-    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-    )
-  )
+    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))))
 
 (setq python-shell-interpreter "python3")
 
@@ -778,7 +785,6 @@
        " --from=markdown --to=html"
        " --standalone --mathjax --highlight-style=pygments")))
 
-;; TODO få dette til å virke en gang
 (use-package pdf-tools
   ;; :load-path "pdf-tools"
   :pin manual
@@ -789,7 +795,9 @@
   (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
   (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
   (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
-  (pdf-tools-install))
+  (setq pdf-view-use-unicode-ligther nil)
+  (pdf-tools-install)
+  )
 
 ;; Automatically refreshes PDF
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -882,6 +890,13 @@
     (set-face-attribute 'mode-line-inactive nil :box        nil)
     (set-face-attribute 'mode-line-inactive nil :background "#f9f2d9")))
 
+(use-package whitespace
+  :ensure t
+  :config
+  (setq whitespace-line-column 80)
+  (setq whitespace-style '(face lines-tail))
+  (add-hook 'prog-mode-hook 'whitespace-mode))
+
 ;; This package implements a menu that lists enabled minor-modes, as well as commonly but not currently enabled minor-modes.
 ;; https://github.com/tarsius/minions
 (use-package minions
@@ -920,6 +935,9 @@
           ("https://nrkbeta.no/feed/" blog tech)
           ("https://slatestarcodex.com/feed/" blog skeptic)
           ("https://lichess.org/blog.atom" chess blog)
+          ("http://bit-player.org/feed" math blog)
+          ("http://www.jeffgeerling.com/blog.xml" raspberry blog)
+          ("https://jvns.ca/atom.xml" blog)
           )))
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
