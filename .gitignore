@@ -64,6 +64,14 @@ cider-history
 recentf
 places
 url/
+.cache
+.dap-breakpoints
+.lsp-session-v1
+eclipse.jdt.ls/
+bookmarks
+smex-items
+transient/
+
 
 #Multiple cursors
 .mc-lists.el
