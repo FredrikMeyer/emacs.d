@@ -771,7 +771,8 @@
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
                 (setq python-shell-interpreter "python3"))))
-  (add-hook 'python-mode-hook 'pyenv-mode))
+  ;; (add-hook 'python-mode-hook 'pyenv-mode)
+  )
 
 
 (use-package dockerfile-mode
