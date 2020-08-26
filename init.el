@@ -22,6 +22,7 @@
 ;; Go straight to scratch buffer on startup
 (setq inhibit-startup-message t)
 
+
 ;; No need for ~ files when editing
 (setq create-lockfiles nil)
 
@@ -124,7 +125,7 @@
   :ensure t
   :after (add-node-modules-path)
   :config
-  (put 'flycheck-python-pylint-executable 'safe-local-variable #'stringp)
+  ;; (put 'flycheck-python-pylint-executable 'safe-local-variable #'stringp)
   (global-flycheck-mode)
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
@@ -505,6 +506,9 @@
 (global-set-key (kbd "C-c i")
                 (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
+(global-set-key (kbd "C-c d")
+                (lambda () (interactive) (find-file "~/Dropbox/org/dagbok.org")))
+
 
 (use-package company
   :ensure t
@@ -735,22 +739,40 @@
               )))
 
 (use-package elpy
+  :disabled
   :ensure t
-  :after pyenv-mode
+  ;; :after pyenv-mode
   :init (elpy-enable)
   :config
   (add-hook 'pyenv-mode-hook (lambda () (elpy-enable)))
   (add-hook 'elpy-mode-hook 'flycheck-mode)
+  (setq elpy-rpc-backend "jedi")
   (when (load "flycheck" t t)
     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))))
 
-(setq python-shell-interpreter "python3")
-
-(use-package pyenv-mode
+(use-package flycheck-pycheckers
   :disabled
   :ensure t
   :config
+  (with-eval-after-load 'flycheck
+    (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
+
+(setq python-shell-interpreter "python3")
+
+(use-package pyvenv
+  :ensure t
+  :config
+  (pyvenv-mode t)
+
+  ;; Set correct Python interpreter
+  (setq pyvenv-post-activate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))))
+  (setq pyvenv-post-deactivate-hooks
+        (list (lambda ()
+                (setq python-shell-interpreter "python3"))))
   (add-hook 'python-mode-hook 'pyenv-mode))
+
 
 (use-package dockerfile-mode
   :ensure t
@@ -807,9 +829,15 @@
 
 (use-package lsp-mode
   :ensure t
-  :init (setq lsp-keymap-prefix "C-c l"))
+  :init (setq lsp-keymap-prefix "C-c l")
+  :config
+  (local-set-key (kbd "M-.") 'lsp-find-definition)
+  (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+  (add-hook 'python-mode-hook #'lsp)
+  (setq lsp-ui-sideline-delay 0.1))
 
 (use-package company-lsp
+  :disabled
   :ensure t)
 
 (use-package lsp-ui
@@ -890,6 +918,7 @@
     (set-face-attribute 'mode-line-inactive nil :box        nil)
     (set-face-attribute 'mode-line-inactive nil :background "#f9f2d9")))
 
+;; https://emacsredux.com/blog/2013/05/31/highlight-lines-that-exceed-a-certain-length-limit/
 (use-package whitespace
   :ensure t
   :config
@@ -938,6 +967,7 @@
           ("http://bit-player.org/feed" math blog)
           ("http://www.jeffgeerling.com/blog.xml" raspberry blog)
           ("https://jvns.ca/atom.xml" blog)
+          ("https://aws.amazon.com/blogs/opensource/feed/" aws blog)
           )))
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
@@ -1011,6 +1041,7 @@
   :ensure t
   :after dired
   :config
+  (setq dired-subtree-use-backgrounds nil)
   (bind-key "<tab>" 'dired-subtree-toggle dired-mode-map))
 
 (use-package ibuffer
