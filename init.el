@@ -78,7 +78,6 @@
 (package-initialize)
 
 (setq package-enable-at-startup nil)
-(setq tls-checktrust 't)
 (add-to-list 'package-archives
              '("marmalade" . "https://marmalade-repo.org/packages/"))
 
@@ -103,10 +102,17 @@
 	(package-install 'use-package))
 
 (use-package benchmark-init
+  :disabled
   :ensure t
   :config
   ;; To disable collection of benchmark data after init is done.
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
+(use-package esup
+  :ensure t
+  ;; To use MELPA Stable use ":pin mepla-stable",
+  :pin melpa-stable
+  :commands (esup))
 
 (use-package try
   :ensure t)
@@ -125,11 +131,12 @@
   :ensure t
   :after (add-node-modules-path)
   :config
-  ;; (put 'flycheck-python-pylint-executable 'safe-local-variable #'stringp)
   (global-flycheck-mode)
+
+  (setq flycheck-display-errors-delay 0.1)
+
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
-  ;; (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
 
 (use-package flycheck-flow
@@ -149,7 +156,6 @@
   (revert-buffer t t))
 
 (setq js2-strict-missing-semi-warning nil)
-
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
   :ensure t
@@ -187,7 +193,13 @@
   ;; Java classes (e.g. JavaClassName)
   (add-hook 'clojure-mode-hook 'subword-mode)
   (add-hook 'clojure-mode-hook 'electric-indent-mode)
-  (add-hook 'clojure-mode-hook 'electric-pair-mode))
+  (add-hook 'clojure-mode-hook 'electric-pair-mode)
+
+  (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
+  (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
+  (add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojurescript-mode))
+  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode))
+  )
 
 ;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
@@ -200,10 +212,48 @@
   :config
   ;; provides minibuffer documentation for the code you're typing into the repl
   (add-hook 'cider-mode-hook 'eldoc-mode)
-  :config
   (add-hook 'cider-repl-mode-hook #'company-mode)
-  :config
-  (add-hook 'cider-mode-hook #'company-mode))
+  (add-hook 'cider-mode-hook #'company-mode)
+  ;; go right to the REPL buffer when it's finished connecting
+  (setq cider-repl-pop-to-buffer-on-connect t)
+
+  ;; When there's a cider error, show its buffer and switch to it
+  (setq cider-show-error-buffer t)
+  (setq cider-auto-select-error-buffer t)
+
+  ;; Wrap when navigating history.
+  (setq cider-repl-wrap-history t)
+
+  ;; enable paredit in your REPL
+  (add-hook 'cider-repl-mode-hook 'paredit-mode)
+
+  ;; Where to store the cider history.
+  (setq cider-repl-history-file "~/.emacs.d/cider-history")
+
+  ;; Don't prompt and don't save
+  (setq cider-save-file-on-load nil)
+
+  (defun cider-start-http-server ()
+    (interactive)
+    (cider-load-current-buffer)
+    (let ((ns (cider-current-ns)))
+      (cider-repl-set-ns ns)
+      (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
+      (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
+
+
+  (defun cider-refresh ()
+    (interactive)
+    (cider-interactive-eval (format "(user/reset)")))
+
+  (defun cider-user-ns ()
+    (interactive)
+    (cider-repl-set-ns "user"))
+  (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
+  (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
+  (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
+  (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)
+  )
 
 (use-package clj-refactor
   :ensure t
@@ -314,8 +364,8 @@
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
   :ensure t
-  :config (engine-mode t)
   :config
+  (engine-mode t)
   (defengine github
     "https://github.com/search?ref=simplesearch&q=%s"
     :keybinding "G")
@@ -348,9 +398,7 @@
 ;  (projectile-mode)
   :config
   (define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
-  :config
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-  :config
   (setq projectile-project-compilation-cmd ""))
 
 ; https://github.com/ericdanan/counsel-projectile
@@ -374,11 +422,10 @@
   :config
   (global-set-key (kbd "C-x t") 'neotree-toggle)
   :config
-  (progn
-    (setq neo-smart-open t)
-    (setq neo-theme 'icons)
-    (setq neo-window-fixed-size nil)
-    (setq neo-show-hidden-files t))
+  (setq neo-smart-open t)
+  (setq neo-theme 'icons)
+  (setq neo-window-fixed-size nil)
+  (setq neo-show-hidden-files t)
   ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
   (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
 
@@ -453,12 +500,11 @@
   :ensure org-plus-contrib
   :pin org
   :config
-  (progn
-    (add-hook 'org-mode-hook (lambda ()
-                               (visual-line-mode t)
-                               (auto-save-mode t)
-                               (electric-pair-mode nil))))
-  :config
+  (add-hook 'org-mode-hook (lambda ()
+                             (visual-line-mode t)
+                             (auto-save-mode t)
+                             (electric-pair-mode 0)))
+
   (setq org-src-fontify-natively t
         org-src-tab-acts-natively t
         org-confirm-babel-evaluate nil
@@ -467,14 +513,14 @@
   (add-hook 'org-mode-hook
             (lambda ()
               (add-hook 'after-save-hook 'org-preview-latex-fragment nil 'make-it-local)))
-  :config
+
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
                                (calc . t)
                                (clojure . t)
                                (gnuplot . t)))
   (setq org-babel-clojure-backend 'cider)
-  :config
+
   (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
   (global-set-key (kbd "C-c c") 'org-capture)
   (setq org-capture-templates '(
@@ -514,8 +560,8 @@
   :ensure t
   :config
   (add-hook 'after-init-hook 'global-company-mode)
-  :config
-  (setq company-idle-delay 0)
+  ;; Don't set this to 0 if you want yasnippet to work well.
+  (setq company-idle-delay 0.5)
   (setq company-dabbrev-downcase nil)
   (add-to-list 'company-backends 'company-flow))
 
@@ -536,27 +582,27 @@
   :ensure t
   :after (add-node-modules-path flycheck)
   :config
-  (progn
-    (setq web-mode-indentation-params '("lineup-calls" . nil))
-    (add-to-list 'auto-mode-alist '("\\.[t|j]sx?$" . web-mode)) ;; auto-enable for .js/.jsx files
-    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
-    (add-to-list 'auto-mode-alist '("\\.tsx?$\\'" . web-mode))
-    (add-hook 'web-mode-hook (lambda ()
-                               (progn ;;(tern-mode)
-                                 (tide-setup)
-                                 (tide-hl-identifier-mode t)
-                                 (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
-                                 (flycheck-mode 1)
-                                 (if (string= (file-name-extension buffer-file-name) "ts")
-                                     (flycheck-add-mode 'typescript-tide 'web-mode))
-                                 (if (and (locate-dominating-file default-directory ".prettier.rc") (string= (file-name-extension buffer-file-name) "ts"))
-                                     (prettier-js-mode 1)
-                                   ;; (add-hook 'before-save-hook 'tide-format-before-save)
-                                   )
-                                 (electric-indent-mode t)
-                                 ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
-                                 (electric-pair-mode t))))
-    (setq web-mode-enable-auto-quoting nil)))
+  (setq web-mode-indentation-params '("lineup-calls" . nil))
+  (add-to-list 'auto-mode-alist '("\\.[t|j]sx?$" . web-mode)) ;; auto-enable for .js/.jsx files
+
+  (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
+  (add-to-list 'auto-mode-alist '("\\.tsx?$\\'" . web-mode))
+  (add-hook 'web-mode-hook (lambda ()
+                             (progn ;;(tern-mode)
+                               (tide-setup)
+                               (tide-hl-identifier-mode t)
+                               (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
+                               (flycheck-mode 1)
+                               (if (string= (file-name-extension buffer-file-name) "ts")
+                                   (flycheck-add-mode 'typescript-tide 'web-mode))
+                               (if (and (locate-dominating-file default-directory ".prettier.rc") (string= (file-name-extension buffer-file-name) "ts"))
+                                   (prettier-js-mode 1)
+                                 ;; (add-hook 'before-save-hook 'tide-format-before-save)
+                                 )
+                               (electric-indent-mode t)
+                               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
+                               (electric-pair-mode t))))
+  (setq web-mode-enable-auto-quoting nil))
 
 (use-package tide
   :ensure t
@@ -570,9 +616,7 @@
   :ensure t
   :config
   (require 'smartparens-config)
-  :config
-  (add-hook 'web-mode-hook #'smartparens-mode)
-  )
+  (add-hook 'web-mode-hook #'smartparens-mode))
 
 (use-package sml-mode
   :ensure t)
@@ -590,12 +634,9 @@
   :ensure t
   :config
   (setq-default indent-tabs-mode nil)
-  :config
   (add-hook 'js-mode-hook 'js2-minor-mode)
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-  :config
   (add-hook 'js-mode-hook 'electric-pair-mode)
-  :config
   (add-hook 'js-mode-hook 'electric-indent-mode))
 
 (use-package tern
@@ -615,8 +656,7 @@
   :config
   (add-hook 'js2-mode-hook (lambda ()
                              (add-to-list (make-local-variable 'company-backends)
-                                  '(company-tern company-dabbrev))))
-  :config
+                                          '(company-tern company-dabbrev))))
   (add-hook 'js2-mode-hook (lambda ()
                              (setq company-idle-delay 0)
                              (tern-mode t)
@@ -631,19 +671,11 @@
   :ensure t
   :config
   (setq-default indent-tabs-mode nil)
-  :config
   (add-hook 'elm-mode-hook 'electric-pair-mode)
-  :config
   (add-hook 'elm-mode-hook 'electric-indent-mode)
-  :config
   (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
-;  :config
-;  (add-to-list 'company-backends 'company-elm)
-  :config
   (add-hook 'elm-mode-hook 'company-mode)
-  :config
   (setq elm-format-on-save t)
-  :config
   (setq elm-interactive-command '("elm" "repl")
         elm-reactor-command '("elm" "reactor")
         elm-reactor-arguments '("--port" "8000")
@@ -662,9 +694,7 @@
   (load (expand-file-name "~/quicklisp/slime-helper.el"))
   :config
   (setq inferior-lisp-program "/usr/local/bin/ccl")
-  :config
-  (setq slime-contribs '(slime-fancy slime-repl))
-  )
+  (setq slime-contribs '(slime-fancy slime-repl)))
 
 ;; Ruby
 (use-package ruby-mode
@@ -710,28 +740,21 @@
   :ensure t
   :config
   (add-hook 'before-save-hook 'gofmt-before-save)
-  :config
   (if (not (string-match "go" compile-command))
       (set (make-local-variable 'compile-command)
            "go build -v && go test -v && go vet"))
-  :config
   (add-hook 'go-mode-hook 'electric-pair-mode)
-  :config
   (add-hook 'go-mode-hook 'electric-indent-mode)
-  :config
   (add-hook 'go-mode-hook (lambda ()
             (setq indent-tabs-mode 1)
-            (setq tab-width 4)))
-  )
+            (setq tab-width 4))))
 
 ;; https://www.racket-mode.com
 (use-package racket-mode
   :ensure t
   :config
   (setq racket-program "/usr/local/bin/racket")
-  :config
   (add-to-list 'auto-mode-alist '("\\.rkt\\'" . racket-mode))
-  :config
   (add-hook 'racket-mode-hook
             (lambda ()
               (electric-indent-mode t)
@@ -757,6 +780,9 @@
   (with-eval-after-load 'flycheck
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
+(use-package python-pytest
+  :ensure t)
+
 (setq python-shell-interpreter "python3")
 
 (use-package pyvenv
@@ -770,9 +796,9 @@
                 (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter "python3"))))
-  ;; (add-hook 'python-mode-hook 'pyenv-mode)
-  )
+                (setq python-shell-interpreter "python3")))))
+
+(add-hook 'python-mode 'electric-pair-mode)
 
 
 (use-package dockerfile-mode
@@ -791,17 +817,15 @@
 
 (use-package markdown-mode
   :ensure t
-  :config
-  (progn (add-hook 'markdown-mode-hook 'visual-line-mode)
-         (add-hook 'markdown-mode-hook  (lambda ()
-                                          (let ((file (file-name-nondirectory buffer-file-name)))
-                                            (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
-                                                    (file-name-sans-extension file)
-                                                    file)))))
   :mode ("\\.md[x]?$")
   :config
+  (add-hook 'markdown-mode-hook 'visual-line-mode)
+  (add-hook 'markdown-mode-hook  (lambda ()
+                                   (let ((file (file-name-nondirectory buffer-file-name)))
+                                     (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
+                                             (file-name-sans-extension file)
+                                             file))))
   (setq markdown-header-scaling 1)
-  :config
   (setq markdown-command
       (concat
        "/usr/local/bin/pandoc"
@@ -819,7 +843,8 @@
   (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
   (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
   (setq pdf-view-use-unicode-ligther nil)
-  (pdf-tools-install)
+  ;; (pdf-tools-install)
+  (pdf-loader-install)
   )
 
 ;; Automatically refreshes PDF
@@ -833,28 +858,41 @@
   :init (setq lsp-keymap-prefix "C-c l")
   :config
   (local-set-key (kbd "M-.") 'lsp-find-definition)
+
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (add-hook 'python-mode-hook #'lsp)
-  (setq lsp-ui-sideline-delay 0.1))
-
-(use-package company-lsp
-  :disabled
-  :ensure t)
+  ;; To enable mypy
+  ;; https://github.com/tomv564/pyls-mypy
+  ;; Also had to install this from source:
+  ; pip3 install git+https://github.com/tomv564/pyls-mypy.git
+  (lsp-register-custom-settings '(("pyls.plugins.pyls_mypy.enabled" t t)))
+  (lsp-register-custom-settings '(("pyls.plugins.pyls_isort.enabled" t t))))
 
 (use-package lsp-ui
-  :ensure t)
+  :ensure t
+  :config
+  (setq lsp-ui-sideline-delay 0.1))
 
-(use-package lsp-java :ensure t :after lsp
-  :config (add-hook 'java-mode-hook 'lsp))
-
+(use-package lsp-java
+  :disabled
+  :ensure t
+  :after lsp
+  :config
+  (add-hook 'java-mode-hook 'lsp))
 
 (use-package dap-mode
+  :disabled t
   :ensure t :after lsp-mode
   :config
   (dap-mode t)
-  (dap-ui-mode t))
+  (dap-ui-mode t)
+  ;; Maybe solves it...
+  (dap-tooltip-mode -1)
+  ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
+  )
 
-(use-package dap-java :after (lsp-java))
+(use-package dap-java
+  :after (lsp-java))
 
 
 ;; LATEX
@@ -863,7 +901,6 @@
   :ensure t
   :config
   (add-hook 'latex-mode-hook (company-auctex-init))
-  :config
   (setq TeX-auto-save t)
   (setq TeX-parse-self t))
 
@@ -927,7 +964,8 @@
   (setq whitespace-style '(face lines-tail))
   (add-hook 'prog-mode-hook 'whitespace-mode))
 
-;; This package implements a menu that lists enabled minor-modes, as well as commonly but not currently enabled minor-modes.
+;; This package implements a menu that lists enabled minor-modes, as well as
+;; commonly but not currently enabled minor-modes.
 ;; https://github.com/tarsius/minions
 (use-package minions
   :ensure t
@@ -1119,10 +1157,9 @@
 (use-package recentf
   :ensure t
   :config
-  (progn
-    (setq recentf-save-file (concat user-emacs-directory ".recentf"))
-    (recentf-mode 1)
-    (setq recentf-max-menu-items 200)))
+  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
+  (recentf-mode 1)
+  (setq recentf-max-menu-items 200))
 
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
@@ -1136,20 +1173,55 @@
 
 (setq sgml-quick-keys 'close)
 
-;; These customizations change the way emacs looks and disable/enable
-;; some user interface elements
-(load "ui.el")
 
 ;; For editing lisps
 (load "elisp-editing.el")
 
-;; Language-specific
-(load "setup-clojure.el")
+;; Show line numbers
+(global-display-line-numbers-mode)
+(column-number-mode)
+
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+
+(menu-bar-mode 1)
+;; increase font size for better readability
+(set-face-attribute 'default nil :height 140)
+(setq initial-frame-alist '((top . 0) (left . 0) (width . 177) (height . 53)))
+
+;; These settings relate to how emacs interacts with your operating system
+(setq ;; makes killing/yanking interact with the clipboard
+      ;; I'm actually not sure what this does but it's recommended?
+      select-enable-primary t
+
+      ;; Save clipboard strings into kill ring before replacing them.
+      ;; When one selects something in another program to paste it into Emacs,
+      ;; but kills something in Emacs before actually pasting it,
+      ;; this selection is gone unless this variable is non-nil
+      save-interprogram-paste-before-kill t
+
+      ;; Shows all options when running apropos. For more info,
+      ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Apropos.html
+      apropos-do-all t
+
+      ;; Mouse yank commands yank at point instead of at click.
+      mouse-yank-at-point t)
+
+;; No cursor blinking, it's distracting
+(blink-cursor-mode 0)
+
+;; Full path in title bar
+(setq-default frame-title-format "Emacs %b (%f)")
+
+;; don't pop up font menu
+(global-set-key (kbd "s-t") '(lambda () (interactive)))
+
+;; no bell
+(setq ring-bell-function 'ignore)
 
 
 (show-paren-mode 1)
 
-;; (add-to-list 'pretty-lambda-auto-modes 'geiser-repl-mode)
 (pretty-lambda-for-modes)
 
 (dolist (mode pretty-lambda-auto-modes)
@@ -1194,8 +1266,8 @@
 (defun die-tabs ()
   "Replace all tabs in buffer with spaces."
   (interactive)
-  (set-variable 'tab-width 4)
   (mark-whole-buffer)
+  (set-variable 'tab-width 4)
   (untabify (region-beginning) (region-end))
   (keyboard-quit))
 
