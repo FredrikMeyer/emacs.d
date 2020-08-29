@@ -19,10 +19,6 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
-;; Go straight to scratch buffer on startup
-(setq inhibit-startup-message t)
-
-
 ;; No need for ~ files when editing
 (setq create-lockfiles nil)
 
@@ -39,8 +35,7 @@
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
-      calendar-week-start-day 1
-      )
+      calendar-week-start-day 1)
 
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -1184,7 +1179,6 @@
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
-(menu-bar-mode 1)
 ;; increase font size for better readability
 (set-face-attribute 'default nil :height 140)
 (setq initial-frame-alist '((top . 0) (left . 0) (width . 177) (height . 53)))
