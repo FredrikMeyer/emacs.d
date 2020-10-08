@@ -71,6 +71,9 @@ eclipse.jdt.ls/
 bookmarks
 smex-items
 transient/
+forge-database.sqlite
+org-clock-save.el
+
 
 
 #Multiple cursors
@@ -80,3 +83,4 @@ transient/
 
 #Mac stuff
 .DS_STORE
+

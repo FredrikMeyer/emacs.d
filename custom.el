@@ -52,7 +52,7 @@
      ("s" . "src")
      ("v" . "verse")))
  '(package-selected-packages
-   '(lsp-ui python-pytest flycheck-pycheckers esup benchmark-init pdf-tools org-pdftools pdftools leuven-theme dockerfile-mode lsp-mode elpy paredit-everywhere paredit-everywhere-mode org-plus-contrib web-mode company-box smartparens dimmer indium company-tern tern json-navigator yaml-mode dashboard doom-modeline anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key use-package htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider))
+   '(swiper plantuml-mode csharp-mode vue-mode typescript wakatime-mode dap-mode forge io-mode quelpa-use-package quelpa julia-mode org-plus-contrib use-package-ensure-system-package use-package dap-java doom-modeline lsp-ui lsp-mode python-pytest flycheck-pycheckers esup benchmark-init pdf-tools org-pdftools pdftools leuven-theme dockerfile-mode elpy paredit-everywhere paredit-everywhere-mode web-mode company-box smartparens dimmer indium company-tern tern json-navigator yaml-mode dashboard anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot clj-refactor engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
  '(python-shell-exec-path '("python3"))
@@ -87,6 +87,32 @@
      (340 . "#2c879008c736")
      (360 . "#268bd2")))
  '(vc-annotate-very-old-color nil)
+ '(vue-modes
+   '((:type template :name nil :mode vue-html-mode)
+     (:type template :name html :mode vue-html-mode)
+     (:type template :name jade :mode jade-mode)
+     (:type template :name pug :mode pug-mode)
+     (:type template :name slm :mode slim-mode)
+     (:type template :name slim :mode slim-mode)
+     (:type script :name nil :mode js-mode)
+     (:type script :name js :mode js-mode)
+     (:type script :name es6 :mode js-mode)
+     (:type script :name babel :mode js-mode)
+     (:type script :name coffee :mode coffee-mode)
+     (:type script :name ts :mode typescript-mode)
+     (:type script :name typescript :mode typescript-mode)
+     (:type script :name tsx :mode typescript-tsx-mode)
+     (:type style :name nil :mode css-mode)
+     (:type style :name css :mode css-mode)
+     (:type style :name stylus :mode stylus-mode)
+     (:type style :name less :mode less-css-mode)
+     (:type style :name postcss :mode css-mode)
+     (:type style :name scss :mode css-mode)
+     (:type style :name sass :mode ssass-mode)
+     (:type i18n :name nil :mode json-mode)
+     (:type i18n :name json :mode json-mode)
+     (:type i18n :name yaml :mode yaml-mode)))
+ '(web-mode-code-indent-offset 2)
  '(weechat-color-list
    '(unspecified "#fdf6e3" "#eee8d5" "#a7020a" "#dc322f" "#5b7300" "#859900" "#866300" "#b58900" "#0061a8" "#268bd2" "#a00559" "#d33682" "#007d76" "#2aa198" "#657b83" "#839496"))
  '(xterm-color-names
@@ -100,4 +126,5 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(aw-leading-char-face ((t (:foreground "red" :height 2.9)))))
+ '(aw-leading-char-face ((t (:foreground "red" :height 2.9))))
+ '(whitespace-empty ((t (:background "selectedTextBackgroundColor" :foreground "firebrick")))))

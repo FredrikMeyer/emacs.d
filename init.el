@@ -5,7 +5,9 @@
 
 ;;; Code:
 
-(toggle-debug-on-error t)
+;; (byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
+
+(toggle-debug-on-error 1)
 (server-start)
 
 (setq lexical-binding t)
@@ -18,18 +20,28 @@
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
 
 ;; No need for ~ files when editing
-(setq create-lockfiles nil)
-
+(setq create-lockfiles nil
+      auto-save-default nil
+      create-lockfiles nil)
+(setq default-directory (concat (getenv "HOME") "/"))
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
+
+(unbind-key "C-z") ;; unbind the very annoying suspend-frame
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
       select-enable-clipboard t)
 
+(set-frame-font "Menlo-14")
 ;; Removes tool-bar
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
@@ -40,18 +52,20 @@
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
 
+
+(setq auth-source-debug 'trivia)
 ;; EDITING
 
 ;; Highlights matching parenthesis
 (show-paren-mode 1)
 (global-hl-line-mode 1)
+(delete-selection-mode 1)
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
-
 (setq-default show-trailing-whitespace 't)
 (setq-default indicate-empty-lines 't)
-
+(setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
 ;; HippieExpand: M-n for å fullføre noe
 ;; http://www.emacswiki.org/emacs/HippieExpand
 (setq hippie-expand-try-functions-list
@@ -69,7 +83,7 @@
 
 ;; Define package repositories
 (require 'package)
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+;; (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (package-initialize)
 
 (setq package-enable-at-startup nil)
@@ -96,6 +110,25 @@
 	(package-refresh-contents)
 	(package-install 'use-package))
 
+(setq use-package-compute-statistics t)
+
+;; Sets up exec-path-from shell
+;; https://github.com/purcell/exec-path-from-shell
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns x))
+  :ensure t
+  :config
+  (setq exec-path-from-shell-arguments nil)
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs
+   '("PATH")))
+
+(use-package system-packages
+  :ensure t)
+
+(use-package use-package-ensure-system-package
+  :ensure t)
+
 (use-package benchmark-init
   :disabled
   :ensure t
@@ -109,22 +142,35 @@
   :pin melpa-stable
   :commands (esup))
 
+(use-package io-mode
+  :mode "\\.io$"
+  :ensure t)
+
 (use-package try
   :ensure t)
 
 (use-package which-key
-             :ensure t
-             :config
-             (which-key-mode))
-
-(use-package expand-region
   :ensure t
   :config
-  (global-set-key (kbd "C-=") 'er/expand-region))
+  (which-key-mode)
+  (which-key-setup-side-window-bottom))
+
+;; https://github.com/magnars/expand-region.le
+(use-package expand-region
+  :ensure t
+  :bind ("C-=" . 'er/expand-region))
+
+;; https://github.com/wakatime/wakatime-mode
+;; See ~/.wakatime.cfg
+(use-package wakatime-mode
+  :ensure t
+  :hook (prog-mode global-wakatime)
+  :config
+  ;; Running on my Raspberry Pi
+  (setq wakatime-api-key "c1af0bcd-9cfc-495a-ba27-2f66f5c308ef"))
 
 (use-package flycheck
   :ensure t
-  :after (add-node-modules-path)
   :config
   (global-flycheck-mode)
 
@@ -137,20 +183,19 @@
 (use-package flycheck-flow
   :ensure t)
 
-
 ;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
 (defun eslint-fix-file ()
   "Run eslint fix current file."
   (interactive)
-  (message "yarn eslinteslint --fixing the file" (buffer-file-name))
-  (shell-command (concat "yarn eslint --fix " (buffer-file-name))))
+  (message "Running npm run lint:fix --fixing the file %s" (buffer-file-name))
+  (shell-command (concat "npm run lint:fix" (buffer-file-name))))
 
 (defun eslint-fix-file-and-revert ()
+  "Run eslint on current buffer."
   (interactive)
   (eslint-fix-file)
   (revert-buffer t t))
 
-(setq js2-strict-missing-semi-warning nil)
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
   :ensure t
@@ -169,8 +214,7 @@
 
 (use-package paredit-everywhere
   :ensure t
-  :config
-  (add-hook 'prog-mode-hook 'paredit-everywhere-mode))
+  :hook (prog-mode . paredit-everywhere-mode))
 
 (use-package flycheck-clj-kondo
   :ensure t
@@ -180,21 +224,19 @@
 ;; https://github.com/clojure-emacs/clojure-mode
 (use-package clojure-mode
   :ensure t
+  :mode "\\.edn$"
+  :mode "\\.boot$"
+  :mode "\\.clj$"
+  :hook ((clojure-mode . subword-mode) ;; For Java class names
+         (clojure-mode . electric-indent-mode)
+         (clojure-mode . electric-pair-mode)
+         (clojure-mode . paredit-mode))
   :config
   (require 'flycheck-clj-kondo)
   ;; Enable paredit for Clojure
-  (add-hook 'clojure-mode-hook 'enable-paredit-mode)
-  :config
-  ;; Java classes (e.g. JavaClassName)
-  (add-hook 'clojure-mode-hook 'subword-mode)
-  (add-hook 'clojure-mode-hook 'electric-indent-mode)
-  (add-hook 'clojure-mode-hook 'electric-pair-mode)
-
-  (add-to-list 'auto-mode-alist '("\\.edn$" . clojure-mode))
-  (add-to-list 'auto-mode-alist '("\\.boot$" . clojure-mode))
+  ;; (add-hook 'clojure-mode-hook 'enable-paredit-mode)
   (add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojurescript-mode))
-  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode))
-  )
+  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode)))
 
 ;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
@@ -247,17 +289,18 @@
   (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
   (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
   (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
-  (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)
-  )
+  (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns))
 
 (use-package clj-refactor
   :ensure t
+  :hook (clojure-mode . clj-refactor)
   :config
   (add-hook 'clojure-mode-hook
             (lambda ()
-              (clj-refactor-mode 1)
-              (yas-minor-mode 1)
               (cljr-add-keybindings-with-prefix "C-c C-m"))))
+
+(use-package prolog-mode
+  :mode "\\.pl$")
 
 (use-package restclient
   :ensure t)
@@ -270,14 +313,14 @@
 ;; https://github.com/wasamasa/eyebrowse
 (use-package eyebrowse
   :ensure t
-  :config (progn
-            (define-key eyebrowse-mode-map (kbd "M-1") 'eyebrowse-switch-to-window-config-1)
-            (define-key eyebrowse-mode-map (kbd "M-2") 'eyebrowse-switch-to-window-config-2)
-            (define-key eyebrowse-mode-map (kbd "M-3") 'eyebrowse-switch-to-window-config-3)
-            (define-key eyebrowse-mode-map (kbd "M-4") 'eyebrowse-switch-to-window-config-4)
-            (eyebrowse-mode t)
-            (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
-            (setq eyebrowse-new-workspace t)))
+  :config
+  (define-key eyebrowse-mode-map (kbd "M-1") 'eyebrowse-switch-to-window-config-1)
+  (define-key eyebrowse-mode-map (kbd "M-2") 'eyebrowse-switch-to-window-config-2)
+  (define-key eyebrowse-mode-map (kbd "M-3") 'eyebrowse-switch-to-window-config-3)
+  (define-key eyebrowse-mode-map (kbd "M-4") 'eyebrowse-switch-to-window-config-4)
+  (eyebrowse-mode t)
+  (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
+  (setq eyebrowse-new-workspace t))
 
 (use-package windmove
   :ensure t
@@ -330,12 +373,10 @@
 	 ("M-x" . counsel-M-x)
 	 ("C-x C-f" . counsel-find-file))
   :config
-  (progn
-    (ivy-mode 1)
-    (setq ivy-use-virtual-buffers t)
-    (setq ivy-display-style 'fancy)
-    (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
-    ))
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-display-style 'fancy)
+  (define-key read-expression-map (kbd "C-r") 'counsel-expression-history))
 
 ;; https://github.com/asok/all-the-icons-ivy
 (use-package all-the-icons-ivy
@@ -376,7 +417,7 @@
 (use-package smart-hungry-delete
   :ensure t
   :bind (("<backspace>" . smart-hungry-delete-backward-char)
-		 ("C-d" . smart-hungry-delete-forward-char))
+	 ("C-d" . smart-hungry-delete-forward-char))
   :defer nil ;; dont defer so we can add our functions to hooks
   :config (smart-hungry-delete-add-default-hooks))
 
@@ -408,6 +449,7 @@
 ;; https://github.com/dajva/rg.el
 (use-package rg
   :ensure t
+  :ensure-system-package (rg . ripgrep)
   :config
   (rg-enable-default-bindings)
   (setq rg-executable "/usr/local/bin/rg"))
@@ -468,14 +510,21 @@
 
 (use-package magit
   :ensure t
+  :bind (("C-x g" . magit-status)
+         ("C-x C-g" . magit-list-repositories)
+         ("C-x C-S-B" . magit-blame-addition))
   :config
-  (global-set-key (kbd "C-x g") 'magit-status)
-  (global-set-key (kbd "C-x C-g") 'magit-list-repositories)
-  (global-set-key (kbd "C-x C-S-B") 'magit-blame-addition)
   (setq magit-repository-directories
         `(("~/code" . 1)
           (,user-emacs-directory . 1)))
   (setq magit-list-refs-sortby "-creatordate"))
+
+
+(use-package forge
+  :ensure t
+  :after magit
+  :config
+  (setq forge-topic-list-order '(number . >)))
 
 ;; https://github.com/syohex/emacs-git-messenger
 (use-package git-messenger
@@ -495,6 +544,8 @@
   :ensure org-plus-contrib
   :pin org
   :config
+  (org-clock-persistence-insinuate)
+  (setq org-clock-persist t)
   (add-hook 'org-mode-hook (lambda ()
                              (visual-line-mode t)
                              (auto-save-mode t)
@@ -520,6 +571,7 @@
   (global-set-key (kbd "C-c c") 'org-capture)
   (setq org-capture-templates '(
                                 ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
+                                ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
                                 ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
                                "* TODO %?\n%U" :empty-lines 1)))
   (require 'org-tempo)
@@ -556,7 +608,8 @@
   :config
   (add-hook 'after-init-hook 'global-company-mode)
   ;; Don't set this to 0 if you want yasnippet to work well.
-  (setq company-idle-delay 0.5)
+  (setq company-idle-delay 0.1)
+  (setq company-minimum-prefix-length 2)
   (setq company-dabbrev-downcase nil)
   (add-to-list 'company-backends 'company-flow))
 
@@ -575,51 +628,91 @@
 
 (use-package web-mode
   :ensure t
-  :after (add-node-modules-path flycheck)
+  :after (add-node-modules-path)
+  :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
+  :mode "\\.tsx?$\\'"
   :config
-  (setq web-mode-indentation-params '("lineup-calls" . nil))
-  (add-to-list 'auto-mode-alist '("\\.[t|j]sx?$" . web-mode)) ;; auto-enable for .js/.jsx files
-
+  (setq web-mode-indentation-params '("lineup-calls" . 1))
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
-  (add-to-list 'auto-mode-alist '("\\.tsx?$\\'" . web-mode))
   (add-hook 'web-mode-hook (lambda ()
-                             (progn ;;(tern-mode)
-                               (tide-setup)
-                               (tide-hl-identifier-mode t)
-                               (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
-                               (flycheck-mode 1)
-                               (if (string= (file-name-extension buffer-file-name) "ts")
-                                   (flycheck-add-mode 'typescript-tide 'web-mode))
-                               (if (and (locate-dominating-file default-directory ".prettier.rc") (string= (file-name-extension buffer-file-name) "ts"))
-                                   (prettier-js-mode 1)
-                                 ;; (add-hook 'before-save-hook 'tide-format-before-save)
-                                 )
-                               (electric-indent-mode t)
+                             (tide-setup)
+                             (tide-hl-identifier-mode t)
+                             (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
+                             (flycheck-mode nil) ;; outcomment bc of all the Vue...
+                             (yas-activate-extra-mode 'js2-mode)
+                             (if (string= (file-name-extension buffer-file-name) "ts")
+                                 (flycheck-add-mode 'typescript-tide 'web-mode))
+                             (if (and (locate-dominating-file default-directory ".prettier.rc") (string= (file-name-extension buffer-file-name) "ts"))
+                                 (prettier-js-mode 1)
+                               ;; (add-hook 'before-save-hook 'tide-format-before-save)
+                               )
+                             (electric-indent-mode nil)
                                ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
-                               (electric-pair-mode t))))
+
+                             (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
+
+
+
+(use-package typescript
+  :ensure t
+  :config
+  (add-hook 'vue-mode-hook #'setup-vue-with-ts)
+)
 
 (use-package tide
   :ensure t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . flycheck-mode)
-         (typescript-mode . tide-hl-identifier-mode)))
-         ;; (before-save . tide-formater-before-save)))
+  :config)
+;; (before-save . tide-formater-before-save))
+
+(use-package plantuml-mode
+  :ensure t
+  :config
+  (setq plantuml-executable-path "/usr/local/bin/plantuml")
+  (setq plantuml-default-exec-mode 'executable))
+
+(use-package rust-mode
+  :ensure t
+  :mode "\\.rs\\'"
+  :config
+  (setq lsp-rust-rls-server-command "/Users/fredrikmeyer/.cargo/bin/rls")
+  (add-hook 'rust-mode-hook #'lsp))
+
+(defun setup-vue-with-ts ()
+  (interactive)
+  "Setup vue"
+  ;; (if (locate-dominating-file default-directory "tsconfig.json")
+      ;; (setq tide-project-root (locate-dominating-file default-directory "tsconfig.json")))
+  (tide-setup)
+  (eldoc-mode +1)
+  (flycheck-mode 0)
+  (tide-hl-identifier-mode t))
+
+(use-package vue-mode
+  :ensure t
+  :mode "\\.vue\\'"
+  :config
+  (setq mmm-typescript-mode-submode-hook #'setup-vue-with-ts)
+  (set-face-background 'mmm-default-submode-face nil)
+  (add-hook 'vue-mode-hook (lambda () (tide-setup)))
+  ;; (add-hook 'vue-mode-hook (electric-pair-mode -1))
+  ;; (add-hook 'vue-mode-hook (lambda () (electric-indent-mode -1)))
+  )
 
 (use-package smartparens
   :ensure t
+  :hook ((web-mode . smartparens-mode)
+         (python-mode . smartparens-mode))
   :config
-  (require 'smartparens-config)
-  (add-hook 'web-mode-hook #'smartparens-mode))
+  (require 'smartparens-config))
 
+;; https://elpa.gnu.org/packages/sml-mode.html
 (use-package sml-mode
   :ensure t)
 
 (use-package flow-minor-mode
   :ensure t
-  :config
-  (add-hook 'web-mode-hook 'flow-minor-enable-automatically))
+  :hook (web-mode . flow-minor-enable-automatically))
 
 (use-package add-node-modules-path
   :ensure t)
@@ -629,6 +722,7 @@
   :ensure t
   :config
   (setq-default indent-tabs-mode nil)
+  (setq js2-strict-missing-semi-warning nil)
   (add-hook 'js-mode-hook 'js2-minor-mode)
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (add-hook 'js-mode-hook 'electric-pair-mode)
@@ -638,29 +732,27 @@
   :ensure t)
 
 (use-package company-tabnine
-  ;; :disabled
   :ensure t
   :config
-  (add-hook 'python-mode-hook '(lambda ()
-                                 (add-to-list (make-local-variable 'company-backends) #'company-tabnine))))
-  ;; (add-to-list 'company-backends #'company-tabnine))
+  (add-hook 'python-mode-hook
+            '(lambda ()
+               (add-to-list (make-local-variable 'company-backends) #'company-tabnine))))
+
 
 (use-package company-tern
   :ensure t
   :after tern
-  :config
+  :init
   (add-hook 'js2-mode-hook (lambda ()
                              (add-to-list (make-local-variable 'company-backends)
-                                          '(company-tern company-dabbrev))))
-  (add-hook 'js2-mode-hook (lambda ()
+                                          '(company-tern company-dabbrev))
                              (setq company-idle-delay 0)
                              (tern-mode t)
                              (company-mode))))
 
 (use-package glsl-mode
   :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("\\.glsl\\'" . glsl-mode)))
+  :mode "\\.glsl\\'")
 
 (use-package elm-mode
   :ensure t
@@ -682,6 +774,7 @@
 (use-package elm-yasnippets
   :ensure t)
 
+;; Common Lisp
 (use-package slime
   :disabled
   :ensure t
@@ -693,24 +786,21 @@
 
 ;; Ruby
 (use-package ruby-mode
-  :ensure t
-  :config
-  (add-hook 'ruby-mode-hook 'ruby-electric-mode))
+  :ensure t)
 
 (use-package ruby-electric
-  :ensure t)
+  :ensure t
+  :hook ruby-mode)
 
 ;; https://github.com/JoshCheek/seeing_is_believing
 ;; https://github.com/jcinnamond/seeing-is-believing
 (use-package seeing-is-believing
   :ensure t
-  :config
-  (add-hook 'ruby-mode-hook 'seeing-is-believing))
+  :hook ruby-mode)
 
 (use-package inf-ruby
   :ensure t
-  :config
-  (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode))
+  :hook (ruby-mode . inf-ruby-minor-mode))
 
 ;; Haskell
 (use-package haskell-mode
@@ -723,12 +813,6 @@
               (set (make-local-variable 'company-backends)
                    (append '((company-capf company-dabbrev-code))
                            company-backends)))))
-
-(use-package intero
-  :ensure t
-  :disabled
-  :config
-  (add-hook 'haskell-mode-hook 'intero-mode))
 
 ;; Go
 (use-package go-mode
@@ -788,7 +872,8 @@
   ;; Set correct Python interpreter
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))))
+                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3"))
+                (setq dap-python-executable (concat pyvenv-virtual-env "bin/python3")))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
                 (setq python-shell-interpreter "python3")))))
@@ -798,16 +883,14 @@
 
 (use-package dockerfile-mode
   :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+  :mode "Dockerfile\\'")
 
 (use-package minimap
   :ensure t
+  :bind ("C-x w" . minimap-mode)
   :config
   (setq minimap-window-location 'right)
-  (setq minimap-automatically-delete-window nil)
-  :config
-  (global-set-key (kbd "C-x w") 'minimap-mode))
+  (setq minimap-automatically-delete-window nil))
 
 
 (use-package markdown-mode
@@ -829,6 +912,7 @@
 
 (use-package pdf-tools
   ;; :load-path "pdf-tools"
+  :disabled ;; takes a lot of startup time
   :pin manual
   :config
   (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
@@ -853,6 +937,11 @@
   :init (setq lsp-keymap-prefix "C-c l")
   :config
   (local-set-key (kbd "M-.") 'lsp-find-definition)
+  (setq lsp-modeline-code-actions-segments '(count icon name))
+
+  ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq gc-cons-threshold 100000000)
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (add-hook 'python-mode-hook #'lsp)
@@ -876,19 +965,18 @@
   (add-hook 'java-mode-hook 'lsp))
 
 (use-package dap-mode
-  :disabled t
+  ;; :disabled t
   :ensure t :after lsp-mode
   :config
   (dap-mode t)
   (dap-ui-mode t)
   ;; Maybe solves it...
   (dap-tooltip-mode -1)
+  (require 'dap-python)
+  ; should fix it also
+;  (dap-enable-mouse-support nil)
   ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
   )
-
-(use-package dap-java
-  :after (lsp-java))
-
 
 ;; LATEX
 
@@ -924,8 +1012,7 @@
 ;; https://github.com/abo-abo/ace-window
 (use-package ace-window
   :ensure t
-  :config
-  (global-set-key (kbd "M-o") 'ace-window))
+  :bind (("M-o" . ace-window)))
 
 (use-package spacemacs-common
   :ensure spacemacs-theme
@@ -954,10 +1041,10 @@
 ;; https://emacsredux.com/blog/2013/05/31/highlight-lines-that-exceed-a-certain-length-limit/
 (use-package whitespace
   :ensure t
+  :hook (prog-mode . whitespace-mode)
   :config
   (setq whitespace-line-column 80)
-  (setq whitespace-style '(face lines-tail))
-  (add-hook 'prog-mode-hook 'whitespace-mode))
+  (setq whitespace-style '(face lines-tail)))
 
 ;; This package implements a menu that lists enabled minor-modes, as well as
 ;; commonly but not currently enabled minor-modes.
@@ -969,11 +1056,12 @@
 ;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
   :ensure t
-  :defer t
+  :defer 3
   :hook (prog-mode . yas-global-mode))
 
 (use-package yasnippet-snippets
-  :ensure t)
+  :ensure t
+  :after yasnippet)
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
@@ -1002,6 +1090,7 @@
           ("http://www.jeffgeerling.com/blog.xml" raspberry blog)
           ("https://jvns.ca/atom.xml" blog)
           ("https://aws.amazon.com/blogs/opensource/feed/" aws blog)
+          ("http://www.realtimerendering.com/blog/feed/" blog graphics)
           )))
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
@@ -1012,7 +1101,7 @@
   (setq dashboard-set-heading-icons t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-items '((recents  . 5)
-                          (projects . 5)
+                          (projects . 10)
                           (bookmarks . 5)
                           (agenda . 5))))
 
@@ -1034,26 +1123,6 @@
   (setq dimmer-fraction 0.3) ;; Originally 0.2
   (dimmer-mode t))
 
-;; On OS X, an Emacs instance started from the graphical user
-;; interface will have a different environment than a shell in a
-;; terminal window, because OS X does not run a shell during the
-;; login. Obviously this will lead to unexpected results when
-;; calling external utilities like make from Emacs.
-;; This library works around this problem by copying important
-;; environment variables from the user's shell.
-;; https://github.com/purcell/exec-path-from-shell
-
-(if (eq system-type 'darwin)
-    (use-package exec-path-from-shell
-      :ensure t))
-
-;; Sets up exec-path-from shell
-;; https://github.com/purcell/exec-path-from-shell
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-envs
-   '("PATH")))
-
 ;; https://www.emacswiki.org/emacs/WinnerMode
 ;; Winner Mode is a global minor mode. When activated, it allows you to “undo” (and “redo”) changes in the window configuration with the key commands ‘C-c left’ and ‘C-c right’
 ;; (winner-mode) Disabled, since I don't use this.
@@ -1071,24 +1140,26 @@
   (add-hook 'yaml-mode-hook
             (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent))))
 
+(use-package julia-mode
+  :ensure t)
+
+(use-package csharp-mode
+  :ensure t)
+
 (use-package dired-subtree
   :ensure t
   :after dired
+  :bind (:map dired-mode-map
+              ("i" . dired-subtree-insert)
+              (";" . dired-subtree-remove)
+              ("<tab>" . dired-subtree-toggle))
   :config
-  (setq dired-subtree-use-backgrounds nil)
-  (bind-key "<tab>" 'dired-subtree-toggle dired-mode-map))
+  (setq dired-subtree-use-backgrounds nil))
 
+;; Se på https://github.com/purcell/ibuffer-projectile?
 (use-package ibuffer
   :bind ("C-x C-b" . ibuffer))
 
-(use-package ibuffer-projectile
-  :hook (ibuffer . ibuffer-projectile-init)
-  :commands ibuffer-projectile-init
-  :config
-  (defun ibuffer-projectile-init()
-    (ibuffer-projectile-set-filter-groups)
-    (unless (eq ibuffer-sorting-mode 'alphabetic)
-      (ibuffer-do-sort-by-alphabetic))))
 
 ;; Shows a list of buffers
 (defalias 'list-buffers  'ibuffer)
@@ -1130,12 +1201,6 @@
 ;; https://www.emacswiki.org/emacs/AutoIndentation
 (electric-indent-mode 1)
 
-;; Add a directory to our load path so that when you `load` things
-;; below, Emacs knows where to look for the corresponding file.
-(add-to-list 'load-path "~/.emacs.d/customizations")
-
-
-
 ;; "When several buffers visit identically-named files,
 ;; Emacs must give the buffers distinct names. The usual method
 ;; for making buffer names unique adds ‘<2>’, ‘<3>’, etc. to the end
@@ -1144,8 +1209,9 @@
 ;; name at the beginning of the buffer name
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
 
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward)
+(use-package uniquify
+  :config
+  (setq uniquify-buffer-name-style 'forward))
 
 ;; Turn on recent file mode so that you can more easily switch to
 ;; recently edited files when you first start emacs
@@ -1154,6 +1220,7 @@
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
   (recentf-mode 1)
+  (setq recentf-max-saved-items 50)
   (setq recentf-max-menu-items 200))
 
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -1165,16 +1232,32 @@
 (setq-default sh-basic-offset 2)
 (setq-default sh-indentation 2)
 
+;; (setq system-uses-terminfo nil)
+
 
 (setq sgml-quick-keys 'close)
 
 
-;; For editing lisps
-(load "elisp-editing.el")
+;; Automatically load paredit when editing a lisp file
+;; More at http://www.emacswiki.org/emacs/ParEdit
+(autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t)
+(add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+(add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+(add-hook 'ielm-mode-hook             #'enable-paredit-mode)
+(add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+(add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+(add-hook 'scheme-mode-hook           #'enable-paredit-mode)
+
+;; eldoc-mode shows documentation in the minibuffer when writing code
+;; http://www.emacswiki.org/emacs/ElDoc
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
+
 
 ;; Show line numbers
-(global-display-line-numbers-mode)
-(column-number-mode)
+(global-display-line-numbers-mode 1)
+(column-number-mode 1)
 
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
@@ -1225,32 +1308,32 @@
 
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
-(setq auto-save-default nil)
 
 
-;;;;;;;;;; Oz
 
-(or (getenv "OZHOME")
-    (setenv "OZHOME" 
-            "/Applications/Mozart2.app/Contents/Resources/"))   ; or wherever Mozart is installed
-(setenv "PATH" (concat (getenv "OZHOME") "/bin:" (getenv "PATH")))
- 
-(setq load-path (cons (concat (getenv "OZHOME") "/share/mozart/elisp")
-                      load-path))
- 
-(setq auto-mode-alist 
-      (append '(("\\.oz\\'" . oz-mode)
-                ("\\.ozg\\'" . oz-gump-mode))
-              auto-mode-alist))
- 
-(autoload 'run-oz "oz" "" t)
-(autoload 'oz-mode "oz" "" t)
-(autoload 'oz-gump-mode "oz" "" t)
-(autoload 'oz-new-buffer "oz" "" t)
-(add-hook 'oz-mode-hook 'electric-pair-mode 'electric-indent-mode)
+;;;;;;;;;; Oz mode
+
+;; (or (getenv "OZHOME")
+;;     (setenv "OZHOME"
+;;             "/Applications/Mozart2.app/Contents/Resources/"))   ; or wherever Mozart is installed
+;; (setenv "PATH" (concat (getenv "OZHOME") "/bin:" (getenv "PATH")))
+
+;; (setq load-path (cons (concat (getenv "OZHOME") "/share/mozart/elisp")
+;;                       load-path))
+
+;; (setq auto-mode-alist
+;;       (append '(("\\.oz\\'" . oz-mode)
+;;                 ("\\.ozg\\'" . oz-gump-mode))
+;;               auto-mode-alist))
+
+;; (autoload 'run-oz "oz" "" t)
+;; (autoload 'oz-mode "oz" "" t)
+;; (autoload 'oz-gump-mode "oz" "" t)
+;; (autoload 'oz-new-buffer "oz" "" t)
+;; (add-hook 'oz-mode-hook 'electric-pair-mode 'electric-indent-mode)
 
 
-;;;; Useful functions 
+;;;; Useful functions
 
 (defun insert-current-date ()
   "Insert current date."
