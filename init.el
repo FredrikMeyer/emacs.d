@@ -8,12 +8,15 @@
 ;; (byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
 
 (toggle-debug-on-error 1)
-(server-start)
+;; Less in the end of this file
+(setq gc-cons-threshold (* 50 1000 1000))
 
 (setq lexical-binding t)
 
 (setq user-full-name "Fredrik Meyer"
       user-mail-address "hrmeyer@gmail.com")
+
+
 
 (setq ns-pop-up-frames nil)
 (prefer-coding-system 'utf-8)
@@ -47,6 +50,7 @@
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
+      use-dialog-box nil
       calendar-week-start-day 1)
 
 ;; Changes all yes/no questions to y/n type
@@ -123,6 +127,11 @@
   (exec-path-from-shell-copy-envs
    '("PATH")))
 
+(use-package server
+  :defer 2
+  :config
+  (server-start))
+
 (use-package system-packages
   :ensure t)
 
@@ -138,15 +147,23 @@
 
 (use-package esup
   :ensure t
+  :defer t
   ;; To use MELPA Stable use ":pin mepla-stable",
   :pin melpa-stable
   :commands (esup))
 
 (use-package io-mode
   :mode "\\.io$"
+  :defer t
   :ensure t)
 
+(use-package popwin
+  :ensure t
+  :config
+  (popwin-mode 1))
+
 (use-package try
+  :defer 2
   :ensure t)
 
 (use-package which-key
@@ -163,6 +180,7 @@
 ;; https://github.com/wakatime/wakatime-mode
 ;; See ~/.wakatime.cfg
 (use-package wakatime-mode
+  :defer 1
   :ensure t
   :hook (prog-mode global-wakatime)
   :config
@@ -171,6 +189,7 @@
 
 (use-package flycheck
   :ensure t
+  :defer 1
   :config
   (global-flycheck-mode)
 
@@ -181,6 +200,7 @@
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
 
 (use-package flycheck-flow
+  :defer 2
   :ensure t)
 
 ;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
@@ -198,6 +218,7 @@
 
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 (use-package paredit
+  :defer 2
   :ensure t
   :config
   (dolist (m '(emacs-lisp-mode-hook
@@ -213,16 +234,19 @@
 	       ("M-{" . paredit-wrap-curly))))
 
 (use-package paredit-everywhere
+  :defer 2
   :ensure t
   :hook (prog-mode . paredit-everywhere-mode))
 
 (use-package flycheck-clj-kondo
+  :defer 2
   :ensure t
   :after (flycheck))
 
 ;; key bindings and code colorization for Clojure
 ;; https://github.com/clojure-emacs/clojure-mode
 (use-package clojure-mode
+  :defer 2
   :ensure t
   :mode "\\.edn$"
   :mode "\\.boot$"
@@ -240,12 +264,13 @@
 
 ;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
+  :defer 2
   :ensure t)
 
 ;; Integration with a Clojure REPL
 ;; https://github.com/clojure-emacs/cider
 (use-package cider
-  :ensure t
+  :defer 2
   :config
   ;; provides minibuffer documentation for the code you're typing into the repl
   (add-hook 'cider-mode-hook 'eldoc-mode)
@@ -293,6 +318,7 @@
 
 (use-package clj-refactor
   :ensure t
+  :defer 2
   :hook (clojure-mode . clj-refactor)
   :config
   (add-hook 'clojure-mode-hook
@@ -300,19 +326,22 @@
               (cljr-add-keybindings-with-prefix "C-c C-m"))))
 
 (use-package prolog-mode
+  :defer 2
   :mode "\\.pl$")
 
 (use-package restclient
-  :ensure t)
-
-(dotimes (n 10)
-  (global-unset-key (kbd (format "C-%d" n)))
-  (global-unset-key (kbd (format "M-%d" n)))
-  )
+  :defer 1
+  :ensure t
+  :mode "\\.http$\\'")
 
 ;; https://github.com/wasamasa/eyebrowse
 (use-package eyebrowse
+  :defer 1
   :ensure t
+  :init
+  (dotimes (n 10)
+    (global-unset-key (kbd (format "C-%d" n)))
+    (global-unset-key (kbd (format "M-%d" n))))
   :config
   (define-key eyebrowse-mode-map (kbd "M-1") 'eyebrowse-switch-to-window-config-1)
   (define-key eyebrowse-mode-map (kbd "M-2") 'eyebrowse-switch-to-window-config-2)
@@ -323,6 +352,7 @@
   (setq eyebrowse-new-workspace t))
 
 (use-package windmove
+  :defer 2
   :ensure t
   :config
   (windmove-default-keybindings))
@@ -332,6 +362,7 @@
 ;;   :ensure t)
 
 (use-package smex
+  :defer 1
   :ensure t)
 
 (use-package counsel
@@ -344,6 +375,7 @@
    ("<backspace>" . 'ivy-backward-delete-char)))
 
 (use-package ivy
+  :defer 1
   :ensure t
   :pin melpa
   :diminish (ivy-mode)
@@ -355,6 +387,8 @@
   (setq ivy-count-format "%d/%d ")
   (setq ivy-display-style 'fancy)
   (setq ivy-wrap t)
+  (setq counsel-describe-function-function #'helpful-callable)
+  (setq counsel-describe-variable-function #'helpful-variable)
   ;; Fuzzy matching is the best
   (setq ivy-re-builders-alist
         '((counsel-ag . ivy--regex-plus)
@@ -366,6 +400,7 @@
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) ""))
 
 (use-package swiper
+  :defer 1
   :ensure t
   :bind (("C-s" . swiper-isearch)
 	 ("C-r" . swiper-isearch)
@@ -380,18 +415,21 @@
 
 ;; https://github.com/asok/all-the-icons-ivy
 (use-package all-the-icons-ivy
+  :defer 1
   :ensure t
   :config
   (all-the-icons-ivy-setup))
 
 (use-package ivy-rich
+  :defer 1
   :ensure t
-  :config
   :disabled
+  :config
   (ivy-rich-mode 1))
 
 ;; http://www.emacswiki.org/emacs/SavePlace
 (use-package saveplace
+  :defer 1
   :ensure t
   :config
   (setq-default save-place t)
@@ -400,6 +438,7 @@
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
   :ensure t
+  :defer 2
   :config
   (engine-mode t)
   (defengine github
@@ -416,6 +455,7 @@
 ;; https://github.com/hrehfeld/emacs-smart-hungry-delete
 (use-package smart-hungry-delete
   :ensure t
+  :defer 2
   :bind (("<backspace>" . smart-hungry-delete-backward-char)
 	 ("C-d" . smart-hungry-delete-forward-char))
   :defer nil ;; dont defer so we can add our functions to hooks
@@ -423,6 +463,7 @@
 
 (use-package anzu
   :ensure t
+  :defer 2
   :bind (("C-1" . anzu-query-replace)
          ("C-!" . anzu-query-replace-regexp))
   :config
@@ -430,8 +471,7 @@
 
 (use-package projectile
   :ensure t
-;  :config ;; Use counsel-projectile
-;  (projectile-mode)
+  :defer t
   :config
   (define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -439,15 +479,18 @@
 
 ; https://github.com/ericdanan/counsel-projectile
 (use-package counsel-projectile
+  :defer 1
   :ensure t
   :config
   (counsel-projectile-mode))
 
 (use-package projectile-ripgrep
+  :defer 1
   :ensure t)
 
 ;; https://github.com/dajva/rg.el
 (use-package rg
+  :defer 1
   :ensure t
   :ensure-system-package (rg . ripgrep)
   :config
@@ -455,6 +498,7 @@
   (setq rg-executable "/usr/local/bin/rg"))
 
 (use-package neotree
+  :defer 1
   :ensure t
   :config
   (global-set-key (kbd "C-x t") 'neotree-toggle)
@@ -468,23 +512,28 @@
 
 ;; https://github.com/domtronn/all-the-icons.el
 (use-package all-the-icons
+  :defer 1
   :ensure t)
 
 ;; https://github.com/jtbm37/all-the-icons-dired
 (use-package all-the-icons-dired
+  :defer 1
   :ensure t
   :config
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
 (use-package rainbow-delimiters
+  :defer 1
   :ensure t
   :config
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 
 (use-package geiser
+  :defer 2
   :ensure t)
 
 (use-package ac-geiser
+  :defer 2
   :ensure t)
 
 ;; https://github.com/TeMPOraL/nyan-mode
@@ -498,6 +547,7 @@
 
 ;; lambda
 (use-package pretty-lambdada
+  :defer 1
   :ensure t)
 
 (use-package undo-tree
@@ -510,6 +560,7 @@
 
 (use-package magit
   :ensure t
+  :defer 1
   :bind (("C-x g" . magit-status)
          ("C-x C-g" . magit-list-repositories)
          ("C-x C-S-B" . magit-blame-addition))
@@ -521,6 +572,7 @@
 
 
 (use-package forge
+  :defer 1
   :ensure t
   :after magit
   :config
@@ -528,6 +580,7 @@
 
 ;; https://github.com/syohex/emacs-git-messenger
 (use-package git-messenger
+  :defer 1
   :ensure t
   :bind ("C-c M" . git-messenger:popup-message)
   :config
@@ -536,11 +589,13 @@
 
 ;; https://github.com/nonsequitur/git-gutter-plus
 (use-package git-gutter+
+  :defer 2
   :ensure t
   :config
   (global-git-gutter+-mode))
 
 (use-package org
+  :defer 1
   :ensure org-plus-contrib
   :pin org
   :config
@@ -579,12 +634,14 @@
 
 
 (use-package org-bullets
+  :defer 2
   :ensure t
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
+  :defer 2
   :ensure t)
 
 (global-set-key (kbd "C-c o")
@@ -604,6 +661,7 @@
 
 
 (use-package company
+  :defer 1
   :ensure t
   :config
   (add-hook 'after-init-hook 'global-company-mode)
@@ -614,19 +672,24 @@
   (add-to-list 'company-backends 'company-flow))
 
 (use-package company-box
+  :defer 1
   :ensure t
   :hook (company-mode . company-box-mode))
 
 (use-package company-flow
+  :defer 2
   :ensure t)
 
 (use-package json-mode
+  :defer 2
   :ensure t)
 
 (use-package prettier-js
+  :defer 2
   :ensure t)
 
 (use-package web-mode
+  :defer 1
   :ensure t
   :after (add-node-modules-path)
   :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
@@ -655,23 +718,24 @@
 
 
 (use-package typescript
+  :defer 1
   :ensure t
   :config
-  (add-hook 'vue-mode-hook #'setup-vue-with-ts)
-)
+  (add-hook 'vue-mode-hook #'setup-vue-with-ts))
 
 (use-package tide
-  :ensure t
-  :config)
-;; (before-save . tide-formater-before-save))
+  :defer 1
+  :ensure t)
 
 (use-package plantuml-mode
+  :defer 1
   :ensure t
   :config
   (setq plantuml-executable-path "/usr/local/bin/plantuml")
   (setq plantuml-default-exec-mode 'executable))
 
 (use-package rust-mode
+  :defer 2
   :ensure t
   :mode "\\.rs\\'"
   :config
@@ -681,14 +745,13 @@
 (defun setup-vue-with-ts ()
   (interactive)
   "Setup vue"
-  ;; (if (locate-dominating-file default-directory "tsconfig.json")
-      ;; (setq tide-project-root (locate-dominating-file default-directory "tsconfig.json")))
   (tide-setup)
   (eldoc-mode +1)
   (flycheck-mode 0)
   (tide-hl-identifier-mode t))
 
 (use-package vue-mode
+  :defer 1
   :ensure t
   :mode "\\.vue\\'"
   :config
@@ -701,6 +764,7 @@
 
 (use-package smartparens
   :ensure t
+  :defer 1
   :hook ((web-mode . smartparens-mode)
          (python-mode . smartparens-mode))
   :config
@@ -708,13 +772,17 @@
 
 ;; https://elpa.gnu.org/packages/sml-mode.html
 (use-package sml-mode
+  :defer 2
   :ensure t)
 
 (use-package flow-minor-mode
+  :defer 2
+  :disabled
   :ensure t
   :hook (web-mode . flow-minor-enable-automatically))
 
 (use-package add-node-modules-path
+  :defer 1
   :ensure t)
 
 (use-package js2-mode
@@ -729,9 +797,11 @@
   (add-hook 'js-mode-hook 'electric-indent-mode))
 
 (use-package tern
+  :disabled
   :ensure t)
 
 (use-package company-tabnine
+  :defer 2
   :ensure t
   :config
   (add-hook 'python-mode-hook
@@ -740,6 +810,7 @@
 
 
 (use-package company-tern
+  :defer 1
   :ensure t
   :after tern
   :init
@@ -751,10 +822,12 @@
                              (company-mode))))
 
 (use-package glsl-mode
+  :defer 2
   :ensure t
   :mode "\\.glsl\\'")
 
 (use-package elm-mode
+  :defer 2
   :ensure t
   :config
   (setq-default indent-tabs-mode nil)
@@ -772,6 +845,7 @@
         elm-package-json "elm.json"))
 
 (use-package elm-yasnippets
+  :defer 3
   :ensure t)
 
 ;; Common Lisp
@@ -786,24 +860,29 @@
 
 ;; Ruby
 (use-package ruby-mode
+  :defer 2
   :ensure t)
 
 (use-package ruby-electric
+  :defer 2
   :ensure t
   :hook ruby-mode)
 
 ;; https://github.com/JoshCheek/seeing_is_believing
 ;; https://github.com/jcinnamond/seeing-is-believing
 (use-package seeing-is-believing
+  :defer 2
   :ensure t
   :hook ruby-mode)
 
 (use-package inf-ruby
+  :defer 2
   :ensure t
   :hook (ruby-mode . inf-ruby-minor-mode))
 
 ;; Haskell
 (use-package haskell-mode
+  :defer 2
   :ensure t
   :config
   (add-hook 'haskell-mode-hook 'haskell-mode)
@@ -817,6 +896,7 @@
 ;; Go
 (use-package go-mode
   :ensure t
+  :defer 2
   :config
   (add-hook 'before-save-hook 'gofmt-before-save)
   (if (not (string-match "go" compile-command))
@@ -825,11 +905,11 @@
   (add-hook 'go-mode-hook 'electric-pair-mode)
   (add-hook 'go-mode-hook 'electric-indent-mode)
   (add-hook 'go-mode-hook (lambda ()
-            (setq indent-tabs-mode 1)
             (setq tab-width 4))))
 
 ;; https://www.racket-mode.com
 (use-package racket-mode
+  :defer 2
   :ensure t
   :config
   (setq racket-program "/usr/local/bin/racket")
@@ -853,6 +933,7 @@
     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))))
 
 (use-package flycheck-pycheckers
+  :defer 2 
   :disabled
   :ensure t
   :config
@@ -860,11 +941,13 @@
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
 (use-package python-pytest
+  :defer 2
   :ensure t)
 
 (setq python-shell-interpreter "python3")
 
 (use-package pyvenv
+  :defer 2
   :ensure t
   :config
   (pyvenv-mode t)
@@ -882,18 +965,32 @@
 
 
 (use-package dockerfile-mode
+  :defer 2
   :ensure t
   :mode "Dockerfile\\'")
 
 (use-package minimap
+  :defer 2
   :ensure t
   :bind ("C-x w" . minimap-mode)
   :config
   (setq minimap-window-location 'right)
   (setq minimap-automatically-delete-window nil))
 
+(use-package helpful
+  :defer 2
+  :ensure t
+  :config
+  (global-set-key (kbd "C-h f") #'helpful-callable)
+  (global-set-key (kbd "C-h v") #'helpful-variable)
+  (global-set-key (kbd "C-h k") #'helpful-key)
+  (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+  (global-set-key (kbd "C-h F") #'helpful-function)
+  (global-set-key (kbd "C-h C") #'helpful-command))
+
 
 (use-package markdown-mode
+  :defer 2
   :ensure t
   :mode ("\\.md[x]?$")
   :config
@@ -933,6 +1030,7 @@
 
 
 (use-package lsp-mode
+  :defer 2
   :ensure t
   :init (setq lsp-keymap-prefix "C-c l")
   :config
@@ -953,6 +1051,7 @@
   (lsp-register-custom-settings '(("pyls.plugins.pyls_isort.enabled" t t))))
 
 (use-package lsp-ui
+  :defer 2
   :ensure t
   :config
   (setq lsp-ui-sideline-delay 0.1))
@@ -965,6 +1064,7 @@
   (add-hook 'java-mode-hook 'lsp))
 
 (use-package dap-mode
+  :defer 3
   ;; :disabled t
   :ensure t :after lsp-mode
   :config
@@ -981,6 +1081,7 @@
 ;; LATEX
 
 (use-package company-auctex
+  :defer 2
   :ensure t
   :config
   (add-hook 'latex-mode-hook (company-auctex-init))
@@ -990,6 +1091,7 @@
 ;; Tabs and ribbons for the mode line
 ;; https://github.com/tarsius/moody
 (use-package moody
+  :defer 2
   :ensure t
   :disabled
   :config
@@ -1007,6 +1109,7 @@
 
 ;; https://github.com/johanvts/emacs-fireplace
 (use-package fireplace
+  :defer 2
   :ensure t)
 
 ;; https://github.com/abo-abo/ace-window
@@ -1040,6 +1143,7 @@
 
 ;; https://emacsredux.com/blog/2013/05/31/highlight-lines-that-exceed-a-certain-length-limit/
 (use-package whitespace
+  :defer 2
   :ensure t
   :hook (prog-mode . whitespace-mode)
   :config
@@ -1050,6 +1154,7 @@
 ;; commonly but not currently enabled minor-modes.
 ;; https://github.com/tarsius/minions
 (use-package minions
+  :defer 1
   :ensure t
   :config (minions-mode 1))
 
@@ -1060,11 +1165,13 @@
   :hook (prog-mode . yas-global-mode))
 
 (use-package yasnippet-snippets
+  :defer 3
   :ensure t
   :after yasnippet)
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
+  :defer 1
   :ensure t
   :config
   (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
@@ -1073,6 +1180,7 @@
   (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
 (use-package elfeed
+  :defer 1
   :ensure t
   :init
   (setq elfeed-feeds
@@ -1107,6 +1215,7 @@
 
 ;; https://github.com/gonewest818/dimmer.el
 (use-package dimmer
+  :defer 1
   :ensure t
   :config
   (dimmer-configure-which-key)
@@ -1135,18 +1244,22 @@
 
 ;; Yaml
 (use-package yaml-mode
+  :defer 1
   :ensure t
   :config
   (add-hook 'yaml-mode-hook
             (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent))))
 
 (use-package julia-mode
+  :defer 2
   :ensure t)
 
 (use-package csharp-mode
+  :defer 2
   :ensure t)
 
 (use-package dired-subtree
+  :defer 2
   :ensure t
   :after dired
   :bind (:map dired-mode-map
@@ -1210,12 +1323,14 @@
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
 
 (use-package uniquify
+  :defer 1
   :config
   (setq uniquify-buffer-name-style 'forward))
 
 ;; Turn on recent file mode so that you can more easily switch to
 ;; recently edited files when you first start emacs
 (use-package recentf
+  :defer t
   :ensure t
   :config
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
@@ -1295,6 +1410,7 @@
 
 ;; no bell
 (setq ring-bell-function 'ignore)
+(setq visible-bell t)
 
 
 (show-paren-mode 1)
@@ -1340,6 +1456,12 @@
   (interactive)
   (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
 
+(defun insert-current-date-with-weekday ()
+  "Insert current date with weekday"
+  (interactive)
+  (insert (shell-command-to-string "echo -n $(date +'%Y-%m-%d %A')")))
+
+
 (defun die-tabs ()
   "Replace all tabs in buffer with spaces."
   (interactive)
@@ -1364,5 +1486,7 @@
     (indent-region (point-min) (point-max) nil)))
 (global-set-key [f12] 'indent-buffer)
 
+
+(setq gc-cons-threshold (* 2 1000 1000))
 
 ;;; init.el ends here
