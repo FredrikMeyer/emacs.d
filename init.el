@@ -661,10 +661,11 @@
 
 
 (use-package company
-  :defer 1
+  :defer
   :ensure t
+  :hook (after-init-hook . global-company-mode)
   :config
-  (add-hook 'after-init-hook 'global-company-mode)
+  ;; (add-hook 'after-init-hook 'global-company-mode)
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 2)
