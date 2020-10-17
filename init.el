@@ -202,6 +202,10 @@
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
 
+(use-package flycheck-color-mode-line
+  :ensure t
+  :hook (flycheck-mode . flycheck-color-mode-line-mode))
+
 (use-package flycheck-flow
   :defer 2
   :ensure t)
@@ -665,14 +669,20 @@
 (use-package company
   :defer
   :ensure t
-  :hook (after-init-hook . global-company-mode)
+  :hook (after-init . global-company-mode)
   :config
-  ;; (add-hook 'after-init-hook 'global-company-mode)
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 2)
   (setq company-dabbrev-downcase nil)
   (add-to-list 'company-backends 'company-flow))
+
+(use-package company-quickhelp
+  :after company
+  :ensure t
+  :config
+  (company-quickhelp-mode))
+
 
 ;; https://github.com/sebastiencs/company-box
 (use-package company-box
