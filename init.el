@@ -68,6 +68,9 @@
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
 (setq-default show-trailing-whitespace 't)
+;; Dont show whitespaces in minibuffer
+(add-hook 'minibuffer-setup-hook (lambda () (setq-local show-trailing-whitespace nil)))
+
 (setq-default indicate-empty-lines 't)
 (setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
 ;; HippieExpand: M-n for å fullføre noe
@@ -361,25 +364,35 @@
 ;; (use-package ox-reveal
 ;;   :ensure t)
 
-(use-package smex
-  :defer 1
-  :ensure t)
-
 (use-package counsel
+  :after ivy
   :ensure t
   :bind
   (("M-y" . counsel-yank-pop)
    :map ivy-minibuffer-map
    ("M-y" . ivy-next-line)
+   ("M-x" . counsel-M-x)
    ("RET" . ivy-alt-done)
-   ("<backspace>" . 'ivy-backward-delete-char)))
+   ("C-x C-f" . counsel-find-file)
+   ("C-h v" . counsel-describe-variable)
+   ("C-h f" . counsel-describe-function)
+   ("C-h o" . counsel-describe-symbol)
+   ("<backspace>" . 'ivy-backward-delete-char))
+  :config
+  (counsel-mode)
+  (setq counsel-describe-function-function #'helpful-callable)
+  (setq counsel-describe-variable-function #'helpful-variable)
+  (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) "")
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-expression-history))
 
 (use-package ivy
-  :defer 1
   :ensure t
+  :defer 0.1
   :pin melpa
+  :demand t
   :diminish (ivy-mode)
-  :bind (("C-x b" . ivy-switch-buffer))
+  :bind (("C-c C-r" . ivy-resume)
+         ("C-x b" . ivy-switch-buffer))
   :config
   (ivy-mode 1)
   (setq ivy-use-virtual-buffers t)
@@ -387,8 +400,6 @@
   (setq ivy-count-format "%d/%d ")
   (setq ivy-display-style 'fancy)
   (setq ivy-wrap t)
-  (setq counsel-describe-function-function #'helpful-callable)
-  (setq counsel-describe-variable-function #'helpful-variable)
   ;; Fuzzy matching is the best
   (setq ivy-re-builders-alist
         '((counsel-ag . ivy--regex-plus)
@@ -396,36 +407,27 @@
           (swiper-isearch . ivy--regex-plus)
           (counsel-projectile-find-file . ivy--regex-plus)
           (counsel-M-x . ivy--regex-fuzzy)
-          (t . ivy--regex-plus)))
-  (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) ""))
+          (t . ivy--regex-plus))))
 
 (use-package swiper
-  :defer 1
   :ensure t
+  :after ivy
   :bind (("C-s" . swiper-isearch)
 	 ("C-r" . swiper-isearch)
-	 ("C-c C-r" . ivy-resume)
-	 ("M-x" . counsel-M-x)
-	 ("C-x C-f" . counsel-find-file))
+	 ("C-x C-f" . counsel-find-file)))
+
+;; https://github.com/Yevgnen/ivy-rich
+(use-package ivy-rich
+  :after ivy
+  :hook (counsel-projectile-mode . ivy-rich-mode)
+  :ensure t
   :config
-  (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-display-style 'fancy)
-  (define-key read-expression-map (kbd "C-r") 'counsel-expression-history))
+  (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
 
 ;; https://github.com/asok/all-the-icons-ivy
-(use-package all-the-icons-ivy
-  :defer 1
-  :ensure t
-  :config
-  (all-the-icons-ivy-setup))
-
-(use-package ivy-rich
-  :defer 1
-  :ensure t
-  :disabled
-  :config
-  (ivy-rich-mode 1))
+(use-package all-the-icons-ivy-rich
+  :hook (ivy-mode . all-the-icons-ivy-rich-mode)
+  :ensure t)
 
 ;; http://www.emacswiki.org/emacs/SavePlace
 (use-package saveplace
@@ -672,8 +674,8 @@
   (setq company-dabbrev-downcase nil)
   (add-to-list 'company-backends 'company-flow))
 
+;; https://github.com/sebastiencs/company-box
 (use-package company-box
-  :defer 1
   :ensure t
   :hook (company-mode . company-box-mode))
 
@@ -690,7 +692,6 @@
   :ensure t)
 
 (use-package web-mode
-  :defer 1
   :ensure t
   :after (add-node-modules-path)
   :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
@@ -702,21 +703,23 @@
                              (tide-setup)
                              (tide-hl-identifier-mode t)
                              (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
-                             (flycheck-mode nil) ;; outcomment bc of all the Vue...
+                             (flycheck-mode 1)
                              (yas-activate-extra-mode 'js2-mode)
                              (if (string= (file-name-extension buffer-file-name) "ts")
                                  (flycheck-add-mode 'typescript-tide 'web-mode))
-                             (if (and (locate-dominating-file default-directory ".prettier.rc") (string= (file-name-extension buffer-file-name) "ts"))
-                                 (prettier-js-mode 1)
+                             (when (and (or (locate-dominating-file default-directory ".prettier.rc")
+                                          (locate-dominating-file default-directory ".prettierrc")) (string= (file-name-extension buffer-file-name) "ts"))
+                               (prettier-js-mode 1)
+                               (add-hook 'before-save-hook 'prettier-js)
                                ;; (add-hook 'before-save-hook 'tide-format-before-save)
                                )
+                             (when (locate-dominating-file default-directory ".eslintrc.js")
+                               (flycheck-add-mode 'javascript-eslint 'web-mode))
                              (electric-indent-mode nil)
                                ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
 
                              (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
-
-
 
 (use-package typescript
   :defer 1
@@ -752,9 +755,9 @@
   (tide-hl-identifier-mode t))
 
 (use-package vue-mode
-  :defer 1
   :ensure t
-  :mode "\\.vue\\'"
+  :defer 1
+  ;; :mode "\\.vue\\'"
   :config
   (setq mmm-typescript-mode-submode-hook #'setup-vue-with-ts)
   (set-face-background 'mmm-default-submode-face nil)
@@ -981,13 +984,18 @@
 (use-package helpful
   :defer 2
   :ensure t
+  :after counsel
   :config
-  (global-set-key (kbd "C-h f") #'helpful-callable)
-  (global-set-key (kbd "C-h v") #'helpful-variable)
+  (setq counsel-describe-function-function #'helpful-callable
+	counsel-describe-variable-function #'helpful-variable)
+
+  ;; (global-set-key (kbd "C-h f") #'helpful-callable)
+  ;; (global-set-key (kbd "C-h v") #'helpful-variable)
   (global-set-key (kbd "C-h k") #'helpful-key)
-  (global-set-key (kbd "C-c C-d") #'helpful-at-point)
-  (global-set-key (kbd "C-h F") #'helpful-function)
-  (global-set-key (kbd "C-h C") #'helpful-command))
+  ;; (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+  ;; (global-set-key (kbd "C-h F") #'helpful-function)
+;  (global-set-key (kbd "C-h C") #'helpful-command)
+  )
 
 
 (use-package markdown-mode
@@ -1065,12 +1073,11 @@
   (add-hook 'java-mode-hook 'lsp))
 
 (use-package dap-mode
-  :defer 3
-  ;; :disabled t
-  :ensure t :after lsp-mode
+  :ensure t
+  :after lsp-mode
+  :hook ((lsp-mode . dap-mode)
+         (lsp-mode . dap-ui-mode))
   :config
-  (dap-mode t)
-  (dap-ui-mode t)
   ;; Maybe solves it...
   (dap-tooltip-mode -1)
   (require 'dap-python)
@@ -1078,6 +1085,9 @@
 ;  (dap-enable-mouse-support nil)
   ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
   )
+
+;; (use-package vterm
+;;   :ensure t)
 
 ;; LATEX
 
