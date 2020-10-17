@@ -278,11 +278,11 @@
 ;; https://github.com/clojure-emacs/cider
 (use-package cider
   :defer 2
+  :hook ((cider-mode . eldoc-mode)
+         (cider-mode . company-mode)
+         (cider-repl-mode . company-mode)
+         (cider-repl-mode . paredit-mode))
   :config
-  ;; provides minibuffer documentation for the code you're typing into the repl
-  (add-hook 'cider-mode-hook 'eldoc-mode)
-  (add-hook 'cider-repl-mode-hook #'company-mode)
-  (add-hook 'cider-mode-hook #'company-mode)
   ;; go right to the REPL buffer when it's finished connecting
   (setq cider-repl-pop-to-buffer-on-connect t)
 
@@ -292,9 +292,6 @@
 
   ;; Wrap when navigating history.
   (setq cider-repl-wrap-history t)
-
-  ;; enable paredit in your REPL
-  (add-hook 'cider-repl-mode-hook 'paredit-mode)
 
   ;; Where to store the cider history.
   (setq cider-repl-history-file "~/.emacs.d/cider-history")
@@ -523,10 +520,9 @@
 
 ;; https://github.com/jtbm37/all-the-icons-dired
 (use-package all-the-icons-dired
-  :defer 1
   :ensure t
-  :config
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+  :hook (dired-mode . all-the-icons-dired-mode)
+  :config)
 
 (use-package rainbow-delimiters
   :defer 1
