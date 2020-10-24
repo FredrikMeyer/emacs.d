@@ -88,6 +88,8 @@
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "M-n") 'hippie-expand)
 
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+
 ;; Define package repositories
 (require 'package)
 ;; (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
@@ -196,7 +198,8 @@
   :config
   (global-flycheck-mode)
 
-  (setq flycheck-display-errors-delay 0.1)
+  (setq flycheck-display-errors-delay 0.2)
+  (setq eldoc-idle-delay 0.1)
 
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
@@ -749,8 +752,14 @@
   :ensure t
   :mode "\\.rs\\'"
   :config
-  (setq lsp-rust-rls-server-command "/Users/fredrikmeyer/.cargo/bin/rls")
   (add-hook 'rust-mode-hook #'lsp))
+
+(use-package flycheck-rust
+  :disabled
+  :ensure t
+  :config
+  (setq flycheck-rust-cargo-executable "/Users/fredrikmeyer/.cargo/bin/cargo")
+  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
 (defun setup-vue-with-ts ()
   (interactive)
@@ -930,50 +939,6 @@
               (electric-pair-mode t)
               )))
 
-(use-package elpy
-  :disabled
-  :ensure t
-  ;; :after pyenv-mode
-  :init (elpy-enable)
-  :config
-  (add-hook 'pyenv-mode-hook (lambda () (elpy-enable)))
-  (add-hook 'elpy-mode-hook 'flycheck-mode)
-  (setq elpy-rpc-backend "jedi")
-  (when (load "flycheck" t t)
-    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))))
-
-(use-package flycheck-pycheckers
-  :defer 2 
-  :disabled
-  :ensure t
-  :config
-  (with-eval-after-load 'flycheck
-    (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
-
-(use-package python-pytest
-  :defer 2
-  :ensure t)
-
-(setq python-shell-interpreter "python3")
-
-(use-package pyvenv
-  :defer 2
-  :ensure t
-  :config
-  (pyvenv-mode t)
-
-  ;; Set correct Python interpreter
-  (setq pyvenv-post-activate-hooks
-        (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3"))
-                (setq dap-python-executable (concat pyvenv-virtual-env "bin/python3")))))
-  (setq pyvenv-post-deactivate-hooks
-        (list (lambda ()
-                (setq python-shell-interpreter "python3")))))
-
-(add-hook 'python-mode 'electric-pair-mode)
-
-
 (use-package dockerfile-mode
   :defer 2
   :ensure t
@@ -998,7 +963,7 @@
   ;; (global-set-key (kbd "C-h f") #'helpful-callable)
   ;; (global-set-key (kbd "C-h v") #'helpful-variable)
   (global-set-key (kbd "C-h k") #'helpful-key)
-  ;; (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+  (global-set-key (kbd "C-c C-d") #'helpful-at-point)
   ;; (global-set-key (kbd "C-h F") #'helpful-function)
 ;  (global-set-key (kbd "C-h C") #'helpful-command)
   )
@@ -1058,6 +1023,12 @@
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (add-hook 'python-mode-hook #'lsp)
+
+  (require 'lsp-rust)
+  (setq lsp-rust-server 'rust-analyzer)
+  (setq lsp-rust-rls-server-command "/Users/fredrikmeyer/.cargo/bin/rls")
+  (setq lsp-rust-analyzer-server-command "/Users/fredrikmeyer/.cargo/bin/rust-analyzer")
+  ;; (setq lsp-rust-server "/Users/fredrikmeyer/.cargo/bin/rust-analyzer")
   ;; To enable mypy
   ;; https://github.com/tomv564/pyls-mypy
   ;; Also had to install this from source:
@@ -1070,6 +1041,7 @@
   :ensure t
   :config
   (setq lsp-ui-sideline-delay 0.1))
+  ;; (setq lsp-ui-doc-position at))
 
 (use-package lsp-java
   :disabled
@@ -1080,6 +1052,7 @@
 
 (use-package dap-mode
   :ensure t
+  :disabled
   :after lsp-mode
   :hook ((lsp-mode . dap-mode)
          (lsp-mode . dap-ui-mode))
@@ -1092,8 +1065,6 @@
   ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
   )
 
-;; (use-package vterm
-;;   :ensure t)
 
 ;; LATEX
 
@@ -1162,7 +1133,7 @@
 (use-package whitespace
   :defer 2
   :ensure t
-  :hook (prog-mode . whitespace-mode)
+  :hook (python-mode . whitespace-mode)
   :config
   (setq whitespace-line-column 80)
   (setq whitespace-style '(face lines-tail)))
@@ -1251,7 +1222,7 @@
 
 ;; https://www.emacswiki.org/emacs/WinnerMode
 ;; Winner Mode is a global minor mode. When activated, it allows you to “undo” (and “redo”) changes in the window configuration with the key commands ‘C-c left’ and ‘C-c right’
-;; (winner-mode) Disabled, since I don't use this.
+(winner-mode t)
 
 (global-set-key (kbd "C-S-c <left>") 'shrink-window-horizontally)
 (global-set-key (kbd "C-S-c <right>") 'enlarge-window-horizontally)

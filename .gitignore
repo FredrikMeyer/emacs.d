@@ -84,3 +84,5 @@ org-clock-save.el
 #Mac stuff
 .DS_STORE
 
+elpy/
+quelpa/
