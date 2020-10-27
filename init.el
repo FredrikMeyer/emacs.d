@@ -88,6 +88,15 @@
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "M-n") 'hippie-expand)
 
+;; Utils
+
+(defun add-auto-mode (mode &rest patterns)
+  "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
+  (dolist (pattern patterns)
+    (add-to-list 'auto-mode-alist (cons pattern mode))))
+
+;; end utils
+
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 ;; Define package repositories
@@ -410,7 +419,7 @@
           (counsel-rg . ivy--regex-plus)
           (swiper-isearch . ivy--regex-plus)
           (counsel-projectile-find-file . ivy--regex-plus)
-          (counsel-M-x . ivy--regex-fuzzy)
+          (counsel-M-x . ivy--regex-plus)
           (t . ivy--regex-plus))))
 
 (use-package swiper
@@ -738,6 +747,7 @@
 
 (use-package tide
   :defer 1
+  :bind ("C-c r" . tide-rename-symbol)
   :ensure t)
 
 (use-package plantuml-mode
@@ -867,15 +877,8 @@
   :defer 3
   :ensure t)
 
-;; Common Lisp
-(use-package slime
-  :disabled
-  :ensure t
-  :init
-  (load (expand-file-name "~/quicklisp/slime-helper.el"))
-  :config
-  (setq inferior-lisp-program "/usr/local/bin/ccl")
-  (setq slime-contribs '(slime-fancy slime-repl)))
+(use-package fm-common-lisp)
+(use-package fm-python)
 
 ;; Ruby
 (use-package ruby-mode
@@ -1473,7 +1476,6 @@
   (save-excursion
     (indent-region (point-min) (point-max) nil)))
 (global-set-key [f12] 'indent-buffer)
-
 
 (setq gc-cons-threshold (* 2 1000 1000))
 
