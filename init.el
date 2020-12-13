@@ -39,6 +39,7 @@
   (load custom-file))
 
 (unbind-key "C-z") ;; unbind the very annoying suspend-frame
+(unbind-key "<mouse-2>")
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
@@ -64,6 +65,10 @@
 (show-paren-mode 1)
 (global-hl-line-mode 1)
 (delete-selection-mode 1)
+
+;; First try to indent the current line, and if the line
+;; was already indented, then try `completion-at-point'
+(setq tab-always-indent 'complete)
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
@@ -105,11 +110,11 @@
 (package-initialize)
 
 (setq package-enable-at-startup nil)
-(add-to-list 'package-archives
-             '("marmalade" . "https://marmalade-repo.org/packages/"))
+;; (add-to-list 'package-archives
+;;              '("marmalade" . "https://marmalade-repo.org/packages/"))
 
-(add-to-list 'package-archives
-             '("tromey" . "http://tromey.com/elpa/"))
+;; (add-to-list 'package-archives
+;;              '("tromey" . "http://tromey.com/elpa/"))
 
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
@@ -212,6 +217,7 @@
 
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (flycheck-add-mode 'javascript-eslint 'vue-mode)
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
 
 (use-package flycheck-color-mode-line
@@ -293,6 +299,7 @@
   :hook ((cider-mode . eldoc-mode)
          (cider-mode . company-mode)
          (cider-repl-mode . company-mode)
+         (cider-mode . paredit-mode)
          (cider-repl-mode . paredit-mode))
   :config
   ;; go right to the REPL buffer when it's finished connecting
@@ -334,8 +341,7 @@
 
 (use-package clj-refactor
   :ensure t
-  :defer 2
-  :hook (clojure-mode . clj-refactor)
+  :hook (clojure-mode . clj-refactor-mode)
   :config
   (add-hook 'clojure-mode-hook
             (lambda ()
@@ -376,6 +382,10 @@
 ;; Disabled because it does not conform with the newest org mode version
 ;; (use-package ox-reveal
 ;;   :ensure t)
+
+(use-package fennel-mode
+  :mode "\\.fnl$'"
+  :ensure t)
 
 (use-package counsel
   :after ivy
@@ -564,6 +574,10 @@
   :defer 1
   :ensure t)
 
+(use-package strokes
+  :config
+  (strokes-mode 1))
+
 (use-package undo-tree
   :ensure t
   :disabled
@@ -658,6 +672,24 @@
   :defer 2
   :ensure t)
 
+(use-package org-roam
+      :ensure t
+      :hook
+      (after-init . org-roam-mode)
+      :custom
+      (org-roam-directory "~/Dropbox/org/roam/")
+      :bind (:map org-roam-mode-map
+                  (("C-c n l" . org-roam)
+                   ("C-c n r" . org-roam-buffer-toggle-display)
+                   ("C-c n f" . org-roam-find-file)
+                   ("C-c n g" . org-roam-graph))
+                  :map org-mode-map
+                  (("C-c n i" . org-roam-insert))
+                  (("C-c n I" . org-roam-insert-immediate)))
+      :config
+      (setq org-roam-completion-everywhere t)
+      (require 'org-roam-protocol))
+
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
@@ -715,7 +747,8 @@
   :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
   :mode "\\.tsx?$\\'"
   :config
-  (setq web-mode-indentation-params '("lineup-calls" . 1))
+  ;; (setq web-mode-indentation-params '(("lineup-calls" . 1)))
+  (setq web-mode-indentation-params '())
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
   (add-hook 'web-mode-hook (lambda ()
                              (tide-setup)
@@ -728,7 +761,7 @@
                              (when (and (or (locate-dominating-file default-directory ".prettier.rc")
                                           (locate-dominating-file default-directory ".prettierrc")) (string= (file-name-extension buffer-file-name) "ts"))
                                (prettier-js-mode 1)
-                               (add-hook 'before-save-hook 'prettier-js)
+                               (add-hook 'before-save-hook 'prettier-js nil t)
                                ;; (add-hook 'before-save-hook 'tide-format-before-save)
                                )
                              (when (locate-dominating-file default-directory ".eslintrc.js")
@@ -741,9 +774,7 @@
 
 (use-package typescript
   :defer 1
-  :ensure t
-  :config
-  (add-hook 'vue-mode-hook #'setup-vue-with-ts))
+  :ensure t)
 
 (use-package tide
   :defer 1
@@ -755,6 +786,7 @@
   :ensure t
   :config
   (setq plantuml-executable-path "/usr/local/bin/plantuml")
+  (setq plantuml-output-type "png")
   (setq plantuml-default-exec-mode 'executable))
 
 (use-package rust-mode
@@ -762,7 +794,8 @@
   :ensure t
   :mode "\\.rs\\'"
   :config
-  (add-hook 'rust-mode-hook #'lsp))
+  (add-hook 'rust-mode-hook #'lsp)
+  (add-hook 'rust-mode-hook (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
 
 (use-package flycheck-rust
   :disabled
@@ -771,22 +804,28 @@
   (setq flycheck-rust-cargo-executable "/Users/fredrikmeyer/.cargo/bin/cargo")
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
+;; https://github.com/kwrooijen/cargo.el
+(use-package cargo
+  :ensure t
+  :hook ((rust-mode . cargo-minor-mode)))
+
 (defun setup-vue-with-ts ()
+  "Setup vue."
   (interactive)
-  "Setup vue"
   (tide-setup)
   (eldoc-mode +1)
-  (flycheck-mode 0)
+  (when (flycheck-may-enable-checker 'javascript-eslint)
+    (flycheck-select-checker 'javascript-eslint))
   (tide-hl-identifier-mode t))
 
 (use-package vue-mode
   :ensure t
-  :defer 1
-  ;; :mode "\\.vue\\'"
+  :mode "\\.vue\\'"
   :config
   (setq mmm-typescript-mode-submode-hook #'setup-vue-with-ts)
   (set-face-background 'mmm-default-submode-face nil)
-  (add-hook 'vue-mode-hook (lambda () (tide-setup)))
+  (setq css-indent-offset 2)
+  ;; (add-hook 'vue-mode-hook (lambda () (tide-setup))) ;;; trengs denne???
   ;; (add-hook 'vue-mode-hook (electric-pair-mode -1))
   ;; (add-hook 'vue-mode-hook (lambda () (electric-indent-mode -1)))
   )
@@ -1021,17 +1060,16 @@
   (setq lsp-modeline-code-actions-segments '(count icon name))
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
-  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq read-process-output-max (* 5 1024 1024)) ;; 5mb
   (setq gc-cons-threshold 100000000)
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
+  (require 'lsp-csharp)
   (setq lsp-rust-server 'rust-analyzer)
-  (setq lsp-rust-rls-server-command "/Users/fredrikmeyer/.cargo/bin/rls")
-  (setq lsp-rust-analyzer-server-command "/Users/fredrikmeyer/.cargo/bin/rust-analyzer")
-  ;; (setq lsp-rust-server "/Users/fredrikmeyer/.cargo/bin/rust-analyzer")
+
   ;; To enable mypy
   ;; https://github.com/tomv564/pyls-mypy
   ;; Also had to install this from source:
@@ -1055,7 +1093,6 @@
 
 (use-package dap-mode
   :ensure t
-  :disabled
   :after lsp-mode
   :hook ((lsp-mode . dap-mode)
          (lsp-mode . dap-ui-mode))
@@ -1116,8 +1153,19 @@
 
 (use-package leuven-theme
   :ensure t
+  :disabled
   :config
   (load-theme 'leuven t))
+
+(use-package modus-operandi-theme
+  :ensure t
+  :config
+  (load-theme 'modus-operandi t)
+  (setq modus-operandi-theme-rainbow-headings t)
+  (setq modus-operandi-theme-scale-headings t))
+
+(use-package modus-vivendi-theme
+  :ensure t)
 
 (use-package solarized-theme
   :ensure t
@@ -1180,6 +1228,7 @@
           ("https://xkcd.com/rss.xml" blog cartoon)
           ("http://jvns.ca/atom.xml" blog)
           ("https://www.johndcook.com/blog/feed" blog math)
+          ("https://nhigham.com/feed/" blog math)
           ("https://www.newth.net/eirik/feed/" blog)
           ("https://nullprogram.com/feed/" blog)
           ("https://nrkbeta.no/feed/" blog tech)
@@ -1190,7 +1239,46 @@
           ("https://jvns.ca/atom.xml" blog)
           ("https://aws.amazon.com/blogs/opensource/feed/" aws blog)
           ("http://www.realtimerendering.com/blog/feed/" blog graphics)
-          )))
+          ("https://0fps.net/feed/" blog graphics)
+          ("https://golem.ph.utexas.edu/category/atom10.xml" blog math)
+          ("https://qchu.wordpress.com/feed/" math)
+          ("https://karthinks.com/software/index.xml" emacs)
+          ("https://www.math.columbia.edu/~woit/wordpress" math physics)
+          ))
+  :config
+  (defun elfeed-open-maybe-in-xwidget (&optional use-generic-p)
+    (interactive "P")
+    (let ((browse-url-browser-function #'xwwp))
+      (elfeed-show-visit use-generic-p)))
+  (define-key elfeed-show-mode-map (kbd "B") 'elfeed-open-maybe-in-xwidget)
+  )
+
+(use-package xwwp
+  :load-path "~/.emacs.d/xwwp"
+  :ensure t)
+
+(use-package xwwp-follow-link
+  :load-path "~/.emacs.d/xwwp-follow-link"
+  :custom
+  (xwwp-follow-link-completion-system 'ivy)
+  :bind (:map xwidget-webkit-mode-map
+              ("v" . xwwp-follow-link)))
+
+;; (use-package xwwp
+;;   :ensure t)
+
+;; (use-package xwwp-follow-link
+;;   :ensure t
+;;   :custom
+;;   (xwwp-follow-link-completion-system 'ivy)
+;;   :bind (:map xwidget-webkit-mode-map
+;;               ("v" . xwwp-follow-link))
+;;   ;; (require 'xwwp-foll(ow-link-ivy)
+;;   )
+
+(global-set-key (kbd "C-å") (lambda ()
+                              (interactive)
+                              (xwwp (thing-at-point 'url 'no-properties))))
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
 (use-package dashboard
@@ -1247,7 +1335,24 @@
 
 (use-package csharp-mode
   :defer 2
-  :ensure t)
+  :ensure t
+  :mode "\\.cs$"
+  :config
+  (add-hook 'csharp-mode-hook #'lsp)
+  (defun my-csharp-mode-setup ()
+    (omnisharp-mode)
+    (flycheck-mode 1))
+
+  
+  ;; (add-hook 'csharp-mode-hook 'my-csharp-mode-setup t)
+  )
+
+(use-package omnisharp
+  :defer 2
+  :ensure t
+  :config
+  (setq omnisharp-debug nil)
+  )
 
 (use-package dired-subtree
   :defer 2
@@ -1448,7 +1553,7 @@
   (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
 
 (defun insert-current-date-with-weekday ()
-  "Insert current date with weekday"
+  "Insert current date with weekday."
   (interactive)
   (insert (shell-command-to-string "echo -n $(date +'%Y-%m-%d %A')")))
 
@@ -1476,6 +1581,44 @@
   (save-excursion
     (indent-region (point-min) (point-max) nil)))
 (global-set-key [f12] 'indent-buffer)
+
+(defun format-and-save-project ()
+  "Format current buffer and save all open buffers."
+         (interactive)
+         (let* ((project (projectile-ensure-project (projectile-project-root)))
+                (project-name (projectile-project-name project))
+                (modified-buffers (cl-remove-if-not (lambda (buf)
+                                                      (and (buffer-file-name buf) (buffer-modified-p buf)))
+                                                    (projectile-project-buffers project))))
+           (if (null modified-buffers)
+               (message "[%s] No buffers need saving" project-name)
+             (dolist (buf modified-buffers)
+               (with-current-buffer buf
+                 (message (buffer-name buf))
+                 (when (lsp-feature? "textDocument/formatting")
+                   (message "got here with " (buffer-name buf))
+                   (lsp-format-buffer))
+                 (save-buffer)))
+             (message "[%s] Saved and formatted %d buffers" project-name (length modified-buffers)))))
+
+;; https://emacsredux.com/blog/2013/04/02/move-current-line-up-or-down/
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(global-set-key [(meta up)]  'move-line-up)
+(global-set-key [(meta down)]  'move-line-down)
 
 (setq gc-cons-threshold (* 2 1000 1000))
 

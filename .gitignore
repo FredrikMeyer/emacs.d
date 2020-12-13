@@ -73,7 +73,7 @@ smex-items
 transient/
 forge-database.sqlite
 org-clock-save.el
-
+projectile.cache
 
 
 #Multiple cursors
