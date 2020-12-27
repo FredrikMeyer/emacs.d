@@ -218,7 +218,10 @@
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-mode 'javascript-eslint 'vue-mode)
-  (flycheck-add-mode 'javascript-eslint 'flow-minor-mode))
+  (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
+
+  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.6.0/bin/tidy")
+  )
 
 (use-package flycheck-color-mode-line
   :ensure t
@@ -1028,6 +1031,14 @@
        "/usr/local/bin/pandoc"
        " --from=markdown --to=html"
        " --standalone --mathjax --highlight-style=pygments")))
+
+
+;; https://github.com/TobiasZawada/texfrag
+(use-package texfrag
+  :ensure t
+  :config
+  (add-hook 'markdown-mode-hook 'texfrag-mode)
+  )
 
 (use-package pdf-tools
   ;; :load-path "pdf-tools"
