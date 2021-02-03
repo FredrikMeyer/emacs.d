@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
- '(coffee-tab-width 2)
+ '(calendar-week-start-day 1)
  '(compilation-message-face 'default)
  '(cua-global-mark-cursor-color "#2aa198")
  '(cua-normal-cursor-color "#657b83")
@@ -58,7 +58,7 @@
      ("s" . "src")
      ("v" . "verse")))
  '(package-selected-packages
-   '(texfrag textfrag xwwp-follow-link xwwp-follow-link-with-ivy xwwp rainbow-blocks omnisharp clj-refactor modus-vivendi-theme modus-operandi-theme org-roam cargo fennel-mode slime-company ac-slime slime flycheck-color-mode-line eldoc-box popwin helpful swiper plantuml-mode csharp-mode vue-mode typescript wakatime-mode dap-mode forge io-mode quelpa-use-package quelpa julia-mode org-plus-contrib use-package-ensure-system-package use-package dap-java doom-modeline lsp-ui lsp-mode python-pytest flycheck-pycheckers esup benchmark-init pdf-tools org-pdftools pdftools leuven-theme dockerfile-mode elpy paredit-everywhere paredit-everywhere-mode web-mode company-box smartparens dimmer indium company-tern tern json-navigator yaml-mode dashboard anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider))
+   '(cfn-lint ivy-posframe magit-todos treemacs-magit treemacs-icons-dired treemacs-projectile org-projectile texfrag textfrag xwwp-follow-link xwwp-follow-link-with-ivy xwwp rainbow-blocks omnisharp clj-refactor modus-vivendi-theme modus-operandi-theme org-roam cargo fennel-mode slime-company ac-slime slime flycheck-color-mode-line eldoc-box popwin helpful swiper plantuml-mode csharp-mode vue-mode typescript wakatime-mode dap-mode forge io-mode quelpa-use-package quelpa julia-mode org-plus-contrib use-package-ensure-system-package use-package dap-java doom-modeline lsp-ui lsp-mode python-pytest flycheck-pycheckers esup benchmark-init pdf-tools org-pdftools pdftools leuven-theme dockerfile-mode elpy paredit-everywhere paredit-everywhere-mode web-mode company-box smartparens dimmer indium company-tern tern json-navigator yaml-mode dashboard anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
  '(python-shell-exec-path '("python3"))
@@ -80,6 +80,7 @@
      (texfrag-org org-mode)))
  '(texfrag-subdir "~/.emacs.d/texfrag-x")
  '(typescript-indent-level 2)
+ '(use-package-compute-statistics t)
  '(vc-annotate-background nil)
  '(vc-annotate-background-mode nil)
  '(vc-annotate-color-map

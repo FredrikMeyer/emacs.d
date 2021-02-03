@@ -2,7 +2,6 @@
 ;; EMACS config
 ;;;
 
-
 ;;; Code:
 
 ;; (byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
@@ -51,8 +50,9 @@
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
-      use-dialog-box nil
-      calendar-week-start-day 1)
+      use-dialog-box nil)
+
+(custom-set-variables '(calendar-week-start-day 1))
 
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -65,6 +65,10 @@
 (show-paren-mode 1)
 (global-hl-line-mode 1)
 (delete-selection-mode 1)
+
+(setq c-default-style '((java-mode . "java")
+                      (awk-mode . "awk")
+                      (other . "stroustrup")))
 
 ;; First try to indent the current line, and if the line
 ;; was already indented, then try `completion-at-point'
@@ -94,6 +98,8 @@
 (global-set-key (kbd "M-n") 'hippie-expand)
 
 ;; Utils
+
+(setq tramp-use-ssh-controlmaster-options nil)
 
 (defun add-auto-mode (mode &rest patterns)
   "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
@@ -133,7 +139,7 @@
 	(package-refresh-contents)
 	(package-install 'use-package))
 
-(setq use-package-compute-statistics t)
+(custom-set-variables '(use-package-compute-statistics t))
 
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
@@ -145,6 +151,10 @@
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-envs
    '("PATH")))
+
+(use-package cfn-lint
+  :ensure nil
+  :after yaml-mode flycheck)
 
 (use-package server
   :defer 2
@@ -235,8 +245,15 @@
 (defun eslint-fix-file ()
   "Run eslint fix current file."
   (interactive)
-  (message "Running npm run lint:fix --fixing the file %s" (buffer-file-name))
-  (shell-command (concat "npm run lint:fix" (buffer-file-name))))
+  (cond ((locate-dominating-file default-directory "package-lock.json")
+       (shell-command (concat "npm run eslint" " " "--fix" (buffer-file-name))))
+        ((locate-dominating-file default-directory "yarn.lock")
+         (call-process-shell-command
+          (concat "yarn run eslint" " " "--fix " (buffer-file-name))
+          nil "*Shell Command Output*" t))
+        (t (message "No lock file.")))
+  (revert-buffer t t)
+  )
 
 (defun eslint-fix-file-and-revert ()
   "Run eslint on current buffer."
@@ -435,6 +452,12 @@
           (counsel-M-x . ivy--regex-plus)
           (t . ivy--regex-plus))))
 
+;; https://github.com/tumashu/ivy-posframe
+(use-package ivy-posframe
+  :ensure t
+  :config
+  (ivy-posframe-mode t))
+
 (use-package swiper
   :ensure t
   :after ivy
@@ -609,6 +632,12 @@
   :config
   (setq forge-topic-list-order '(number . >)))
 
+;; https://github.com/alphapapa/magit-todos#installation
+(use-package magit-todos
+  :ensure t
+  :config
+  (magit-todos-mode t))
+
 ;; https://github.com/syohex/emacs-git-messenger
 (use-package git-messenger
   :defer 1
@@ -693,6 +722,42 @@
       (setq org-roam-completion-everywhere t)
       (require 'org-roam-protocol))
 
+;; https://github.com/IvanMalison/org-projectile
+(use-package org-projectile
+  :defer 3
+  :ensure t
+  :config
+  (setq org-projectile-projects-file "~/Dropbox/org/prosjekter.org")
+   (add-to-list 'org-capture-templates
+                 (org-projectile-project-todo-entry
+                  :capture-character "l")))
+
+(use-package treemacs
+  :ensure t
+  :bind
+  (:map global-map
+         ;; ("M-0"       . treemacs-select-window)
+        ("C-z 1"   . treemacs-delete-other-windows)
+        ("C-z z z"   . treemacs)
+        ("C-z z B"   . treemacs-bookmark)
+        ("C-z z C-t" . treemacs-find-file)
+        ("C-z t M-t" . treemacs-find-tag))
+  )
+
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :after treemacs dired
+  :ensure t
+  :config (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit
+  :after treemacs magit
+  :ensure t)
+
+
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
@@ -713,11 +778,11 @@
   :defer
   :ensure t
   :hook (after-init . global-company-mode)
+  :custom (company-dabbrev-downcase nil)
   :config
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-minimum-prefix-length 2)
-  (setq company-dabbrev-downcase nil)
   (add-to-list 'company-backends 'company-flow))
 
 (use-package company-quickhelp
@@ -749,20 +814,24 @@
   :after (add-node-modules-path)
   :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
   :mode "\\.tsx?$\\'"
+  :bind ("C-c r" . 'tide-rename-symbol-at-location)
   :config
-  ;; (setq web-mode-indentation-params '(("lineup-calls" . 1)))
-  (setq web-mode-indentation-params '())
+  (setq web-mode-indentation-params '(("lineup-calls" . 1)))
+  ;; (setq web-mode-indentation-params '())
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
+  (setq web-mode-enable-auto-indentation nil)
   (add-hook 'web-mode-hook (lambda ()
                              (tide-setup)
                              (tide-hl-identifier-mode t)
-                             (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
+                             ;; (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
                              (flycheck-mode 1)
                              (yas-activate-extra-mode 'js2-mode)
                              (if (string= (file-name-extension buffer-file-name) "ts")
                                  (flycheck-add-mode 'typescript-tide 'web-mode))
                              (when (and (or (locate-dominating-file default-directory ".prettier.rc")
-                                          (locate-dominating-file default-directory ".prettierrc")) (string= (file-name-extension buffer-file-name) "ts"))
+                                            (locate-dominating-file default-directory ".prettierrc.json")
+                                            (locate-dominating-file default-directory ".prettierrc")))
+                                                              ;; (string= (file-name-extension buffer-file-name) "ts")
                                (prettier-js-mode 1)
                                (add-hook 'before-save-hook 'prettier-js nil t)
                                ;; (add-hook 'before-save-hook 'tide-format-before-save)
@@ -827,11 +896,7 @@
   :config
   (setq mmm-typescript-mode-submode-hook #'setup-vue-with-ts)
   (set-face-background 'mmm-default-submode-face nil)
-  (setq css-indent-offset 2)
-  ;; (add-hook 'vue-mode-hook (lambda () (tide-setup))) ;;; trengs denne???
-  ;; (add-hook 'vue-mode-hook (electric-pair-mode -1))
-  ;; (add-hook 'vue-mode-hook (lambda () (electric-indent-mode -1)))
-  )
+  (setq css-indent-offset 2))
 
 (use-package smartparens
   :ensure t
