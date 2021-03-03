@@ -45,7 +45,6 @@
  '(minions-mode t)
  '(nrepl-message-colors
    '("#dc322f" "#cb4b16" "#b58900" "#5b7300" "#b3c34d" "#0061a8" "#2aa198" "#d33682" "#6c71c4"))
- '(org-agenda-files nil)
  '(org-structure-template-alist
    '(("a" . "export ascii")
      ("c" . "center")
@@ -58,12 +57,24 @@
      ("s" . "src")
      ("v" . "verse")))
  '(package-selected-packages
-   '(cfn-lint ivy-posframe magit-todos treemacs-magit treemacs-icons-dired treemacs-projectile org-projectile texfrag textfrag xwwp-follow-link xwwp-follow-link-with-ivy xwwp rainbow-blocks omnisharp clj-refactor modus-vivendi-theme modus-operandi-theme org-roam cargo fennel-mode slime-company ac-slime slime flycheck-color-mode-line eldoc-box popwin helpful swiper plantuml-mode csharp-mode vue-mode typescript wakatime-mode dap-mode forge io-mode quelpa-use-package quelpa julia-mode org-plus-contrib use-package-ensure-system-package use-package dap-java doom-modeline lsp-ui lsp-mode python-pytest flycheck-pycheckers esup benchmark-init pdf-tools org-pdftools pdftools leuven-theme dockerfile-mode elpy paredit-everywhere paredit-everywhere-mode web-mode company-box smartparens dimmer indium company-tern tern json-navigator yaml-mode dashboard anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider))
+   '(ob-http lsp-pyright company-restclient python-docstring package-utils-upgrade-all-and-recompile package-utils ob-ipython cfn-lint ivy-posframe magit-todos treemacs-magit treemacs-icons-dired treemacs-projectile org-projectile texfrag textfrag xwwp-follow-link xwwp-follow-link-with-ivy xwwp rainbow-blocks omnisharp clj-refactor modus-vivendi-theme modus-operandi-theme org-roam cargo fennel-mode slime-company ac-slime slime flycheck-color-mode-line eldoc-box popwin helpful swiper plantuml-mode csharp-mode vue-mode typescript wakatime-mode dap-mode forge io-mode quelpa-use-package quelpa julia-mode org-plus-contrib use-package-ensure-system-package use-package dap-java doom-modeline lsp-ui lsp-mode python-pytest flycheck-pycheckers esup benchmark-init pdf-tools org-pdftools pdftools leuven-theme dockerfile-mode elpy paredit-everywhere paredit-everywhere-mode web-mode company-box smartparens dimmer indium company-tern tern json-navigator yaml-mode dashboard anzu spacemacs-light spacemacs-theme ubuntu-theme yasnippet-snippets yasnippet-classic-snippets undo-tree kotlin-mode gradle-mode let-alist dired-subtree graphql-mode ivy-rich rust-mode chess git-messenger all-the-icons-ivy intero all-the-icons-dired all-the-icons counsel-projectile gnuplot engine-mode company-tabnine company-flow flow-minor-mode projectile-ripgrep rg git-gutter+ git-gutter-+ add-node-modules-path :nyan-mode company-auctex ox-latex ox-beamer auc-tex eyebrowse org-tempo elfeed xref-js2 fireplace ace-window edit-indirect nyan-mode smart-hungry-delete hungry-delete expand-region minimap glsl-mode elm-yasnippets org-reveal minions dracula-theme solarized-theme neotree go-mode haskell-mode ruby-electric inf-ruby elm-mode try which-key htmlize restclient json-mode sml-mode markdown-mode tagedit rainbow-delimiters projectile paredit magit exec-path-from-shell clojure-mode-extra-font-locking cider))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
  '(python-shell-exec-path '("python3"))
  '(safe-local-variable-values
-   '((python-shell-interpreter . "/Users/fredrikmeyer/code/numpoly/.venv/bin/python")
+   '((lsp-enabled-clients . lsp-pyright)
+     (eval message "Project directory set to `%s'." my-project-path)
+     (eval set
+           (make-local-variable 'my-project-path)
+           (file-name-directory
+            (let
+                ((d
+                  (dir-locals-find-file ".")))
+              (if
+                  (stringp d)
+                  d
+                (car d)))))
+     (python-shell-interpreter . "/Users/fredrikmeyer/code/numpoly/.venv/bin/python")
      (web-mode-markup-indentation . 2)
      (js-indent-level . 2)))
  '(save-place-mode t)

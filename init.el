@@ -76,7 +76,7 @@
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
-(setq-default show-trailing-whitespace 't)
+(setq-default show-trailing-whitespace 't) ;; TODO only in prog mode 
 ;; Dont show whitespaces in minibuffer
 (add-hook 'minibuffer-setup-hook (lambda () (setq-local show-trailing-whitespace nil)))
 
@@ -107,8 +107,6 @@
     (add-to-list 'auto-mode-alist (cons pattern mode))))
 
 ;; end utils
-
-(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 ;; Define package repositories
 (require 'package)
@@ -166,6 +164,22 @@
 
 (use-package use-package-ensure-system-package
   :ensure t)
+
+(use-package package-utils
+  :ensure t)
+
+;; https://github.com/quelpa/quelpa-use-package
+(use-package quelpa-use-package
+  :ensure t)
+
+(use-package package-utils-upgrade-all-and-recompile
+  :commands (package-utils-upgrade-all-and-recompile)
+
+  :quelpa
+  (package-utils-upgrade-all-and-recompile :fetcher gitlab :repo "ideasman42/emacs-package-utils-upgrade-all-and-recompile"))
+
+
+
 
 (use-package benchmark-init
   :disabled
@@ -375,6 +389,13 @@
   :defer 1
   :ensure t
   :mode "\\.http$\\'")
+
+(use-package company-restclient
+  :defer 1
+  :ensure t
+  :after restclient
+  :config
+  (add-to-list 'company-backends 'company-restclient))
 
 ;; https://github.com/wasamasa/eyebrowse
 (use-package eyebrowse
@@ -654,6 +675,51 @@
   :config
   (global-git-gutter+-mode))
 
+(use-package ob-ipython
+  :disabled
+  :after company
+  :ensure t
+  :config
+  (add-hook 'ob-ipython-mode-hook
+            (lambda () (company-mode 1)))
+
+  ;; (advice-add 'ob-ipython-auto-configure-kernels :around
+  ;;             (lambda (orig-fun &rest args)
+  ;;               "Configure the kernels when found jupyter."
+  ;;               (when (executable-find ob-ipython-command)
+  ;;                 (apply orig-fun args))))
+
+  ;;   (defun run-python-first (&rest args)
+  ;;   "Start a inferior python if there isn't one."
+  ;;   (or (comint-check-proc "*Python*") (run-python)))
+
+  ;; (advice-add 'org-babel-execute:ipython :after
+  ;;             (lambda (body params)
+  ;;               "Send body to `inferior-python'."
+  ;;               (run-python-first)
+  ;;               (python-shell-send-string body)))
+
+  ;;  (add-hook 'org-mode-hook
+  ;;           (lambda ()
+  ;;             (setq-local completion-at-point-functions
+  ;;                         '(pcomplete-completions-at-point python-completion-at-point))))
+
+  ;;    (defun ob-ipython-eldoc-function ()
+  ;;   (when (org-babel-where-is-src-block-head)
+  ;;     (python-eldoc-function)))
+
+  ;; (add-hook 'org-mode-hook
+  ;;           (lambda ()
+  ;;             (setq-default eldoc-documentation-function 'ob-ipython-eldoc-function)))
+
+  (add-to-list 'company-backends 'company-ob-ipython))
+
+
+;; https://github.com/zweifisch/ob-http
+;; org mode source block http
+(use-package ob-http
+  :ensure t)
+
 (use-package org
   :defer 1
   :ensure org-plus-contrib
@@ -667,7 +733,7 @@
                              (electric-pair-mode 0)))
 
   (setq org-src-fontify-natively t
-        org-src-tab-acts-natively t
+        org-src-tab-acts-natively nil
         org-confirm-babel-evaluate nil
         org-edit-src-content-indentation 0)
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
@@ -677,16 +743,36 @@
 
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
+                               ;; (ipython . t)
                                (calc . t)
                                (clojure . t)
+                               (shell . t)
+                               (plantuml . t)
+                               (http . t)
                                (gnuplot . t)))
+  (setq org-plantuml-exec-mode 'plantuml)
+  (setq org-plantuml-jar-path "/usr/local/bin/plantuml")
   (setq org-babel-clojure-backend 'cider)
+  (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
+
+  (message "got here")
+
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (setq org-agenda-files (list "~/Dropbox/org/prosjekter.org"
+                               "~/Dropbox/org/audio_xal.org"
+                               "~/Dropbox/org/tasks.org"
+                               "~/Dropbox/org/notater.org"))
+
+  (message "and here")
 
   (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
   (global-set-key (kbd "C-c c") 'org-capture)
   (setq org-capture-templates '(
                                 ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
                                 ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
+                                ("a" "Audio project" entry
+                                 (file+headline "~/Dropbox/org/audio_xal.org" "Todos")
+                                 "* TODO %?\n")
                                 ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
                                "* TODO %?\n%U" :empty-lines 1)))
   (require 'org-tempo)
@@ -694,10 +780,9 @@
 
 
 (use-package org-bullets
-  :defer 2
   :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+  :hook (org-mode . org-bullets-mode)
+  :config)
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
@@ -946,6 +1031,7 @@
 
 
 (use-package company-tern
+  :disabled
   :defer 1
   :ensure t
   :after tern
@@ -983,9 +1069,6 @@
 (use-package elm-yasnippets
   :defer 3
   :ensure t)
-
-(use-package fm-common-lisp)
-(use-package fm-python)
 
 ;; Ruby
 (use-package ruby-mode
@@ -1127,6 +1210,8 @@
 ;; Requires `brew install ghostscript`
 
 
+;; (byte-recompile-directory "~/.emacs.d/elpa" 0 t)
+
 (use-package lsp-mode
   :defer 2
   :ensure t
@@ -1140,10 +1225,11 @@
   (setq gc-cons-threshold 100000000)
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
-  (add-hook 'python-mode-hook #'lsp)
+  ;; (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
   (require 'lsp-csharp)
+  (require 'lsp-pyright)
   (setq lsp-rust-server 'rust-analyzer)
 
   ;; To enable mypy
@@ -1168,6 +1254,7 @@
   (add-hook 'java-mode-hook 'lsp))
 
 (use-package dap-mode
+  :disabled
   :ensure t
   :after lsp-mode
   :hook ((lsp-mode . dap-mode)
@@ -1175,7 +1262,7 @@
   :config
   ;; Maybe solves it...
   (dap-tooltip-mode -1)
-  (require 'dap-python)
+  ;; (require 'dap-python)
   ; should fix it also
 ;  (dap-enable-mouse-support nil)
   ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
@@ -1370,6 +1457,7 @@
 
 ;; https://github.com/gonewest818/dimmer.el
 (use-package dimmer
+  :disabled
   :defer 1
   :ensure t
   :config
@@ -1403,7 +1491,8 @@
   :ensure t
   :config
   (add-hook 'yaml-mode-hook
-            (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent))))
+            (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent)))
+  (setq yaml-indent-offset 2))
 
 (use-package julia-mode
   :defer 2
@@ -1620,6 +1709,10 @@
 ;; (autoload 'oz-new-buffer "oz" "" t)
 ;; (add-hook 'oz-mode-hook 'electric-pair-mode 'electric-indent-mode)
 
+
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+(use-package fm-common-lisp)
+(use-package fm-python)
 
 ;;;; Useful functions
 

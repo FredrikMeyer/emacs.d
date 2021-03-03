@@ -25,10 +25,31 @@
   (with-eval-after-load 'flycheck
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
+
 
 (use-package python-pytest
   :defer 2
-  :ensure t)
+  :ensure t
+  :config
+  (setq python-pytest-executable "python -m pytest")
+
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (when-let ((r (locate-dominating-file default-directory ".pyroot")))
+                (setq python-pytest-executable
+                      (concat "PYTHONPATH=" r " " "pytest")))))
+
+  )
+
+(use-package python-docstring
+  :ensure t
+  :config
+  (python-docstring-install))
 
 (setq python-shell-interpreter "python3")
 
@@ -39,15 +60,26 @@
   (pyvenv-mode t)
 
   ;; Set correct Python interpreter
+  ;; TODO: auto detect virtual env (f.ex via a dotfile)
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter (concat pyvenv-virtual-env "bin/python3")))))
+                (let
+                    ((ipython (concat pyvenv-virtual-env "bin/ipython"))
+                     (python (concat pyvenv-virtual-env "bin/python3")))
+                  (if (file-exists-p ipython)
+                      (progn
+                        (setq python-shell-interpreter ipython)
+                        (setq python-shell-interpreter-args "--simple-prompt -i")
+                        (setq org-babel-python-command python)
+                        )
+                    (progn
+                      (setq org-babel-python-command python)
+                      (setq python-shell-interpreter python)))))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
                 (setq python-shell-interpreter "python3")))))
 
 (add-hook 'python-mode 'electric-pair-mode)
-
 
 
 (provide 'fm-python)
