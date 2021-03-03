@@ -5,7 +5,7 @@ This is my Emacs config.
 
 Current Emacs version:
 
-#+begin_src elisp
+#+begin_src elisp :exports both
 (emacs-version)
 #+end_src
 
