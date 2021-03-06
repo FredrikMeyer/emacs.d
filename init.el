@@ -16,7 +16,6 @@
       user-mail-address "hrmeyer@gmail.com")
 
 
-
 (setq ns-pop-up-frames nil)
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
@@ -76,12 +75,15 @@
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
-(setq-default show-trailing-whitespace 't) ;; TODO only in prog mode 
+(add-hook 'prog-mode-hook (lambda ()
+                            (setq-local show-trailing-whitespace t)))
+
 ;; Dont show whitespaces in minibuffer
 (add-hook 'minibuffer-setup-hook (lambda () (setq-local show-trailing-whitespace nil)))
 
 (setq-default indicate-empty-lines 't)
 (setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
+
 ;; HippieExpand: M-n for å fullføre noe
 ;; http://www.emacswiki.org/emacs/HippieExpand
 (setq hippie-expand-try-functions-list
@@ -114,11 +116,6 @@
 (package-initialize)
 
 (setq package-enable-at-startup nil)
-;; (add-to-list 'package-archives
-;;              '("marmalade" . "https://marmalade-repo.org/packages/"))
-
-;; (add-to-list 'package-archives
-;;              '("tromey" . "http://tromey.com/elpa/"))
 
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
@@ -150,10 +147,6 @@
   (exec-path-from-shell-copy-envs
    '("PATH")))
 
-(use-package cfn-lint
-  :ensure nil
-  :after yaml-mode flycheck)
-
 (use-package server
   :defer 2
   :config
@@ -176,10 +169,9 @@
   :commands (package-utils-upgrade-all-and-recompile)
 
   :quelpa
-  (package-utils-upgrade-all-and-recompile :fetcher gitlab :repo "ideasman42/emacs-package-utils-upgrade-all-and-recompile"))
-
-
-
+  (package-utils-upgrade-all-and-recompile
+   :fetcher gitlab
+   :repo "ideasman42/emacs-package-utils-upgrade-all-and-recompile"))
 
 (use-package benchmark-init
   :disabled
@@ -194,11 +186,6 @@
   ;; To use MELPA Stable use ":pin mepla-stable",
   :pin melpa-stable
   :commands (esup))
-
-(use-package io-mode
-  :mode "\\.io$"
-  :defer t
-  :ensure t)
 
 (use-package popwin
   :ensure t
@@ -305,7 +292,7 @@
 ;; key bindings and code colorization for Clojure
 ;; https://github.com/clojure-emacs/clojure-mode
 (use-package clojure-mode
-  :defer 2
+  :defer t
   :ensure t
   :mode "\\.edn$"
   :mode "\\.boot$"
@@ -405,6 +392,7 @@
   (dotimes (n 10)
     (global-unset-key (kbd (format "C-%d" n)))
     (global-unset-key (kbd (format "M-%d" n))))
+  (setq eyebrowse-keymap-prefix (kbd "C-C M-e"))
   :config
   (define-key eyebrowse-mode-map (kbd "M-1") 'eyebrowse-switch-to-window-config-1)
   (define-key eyebrowse-mode-map (kbd "M-2") 'eyebrowse-switch-to-window-config-2)
@@ -420,9 +408,13 @@
   :config
   (windmove-default-keybindings))
 
-;; Disabled because it does not conform with the newest org mode version
-;; (use-package ox-reveal
-;;   :ensure t)
+(use-package buffer-move
+  :ensure t
+  :bind
+  (("C-c b u" . 'buf-move-up)
+   ("C-c b d" . 'buf-move-down)
+   ("C-c b l" . 'buf-move-left)
+   ("C-c b r" . 'buf-move-right)))
 
 (use-package fennel-mode
   :mode "\\.fnl$'"
@@ -509,6 +501,7 @@
 
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
+  :disabled
   :ensure t
   :defer 2
   :config
@@ -574,7 +567,6 @@
   :ensure t
   :config
   (global-set-key (kbd "C-x t") 'neotree-toggle)
-  :config
   (setq neo-smart-open t)
   (setq neo-theme 'icons)
   (setq neo-window-fixed-size nil)
@@ -590,14 +582,12 @@
 ;; https://github.com/jtbm37/all-the-icons-dired
 (use-package all-the-icons-dired
   :ensure t
-  :hook (dired-mode . all-the-icons-dired-mode)
-  :config)
+  :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package rainbow-delimiters
   :defer 1
   :ensure t
-  :config
-  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package geiser
   :defer 2
@@ -615,13 +605,14 @@
   (setq nyan-wavy-trail 1)
   (nyan-mode))
 
-
 ;; lambda
 (use-package pretty-lambdada
   :defer 1
   :ensure t)
 
+;;; dont know what this is??
 (use-package strokes
+  :disabled
   :config
   (strokes-mode 1))
 
@@ -642,9 +633,9 @@
   :config
   (setq magit-repository-directories
         `(("~/code" . 1)
-          (,user-emacs-directory . 1)))
+          ("~/code/work" . 1)
+          (,user-emacs-directory . 0)))
   (setq magit-list-refs-sortby "-creatordate"))
-
 
 (use-package forge
   :defer 1
@@ -681,44 +672,25 @@
   :ensure t
   :config
   (add-hook 'ob-ipython-mode-hook
-            (lambda () (company-mode 1)))
-
-  ;; (advice-add 'ob-ipython-auto-configure-kernels :around
-  ;;             (lambda (orig-fun &rest args)
-  ;;               "Configure the kernels when found jupyter."
-  ;;               (when (executable-find ob-ipython-command)
-  ;;                 (apply orig-fun args))))
-
-  ;;   (defun run-python-first (&rest args)
-  ;;   "Start a inferior python if there isn't one."
-  ;;   (or (comint-check-proc "*Python*") (run-python)))
-
-  ;; (advice-add 'org-babel-execute:ipython :after
-  ;;             (lambda (body params)
-  ;;               "Send body to `inferior-python'."
-  ;;               (run-python-first)
-  ;;               (python-shell-send-string body)))
-
-  ;;  (add-hook 'org-mode-hook
-  ;;           (lambda ()
-  ;;             (setq-local completion-at-point-functions
-  ;;                         '(pcomplete-completions-at-point python-completion-at-point))))
-
-  ;;    (defun ob-ipython-eldoc-function ()
-  ;;   (when (org-babel-where-is-src-block-head)
-  ;;     (python-eldoc-function)))
-
-  ;; (add-hook 'org-mode-hook
-  ;;           (lambda ()
-  ;;             (setq-default eldoc-documentation-function 'ob-ipython-eldoc-function)))
-
-  (add-to-list 'company-backends 'company-ob-ipython))
-
+            (lambda () (company-mode 1))))
 
 ;; https://github.com/zweifisch/ob-http
 ;; org mode source block http
 (use-package ob-http
   :ensure t)
+
+;; https://github.com/alphapapa/org-super-agenda/#installation
+(use-package org-super-agenda
+  :ensure t
+  :config
+  (org-super-agenda-mode t)
+  (setq org-super-agenda-groups
+        '(
+          (:name "Important"
+                 :priority "A")
+          (:category "notater" :name "Notater")
+          (:category "audio_xal" :name "Work")
+          )))
 
 (use-package org
   :defer 1
@@ -755,34 +727,49 @@
   (setq org-babel-clojure-backend 'cider)
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
-  (message "got here")
+  (setq org-refile-targets '((nil :maxlevel . 3)))
+  (setq org-refile-use-outline-path t)
+  (setq org-outline-path-complete-in-steps nil)
 
   (global-set-key (kbd "C-c a") 'org-agenda)
-  (setq org-agenda-files (list "~/Dropbox/org/prosjekter.org"
-                               "~/Dropbox/org/audio_xal.org"
+  (setq org-agenda-files (list "~/Dropbox/org/audio_xal.org"
                                "~/Dropbox/org/tasks.org"
                                "~/Dropbox/org/notater.org"))
 
-  (message "and here")
+  ;; https://orgmode.org/worg/org-tutorials/org-custom-agenda-commands.html
+  (setq org-agenda-custom-commands
+        '(("w" "Work view"
+           (
+            (todo "" ((org-super-agenda-groups
+                       '(
+                         ;; (:name "First prio"
+                         ;;        :category "audio_xal" :priority "A")
+                         (:name "Top prio"
+                                :priority "A")
+                         (:auto-outline-path t)
+                         )))))
+           ((org-agenda-files '("~/Dropbox/org/audio_xal.org")))
+           )))
+
 
   (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
   (global-set-key (kbd "C-c c") 'org-capture)
-  (setq org-capture-templates '(
-                                ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
-                                ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
-                                ("a" "Audio project" entry
-                                 (file+headline "~/Dropbox/org/audio_xal.org" "Todos")
-                                 "* TODO %?\n")
-                                ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
-                               "* TODO %?\n%U" :empty-lines 1)))
+  (setq org-capture-templates
+        '(
+          ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
+          ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
+          ("a" "Audio project" entry
+           (file+headline "~/Dropbox/org/audio_xal.org" "Usorterte todos")
+           "* TODO %?\n")
+          ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
+           "* TODO %?\n%U" :empty-lines 1)))
   (require 'org-tempo)
   (require 'ox-md))
 
 
 (use-package org-bullets
   :ensure t
-  :hook (org-mode . org-bullets-mode)
-  :config)
+  :hook (org-mode . org-bullets-mode))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
@@ -809,6 +796,7 @@
 
 ;; https://github.com/IvanMalison/org-projectile
 (use-package org-projectile
+  :disabled
   :defer 3
   :ensure t
   :config
@@ -826,8 +814,7 @@
         ("C-z z z"   . treemacs)
         ("C-z z B"   . treemacs-bookmark)
         ("C-z z C-t" . treemacs-find-file)
-        ("C-z t M-t" . treemacs-find-tag))
-  )
+        ("C-z t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-projectile
   :after treemacs projectile
@@ -841,7 +828,6 @@
 (use-package treemacs-magit
   :after treemacs magit
   :ensure t)
-
 
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
@@ -875,7 +861,6 @@
   :ensure t
   :config
   (company-quickhelp-mode))
-
 
 ;; https://github.com/sebastiencs/company-box
 (use-package company-box
@@ -1036,12 +1021,13 @@
   :ensure t
   :after tern
   :init
-  (add-hook 'js2-mode-hook (lambda ()
-                             (add-to-list (make-local-variable 'company-backends)
-                                          '(company-tern company-dabbrev))
-                             (setq company-idle-delay 0)
-                             (tern-mode t)
-                             (company-mode))))
+  (add-hook 'js2-mode-hook
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends)
+                           '(company-tern company-dabbrev))
+              (setq company-idle-delay 0)
+              (tern-mode t)
+              (company-mode))))
 
 (use-package glsl-mode
   :defer 2
@@ -1051,6 +1037,7 @@
 (use-package elm-mode
   :defer 2
   :ensure t
+  :disabled ;; dont use elm anymore
   :config
   (setq-default indent-tabs-mode nil)
   (add-hook 'elm-mode-hook 'electric-pair-mode)
@@ -1067,6 +1054,7 @@
         elm-package-json "elm.json"))
 
 (use-package elm-yasnippets
+  :disabled
   :defer 3
   :ensure t)
 
@@ -1153,13 +1141,8 @@
   (setq counsel-describe-function-function #'helpful-callable
 	counsel-describe-variable-function #'helpful-variable)
 
-  ;; (global-set-key (kbd "C-h f") #'helpful-callable)
-  ;; (global-set-key (kbd "C-h v") #'helpful-variable)
   (global-set-key (kbd "C-h k") #'helpful-key)
-  (global-set-key (kbd "C-c C-d") #'helpful-at-point)
-  ;; (global-set-key (kbd "C-h F") #'helpful-function)
-;  (global-set-key (kbd "C-h C") #'helpful-command)
-  )
+  (global-set-key (kbd "C-c C-d") #'helpful-at-point))
 
 
 (use-package markdown-mode
@@ -1168,11 +1151,12 @@
   :mode ("\\.md[x]?$")
   :config
   (add-hook 'markdown-mode-hook 'visual-line-mode)
-  (add-hook 'markdown-mode-hook  (lambda ()
-                                   (let ((file (file-name-nondirectory buffer-file-name)))
-                                     (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
-                                             (file-name-sans-extension file)
-                                             file))))
+  (add-hook 'markdown-mode-hook
+            (lambda ()
+              (let ((file (file-name-nondirectory buffer-file-name)))
+                (format "pandoc -o %s.pdf %s --pdf-engine=xelatex"
+                        (file-name-sans-extension file)
+                        file))))
   (setq markdown-header-scaling 1)
   (setq markdown-command
       (concat
@@ -1185,8 +1169,7 @@
 (use-package texfrag
   :ensure t
   :config
-  (add-hook 'markdown-mode-hook 'texfrag-mode)
-  )
+  (add-hook 'markdown-mode-hook 'texfrag-mode))
 
 (use-package pdf-tools
   ;; :load-path "pdf-tools"
@@ -1427,18 +1410,6 @@
   :bind (:map xwidget-webkit-mode-map
               ("v" . xwwp-follow-link)))
 
-;; (use-package xwwp
-;;   :ensure t)
-
-;; (use-package xwwp-follow-link
-;;   :ensure t
-;;   :custom
-;;   (xwwp-follow-link-completion-system 'ivy)
-;;   :bind (:map xwidget-webkit-mode-map
-;;               ("v" . xwwp-follow-link))
-;;   ;; (require 'xwwp-foll(ow-link-ivy)
-;;   )
-
 (global-set-key (kbd "C-å") (lambda ()
                               (interactive)
                               (xwwp (thing-at-point 'url 'no-properties))))
@@ -1499,6 +1470,7 @@
   :ensure t)
 
 (use-package csharp-mode
+  :disabled
   :defer 2
   :ensure t
   :mode "\\.cs$"
@@ -1508,16 +1480,15 @@
     (omnisharp-mode)
     (flycheck-mode 1))
 
-  
   ;; (add-hook 'csharp-mode-hook 'my-csharp-mode-setup t)
   )
 
 (use-package omnisharp
+  :disabled
   :defer 2
   :ensure t
   :config
-  (setq omnisharp-debug nil)
-  )
+  (setq omnisharp-debug nil))
 
 (use-package dired-subtree
   :defer 2
