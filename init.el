@@ -49,7 +49,11 @@
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
-      use-dialog-box nil)
+      use-dialog-box nil
+      ;; always split vertically
+      split-width-threshold 160
+      split-height-threshold 80
+      )
 
 (custom-set-variables '(calendar-week-start-day 1))
 
@@ -143,9 +147,9 @@
   :ensure t
   :config
   (setq exec-path-from-shell-arguments nil)
-  (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-envs
-   '("PATH")))
+   '("PATH" "WORKON_HOME"))
+  (exec-path-from-shell-initialize))
 
 (use-package server
   :defer 2
@@ -181,6 +185,7 @@
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (use-package esup
+  :disabled
   :ensure t
   :defer t
   ;; To use MELPA Stable use ":pin mepla-stable",
@@ -239,6 +244,7 @@
   :hook (flycheck-mode . flycheck-color-mode-line-mode))
 
 (use-package flycheck-flow
+  :disabled
   :defer 2
   :ensure t)
 
@@ -263,10 +269,17 @@
   (revert-buffer t t))
 
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
+;; More at http://www.emacswiki.org/emacs/ParEdit
 (use-package paredit
   :defer 2
   :ensure t
   :config
+  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
+
   (dolist (m '(emacs-lisp-mode-hook
 	       racket-mode-hook
 	       racket-repl-mode-hook))
@@ -280,19 +293,18 @@
 	       ("M-{" . paredit-wrap-curly))))
 
 (use-package paredit-everywhere
+  :disabled
   :defer 2
   :ensure t
   :hook (prog-mode . paredit-everywhere-mode))
 
 (use-package flycheck-clj-kondo
-  :defer 2
   :ensure t
   :after (flycheck))
 
 ;; key bindings and code colorization for Clojure
 ;; https://github.com/clojure-emacs/clojure-mode
 (use-package clojure-mode
-  :defer t
   :ensure t
   :mode "\\.edn$"
   :mode "\\.boot$"
@@ -310,18 +322,18 @@
 
 ;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
-  :defer 2
+  :after clojure-mode
   :ensure t)
 
 ;; Integration with a Clojure REPL
 ;; https://github.com/clojure-emacs/cider
 (use-package cider
-  :defer 2
   :hook ((cider-mode . eldoc-mode)
          (cider-mode . company-mode)
          (cider-repl-mode . company-mode)
-         (cider-mode . paredit-mode)
-         (cider-repl-mode . paredit-mode))
+         ;; (cider-mode . paredit-mode)
+         ;; (cider-repl-mode . paredit-mode)
+         )
   :config
   ;; go right to the REPL buffer when it's finished connecting
   (setq cider-repl-pop-to-buffer-on-connect t)
@@ -347,7 +359,6 @@
       (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
       (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
 
-
   (defun cider-refresh ()
     (interactive)
     (cider-interactive-eval (format "(user/reset)")))
@@ -369,16 +380,14 @@
               (cljr-add-keybindings-with-prefix "C-c C-m"))))
 
 (use-package prolog-mode
-  :defer 2
+  :ensure t
   :mode "\\.pl$")
 
 (use-package restclient
-  :defer 1
   :ensure t
   :mode "\\.http$\\'")
 
 (use-package company-restclient
-  :defer 1
   :ensure t
   :after restclient
   :config
@@ -411,10 +420,10 @@
 (use-package buffer-move
   :ensure t
   :bind
-  (("C-c b u" . 'buf-move-up)
-   ("C-c b d" . 'buf-move-down)
-   ("C-c b l" . 'buf-move-left)
-   ("C-c b r" . 'buf-move-right)))
+  (("C-c q u" . 'buf-move-up)
+   ("C-c q d" . 'buf-move-down)
+   ("C-c q l" . 'buf-move-left)
+   ("C-c q r" . 'buf-move-right)))
 
 (use-package fennel-mode
   :mode "\\.fnl$'"
@@ -528,7 +537,6 @@
 
 (use-package anzu
   :ensure t
-  :defer 2
   :bind (("C-1" . anzu-query-replace)
          ("C-!" . anzu-query-replace-regexp))
   :config
@@ -563,10 +571,9 @@
   (setq rg-executable "/usr/local/bin/rg"))
 
 (use-package neotree
-  :defer 1
   :ensure t
+  :bind ("C-x t" . neotree-toggle)
   :config
-  (global-set-key (kbd "C-x t") 'neotree-toggle)
   (setq neo-smart-open t)
   (setq neo-theme 'icons)
   (setq neo-window-fixed-size nil)
@@ -585,7 +592,6 @@
   :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package rainbow-delimiters
-  :defer 1
   :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
 
@@ -683,19 +689,17 @@
 (use-package org-super-agenda
   :ensure t
   :config
-  (org-super-agenda-mode t)
-  (setq org-super-agenda-groups
-        '(
-          (:name "Important"
-                 :priority "A")
-          (:category "notater" :name "Notater")
-          (:category "audio_xal" :name "Work")
-          )))
+  (org-super-agenda-mode t))
 
 (use-package org
   :defer 1
   :ensure org-plus-contrib
   :pin org
+  :bind (("C-c l" . org-store-link)
+         ("C-c c" . org-capture)
+         ("C-c a" . org-agenda)
+         ("C-c ." . org-save-all-org-buffers)
+         ("C-c b" . org-switchb))
   :config
   (org-clock-persistence-insinuate)
   (setq org-clock-persist t)
@@ -706,8 +710,12 @@
 
   (setq org-src-fontify-natively t
         org-src-tab-acts-natively nil
+        org-hide-emphasis-markers t
+        org-log-done 'time
         org-confirm-babel-evaluate nil
-        org-edit-src-content-indentation 0)
+        org-edit-src-content-indentation 0
+        org-startup-indented t
+        org-directory "~/Dropbox/org")
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   (add-hook 'org-mode-hook
             (lambda ()
@@ -736,40 +744,116 @@
                                "~/Dropbox/org/tasks.org"
                                "~/Dropbox/org/notater.org"))
 
+  (setq org-super-agenda-groups nil)
+
+  (setq org-priority-faces '((?A . (:foreground "Dark Red" :weight bold))
+                             (?B . (:foreground "DeepSkyBlue4"))
+                             (?C . (:foreground "OliveDrab"))))
+  (setq org-agenda-start-on-weekday nil)
+  (setq org-log-into-drawer t)
+
+  ;; https://whhone.com/posts/org-mode-task-management/ insp
   ;; https://orgmode.org/worg/org-tutorials/org-custom-agenda-commands.html
   (setq org-agenda-custom-commands
-        '(("w" "Work view"
+        '(
+          ("n" "Agenda all all TODOs"
+           ((agenda "")
+            (alltodo "")))
+          ("p" "Private view"
            (
-            (todo "" ((org-super-agenda-groups
+            (agenda "" ((org-super-agenda-groups
                        '(
-                         ;; (:name "First prio"
-                         ;;        :category "audio_xal" :priority "A")
                          (:name "Top prio"
                                 :priority "A")
+                         (:name "Next prio"
+                                :priority<= "B")
                          (:auto-outline-path t)
-                         )))))
-           ((org-agenda-files '("~/Dropbox/org/audio_xal.org")))
-           )))
-
+                         ))
+                        ))
+            (alltodo ""
+                     ((org-super-agenda-groups
+                       '(
+                         (:name "Top prio todo"
+                                :priority "A"
+                                :order 0)
+                         (:auto-outline-path t)
+                         ))
+                      (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
+                      (org-agenda-overriding-header "ALL normal priority tasks:")
+                      )
+                  ))
+           ((org-agenda-files '("~/Dropbox/org/notater.org" "~/Dropbox/org/tasks.org"))
+            (org-agenda-span 'day)
+            (org-agenda-show-log t)
+            ))
+          ("w" "Work view"
+           (
+            (agenda "" ((org-agenda-overriding-header "XXXXX")
+                        (org-agenda-span 'day)
+                        ;; (org-agenda-use-time-grid nil)
+                        (org-super-agenda-groups
+                         '(
+                           (:name "Top prio"
+                                  :priority "A")
+                           (:time-grid t)
+                           (:auto-outline-path t)
+                           ))
+                        ))
+            (alltodo "" ((org-super-agenda-groups
+                          '(
+                            (:name "Doing"
+                                   :todo "DOING")
+                            (:name "Top prio"
+                                   :priority "A")
+                            (:auto-group t)
+                         ))
+                         (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
+                         (org-agenda-overriding-header "ALL NONSCHEDULED TASKS")
+                      )))
+           ((org-agenda-files '("~/Dropbox/org/audio_xal.org"))
+            (org-agenda-span 'day)
+            (org-agenda-compact-blocks t))
+           )
+          ("I" "Import diary from iCal" agenda ""
+         ((org-agenda-mode-hook
+           (lambda ()
+             (org-mac-iCal)))))
+          ))
 
   (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
-  (global-set-key (kbd "C-c c") 'org-capture)
+
+  ;; org capture
   (setq org-capture-templates
         '(
           ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
           ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
+          ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
+           "* TODO %?\n%U")
           ("a" "Audio project" entry
            (file+headline "~/Dropbox/org/audio_xal.org" "Usorterte todos")
-           "* TODO %?\n")
+           "* TODO [#C] %?\n")
           ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
-           "* TODO %?\n%U" :empty-lines 1)))
+           "** TODO %?\n%U" :empty-lines 1)))
   (require 'org-tempo)
-  (require 'ox-md))
+  (require 'org-habit)
+  (add-to-list 'org-modules 'org-habit t)
+  (add-to-list 'org-modules 'org-habit t)
+  (setq org-agenda-include-diary t)
+  (require 'org-mac-iCal)
+  )
 
+(use-package ox-md
+  :ensure nil
+  :defer 3
+  :after org)
 
 (use-package org-bullets
   :ensure t
   :hook (org-mode . org-bullets-mode))
+
+(use-package org-superstar
+  :ensure t
+  :hook (org-mode . org-superstar-mode))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
@@ -777,22 +861,22 @@
   :ensure t)
 
 (use-package org-roam
-      :ensure t
-      :hook
-      (after-init . org-roam-mode)
-      :custom
-      (org-roam-directory "~/Dropbox/org/roam/")
-      :bind (:map org-roam-mode-map
-                  (("C-c n l" . org-roam)
-                   ("C-c n r" . org-roam-buffer-toggle-display)
-                   ("C-c n f" . org-roam-find-file)
-                   ("C-c n g" . org-roam-graph))
-                  :map org-mode-map
-                  (("C-c n i" . org-roam-insert))
-                  (("C-c n I" . org-roam-insert-immediate)))
-      :config
-      (setq org-roam-completion-everywhere t)
-      (require 'org-roam-protocol))
+  :ensure t
+  :hook
+  (after-init . org-roam-mode)
+  :custom
+  (org-roam-directory "~/Dropbox/org/roam/")
+  :bind (:map org-roam-mode-map
+              (("C-c n l" . org-roam)
+               ("C-c n r" . org-roam-buffer-toggle-display)
+               ("C-c n f" . org-roam-find-file)
+               ("C-c n g" . org-roam-graph))
+              :map org-mode-map
+              (("C-c n i" . org-roam-insert))
+              (("C-c n I" . org-roam-insert-immediate)))
+  :config
+  (setq org-roam-completion-everywhere t)
+  (require 'org-roam-protocol))
 
 ;; https://github.com/IvanMalison/org-projectile
 (use-package org-projectile
@@ -802,8 +886,8 @@
   :config
   (setq org-projectile-projects-file "~/Dropbox/org/prosjekter.org")
    (add-to-list 'org-capture-templates
-                 (org-projectile-project-todo-entry
-                  :capture-character "l")))
+                (org-projectile-project-todo-entry
+                 :capture-character "l")))
 
 (use-package treemacs
   :ensure t
@@ -838,11 +922,38 @@
 (global-set-key (kbd "C-c ø")
                 (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
 
+(global-set-key (kbd "C-c æ")
+                (lambda () (interactive) (find-file "~/Dropbox/org/audio_xal.org")))
+
 (global-set-key (kbd "C-c i")
                 (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
 (global-set-key (kbd "C-c d")
                 (lambda () (interactive) (find-file "~/Dropbox/org/dagbok.org")))
+
+
+;; https://github.com/tarsius/hl-todo
+(use-package hl-todo
+  :ensure t
+  :config
+  (global-hl-todo-mode t))
+
+
+(use-package ligature
+  :load-path "~/.emacs.d/ligature.el"
+  :config
+    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+                                      "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+                                      "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+                                      "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+                                      "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+                                      "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+                                      ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+                                      "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+                                      "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+                                      "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+                                      "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+    (global-ligature-mode 1))
 
 
 (use-package company
@@ -853,9 +964,11 @@
   :config
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
-  (setq company-minimum-prefix-length 2)
+  (setq company-show-numbers t)
+  (setq company-minimum-prefix-length 1)
   (add-to-list 'company-backends 'company-flow))
 
+;; https://github.com/company-mode/company-quickhelp
 (use-package company-quickhelp
   :after company
   :ensure t
@@ -868,11 +981,12 @@
   :hook (company-mode . company-box-mode))
 
 (use-package company-flow
+  :disabled
   :defer 2
   :ensure t)
 
 (use-package json-mode
-  :defer 2
+  :mode "\\.json\\'"
   :ensure t)
 
 (use-package prettier-js
@@ -932,7 +1046,6 @@
   (setq plantuml-default-exec-mode 'executable))
 
 (use-package rust-mode
-  :defer 2
   :ensure t
   :mode "\\.rs\\'"
   :config
@@ -961,6 +1074,7 @@
   (tide-hl-identifier-mode t))
 
 (use-package vue-mode
+  :disabled
   :ensure t
   :mode "\\.vue\\'"
   :config
@@ -1007,9 +1121,12 @@
   :ensure t)
 
 (use-package company-tabnine
+  :disabled
   :defer 2
   :ensure t
   :config
+  (setq company-tabnine-always-trigger nil)
+  (setq company-tabnine-wait 0.5)
   (add-hook 'python-mode-hook
             '(lambda ()
                (add-to-list (make-local-variable 'company-backends) #'company-tabnine))))
@@ -1030,12 +1147,10 @@
               (company-mode))))
 
 (use-package glsl-mode
-  :defer 2
   :ensure t
   :mode "\\.glsl\\'")
 
 (use-package elm-mode
-  :defer 2
   :ensure t
   :disabled ;; dont use elm anymore
   :config
@@ -1060,23 +1175,20 @@
 
 ;; Ruby
 (use-package ruby-mode
-  :defer 2
+  :mode "\\.rb\\'"
   :ensure t)
 
 (use-package ruby-electric
-  :defer 2
   :ensure t
   :hook ruby-mode)
 
 ;; https://github.com/JoshCheek/seeing_is_believing
 ;; https://github.com/jcinnamond/seeing-is-believing
 (use-package seeing-is-believing
-  :defer 2
   :ensure t
   :hook ruby-mode)
 
 (use-package inf-ruby
-  :defer 2
   :ensure t
   :hook (ruby-mode . inf-ruby-minor-mode))
 
@@ -1096,7 +1208,7 @@
 ;; Go
 (use-package go-mode
   :ensure t
-  :defer 2
+  :mode "\\.go\\'"
   :config
   (add-hook 'before-save-hook 'gofmt-before-save)
   (if (not (string-match "go" compile-command))
@@ -1109,24 +1221,16 @@
 
 ;; https://www.racket-mode.com
 (use-package racket-mode
-  :defer 2
   :ensure t
+  :mode "\\.rkt\\'"
   :config
-  (setq racket-program "/usr/local/bin/racket")
-  (add-to-list 'auto-mode-alist '("\\.rkt\\'" . racket-mode))
-  (add-hook 'racket-mode-hook
-            (lambda ()
-              (electric-indent-mode t)
-              (electric-pair-mode t)
-              )))
+  (setq racket-program "/usr/local/bin/racket"))
 
 (use-package dockerfile-mode
-  :defer 2
   :ensure t
   :mode "Dockerfile\\'")
 
 (use-package minimap
-  :defer 2
   :ensure t
   :bind ("C-x w" . minimap-mode)
   :config
@@ -1146,7 +1250,6 @@
 
 
 (use-package markdown-mode
-  :defer 2
   :ensure t
   :mode ("\\.md[x]?$")
   :config
@@ -1208,11 +1311,11 @@
   (setq gc-cons-threshold 100000000)
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
-  ;; (add-hook 'python-mode-hook #'lsp)
+  (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
   (require 'lsp-csharp)
-  (require 'lsp-pyright)
+  ;; (require 'lsp-pyright)
   (setq lsp-rust-server 'rust-analyzer)
 
   ;; To enable mypy
@@ -1332,7 +1435,7 @@
   :ensure t
   :hook (python-mode . whitespace-mode)
   :config
-  (setq whitespace-line-column 80)
+  (setq whitespace-line-column 120)
   (setq whitespace-style '(face lines-tail)))
 
 ;; This package implements a menu that lists enabled minor-modes, as well as
@@ -1356,13 +1459,11 @@
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
-  :defer 1
-  :ensure t
-  :config
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+  :bind (("C-S-c C-S-c" . 'mc/edit-lines)
+         ("C->" . 'mc/mark-next-like-this)
+         ("C-<" . 'mc/mark-previous-like-this)
+         ("C-c C-<" . 'mc/mark-all-like-this))
+  :ensure t)
 
 (use-package elfeed
   :defer 1
@@ -1584,22 +1685,10 @@
 
 (setq sgml-quick-keys 'close)
 
-
-;; Automatically load paredit when editing a lisp file
-;; More at http://www.emacswiki.org/emacs/ParEdit
-(autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of Lisp code." t)
-(add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-(add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-(add-hook 'ielm-mode-hook             #'enable-paredit-mode)
-(add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-(add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-(add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-(add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
 
 
 ;; Show line numbers
@@ -1610,7 +1699,11 @@
   (scroll-bar-mode -1))
 
 ;; increase font size for better readability
-(set-face-attribute 'default nil :height 140)
+(set-face-attribute 'default nil
+                    :height 140
+                    :weight 'normal
+                    :family "Jetbrains Mono")
+
 (setq initial-frame-alist '((top . 0) (left . 0) (width . 177) (height . 53)))
 
 ;; These settings relate to how emacs interacts with your operating system
@@ -1656,30 +1749,6 @@
 
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
-
-
-
-;;;;;;;;;; Oz mode
-
-;; (or (getenv "OZHOME")
-;;     (setenv "OZHOME"
-;;             "/Applications/Mozart2.app/Contents/Resources/"))   ; or wherever Mozart is installed
-;; (setenv "PATH" (concat (getenv "OZHOME") "/bin:" (getenv "PATH")))
-
-;; (setq load-path (cons (concat (getenv "OZHOME") "/share/mozart/elisp")
-;;                       load-path))
-
-;; (setq auto-mode-alist
-;;       (append '(("\\.oz\\'" . oz-mode)
-;;                 ("\\.ozg\\'" . oz-gump-mode))
-;;               auto-mode-alist))
-
-;; (autoload 'run-oz "oz" "" t)
-;; (autoload 'oz-mode "oz" "" t)
-;; (autoload 'oz-gump-mode "oz" "" t)
-;; (autoload 'oz-new-buffer "oz" "" t)
-;; (add-hook 'oz-mode-hook 'electric-pair-mode 'electric-indent-mode)
-
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 (use-package fm-common-lisp)

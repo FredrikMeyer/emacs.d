@@ -13,7 +13,9 @@ Current Emacs version:
 : GNU Emacs 28.0.50 (build 2, x86_64-apple-darwin20.2.0, NS appkit-2022.20 Version 11.1 (Build 20C69))
 :  of 2021-02-11
 
+** Dependencies
 
+- [[https://github.com/BurntSushi/ripgrep][ripgrep]]
 ** Things that should be done
 
  - Write a list of all necessary external binaries (such as Python language server, `ag`, and so on)

@@ -26,6 +26,7 @@
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
 (use-package lsp-pyright
+  :disabled ;; test python-lsp again 
   :ensure t
   :hook (python-mode . (lambda ()
                           (require 'lsp-pyright)
