@@ -169,13 +169,13 @@
 (use-package quelpa-use-package
   :ensure t)
 
-(use-package package-utils-upgrade-all-and-recompile
-  :commands (package-utils-upgrade-all-and-recompile)
+;; (use-package package-utils-upgrade-all-and-recompile
+;;   :commands (package-utils-upgrade-all-and-recompile)
 
-  :quelpa
-  (package-utils-upgrade-all-and-recompile
-   :fetcher gitlab
-   :repo "ideasman42/emacs-package-utils-upgrade-all-and-recompile"))
+;;   :quelpa
+;;   (package-utils-upgrade-all-and-recompile
+;;    :fetcher gitlab
+;;    :repo "ideasman42/emacs-package-utils-upgrade-all-and-recompile"))
 
 (use-package benchmark-init
   :disabled
@@ -271,6 +271,7 @@
 ;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
 ;; More at http://www.emacswiki.org/emacs/ParEdit
 (use-package paredit
+  :disabled
   :defer 2
   :ensure t
   :config
@@ -312,7 +313,8 @@
   :hook ((clojure-mode . subword-mode) ;; For Java class names
          (clojure-mode . electric-indent-mode)
          (clojure-mode . electric-pair-mode)
-         (clojure-mode . paredit-mode))
+         ;; (clojure-mode . paredit-mode)
+         )
   :config
   (require 'flycheck-clj-kondo)
   ;; Enable paredit for Clojure
@@ -380,6 +382,7 @@
               (cljr-add-keybindings-with-prefix "C-c C-m"))))
 
 (use-package prolog-mode
+  :disabled
   :ensure t
   :mode "\\.pl$")
 
@@ -735,7 +738,7 @@
   (setq org-babel-clojure-backend 'cider)
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
-  (setq org-refile-targets '((nil :maxlevel . 3)))
+  (setq org-refile-targets '((nil :maxlevel . 3) (org-agenda-files :maxlevel . 9)))
   (setq org-refile-use-outline-path t)
   (setq org-outline-path-complete-in-steps nil)
 
@@ -1087,8 +1090,21 @@
   :defer 1
   :hook ((web-mode . smartparens-mode)
          (python-mode . smartparens-mode))
+  :bind (:map smartparens-mode-map
+              ("C-M-f" . 'sp-forward-sexp)
+              ("C-M-b" . 'sp-backward-sexp)
+              ("C-M-d" . 'sp-down-sexp)
+              ("C-M-a" . 'sp-backward-down-sexp)
+              ("C-S-d" . 'sp-beginning-of-sexp)
+              ("C-S-a" . 'sp-beginning-of-sexp)
+              ("C-M-<left>" . 'sp-forward-barf-sexp)
+              ("C-M-<right>" . 'sp-forward-slurp-sexp)
+         )
   :config
-  (require 'smartparens-config))
+  (require 'smartparens-config)
+  (smartparens-global-mode t)
+  (smartparens-strict-mode t)
+  )
 
 ;; https://elpa.gnu.org/packages/sml-mode.html
 (use-package sml-mode
@@ -1742,9 +1758,10 @@
 
 (pretty-lambda-for-modes)
 
-(dolist (mode pretty-lambda-auto-modes)
-  ;; add paredit-mode to all mode-hooks
-  (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode))
+;; (dolist (mode pretty-lambda-auto-modes)
+;;   ;; add paredit-mode to all mode-hooks
+;;   (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode)
+;;   )
 
 
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory

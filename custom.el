@@ -62,7 +62,7 @@
  '(pos-tip-foreground-color "#586e75")
  '(python-shell-exec-path '("python3"))
  '(safe-local-variable-values
-   '(
+   '((lsp-enabled-clients . lsp-pyright)
      (eval message "Project directory set to `%s'." my-project-path)
      (eval set
            (make-local-variable 'my-project-path)
