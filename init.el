@@ -8,13 +8,14 @@
 
 (toggle-debug-on-error 1)
 ;; Less in the end of this file
-(setq gc-cons-threshold (* 50 1000 1000))
+(setq gc-cons-threshold (* 100 1000 1000))
 
 (setq lexical-binding t)
 
 (setq user-full-name "Fredrik Meyer"
       user-mail-address "hrmeyer@gmail.com")
 
+(setq comp-async-report-warnings-errors nil)
 
 (setq ns-pop-up-frames nil)
 (prefer-coding-system 'utf-8)
@@ -43,9 +44,7 @@
       mac-command-modifier 'meta
       select-enable-clipboard t)
 
-(set-frame-font "Menlo-14")
-;; Removes tool-bar
-(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+;; (set-frame-font "Menlo-14")
 
 (setq inhibit-startup-message t
       initial-scratch-message nil
@@ -138,7 +137,7 @@
 	(package-refresh-contents)
 	(package-install 'use-package))
 
-(custom-set-variables '(use-package-compute-statistics t))
+;; (custom-set-variables '(use-package-compute-statistics t))
 
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
@@ -214,13 +213,13 @@
 
 ;; https://github.com/wakatime/wakatime-mode
 ;; See ~/.wakatime.cfg
-(use-package wakatime-mode
-  :defer 1
-  :ensure t
-  :hook (prog-mode global-wakatime)
-  :config
-  ;; Running on my Raspberry Pi
-  (setq wakatime-api-key "c1af0bcd-9cfc-495a-ba27-2f66f5c308ef"))
+;; (use-package wakatime-mode
+;;   :defer 1
+;;   :ensure t
+;;   :hook (prog-mode global-wakatime)
+;;   :config
+;;   ;; Running on my Raspberry Pi
+;;   (setq wakatime-api-key "c1af0bcd-9cfc-495a-ba27-2f66f5c308ef"))
 
 (use-package flycheck
   :ensure t
@@ -233,20 +232,14 @@
 
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (flycheck-add-mode 'javascript-eslint 'vue-mode)
+  ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
 
-  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.6.0/bin/tidy")
-  )
+  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.6.0/bin/tidy"))
 
 (use-package flycheck-color-mode-line
   :ensure t
   :hook (flycheck-mode . flycheck-color-mode-line-mode))
-
-(use-package flycheck-flow
-  :disabled
-  :defer 2
-  :ensure t)
 
 ;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
 (defun eslint-fix-file ()
@@ -432,77 +425,6 @@
   :mode "\\.fnl$'"
   :ensure t)
 
-(use-package counsel
-  :after ivy
-  :ensure t
-  :bind
-  (("M-y" . counsel-yank-pop)
-   :map ivy-minibuffer-map
-   ("M-y" . ivy-next-line)
-   ("M-x" . counsel-M-x)
-   ("RET" . ivy-alt-done)
-   ("C-x C-f" . counsel-find-file)
-   ("C-h v" . counsel-describe-variable)
-   ("C-h f" . counsel-describe-function)
-   ("C-h o" . counsel-describe-symbol)
-   ("<backspace>" . 'ivy-backward-delete-char))
-  :config
-  (counsel-mode)
-  (setq counsel-describe-function-function #'helpful-callable)
-  (setq counsel-describe-variable-function #'helpful-variable)
-  (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) "")
-  (define-key minibuffer-local-map (kbd "C-r") 'counsel-expression-history))
-
-(use-package ivy
-  :ensure t
-  :defer 0.1
-  :pin melpa
-  :demand t
-  :diminish (ivy-mode)
-  :bind (("C-c C-r" . ivy-resume)
-         ("C-x b" . ivy-switch-buffer))
-  :config
-  (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers t)
-  (setq ivy-count-format "%d/%d ")
-  (setq ivy-display-style 'fancy)
-  (setq ivy-wrap t)
-  ;; Fuzzy matching is the best
-  (setq ivy-re-builders-alist
-        '((counsel-ag . ivy--regex-plus)
-          (counsel-rg . ivy--regex-plus)
-          (swiper-isearch . ivy--regex-plus)
-          (counsel-projectile-find-file . ivy--regex-plus)
-          (counsel-M-x . ivy--regex-plus)
-          (t . ivy--regex-plus))))
-
-;; https://github.com/tumashu/ivy-posframe
-(use-package ivy-posframe
-  :ensure t
-  :config
-  (ivy-posframe-mode t))
-
-(use-package swiper
-  :ensure t
-  :after ivy
-  :bind (("C-s" . swiper-isearch)
-	 ("C-r" . swiper-isearch)
-	 ("C-x C-f" . counsel-find-file)))
-
-;; https://github.com/Yevgnen/ivy-rich
-(use-package ivy-rich
-  :after ivy
-  :hook (counsel-projectile-mode . ivy-rich-mode)
-  :ensure t
-  :config
-  (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
-
-;; https://github.com/asok/all-the-icons-ivy
-(use-package all-the-icons-ivy-rich
-  :hook (ivy-mode . all-the-icons-ivy-rich-mode)
-  :ensure t)
-
 ;; http://www.emacswiki.org/emacs/SavePlace
 (use-package saveplace
   :defer 1
@@ -547,20 +469,15 @@
 
 (use-package projectile
   :ensure t
-  :defer t
+  :bind (:map projectile-mode-map
+              (("M-p" . 'projectile-command-map)
+               ("C-c p" . 'projectile-command-map)))
   :config
-  (define-key projectile-mode-map (kbd "M-p") 'projectile-command-map)
-  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   (setq projectile-project-compilation-cmd ""))
 
-; https://github.com/ericdanan/counsel-projectile
-(use-package counsel-projectile
-  :defer 1
-  :ensure t
-  :config
-  (counsel-projectile-mode))
 
 (use-package projectile-ripgrep
+  :after projectile
   :defer 1
   :ensure t)
 
@@ -616,14 +533,11 @@
 
 ;; lambda
 (use-package pretty-lambdada
-  :defer 1
-  :ensure t)
-
-;;; dont know what this is??
-(use-package strokes
   :disabled
+  :defer 1
+  :ensure t
   :config
-  (strokes-mode 1))
+  (pretty-lambda-for-modes))
 
 (use-package undo-tree
   :ensure t
@@ -726,7 +640,6 @@
 
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
-                               ;; (ipython . t)
                                (calc . t)
                                (clojure . t)
                                (shell . t)
@@ -742,7 +655,6 @@
   (setq org-refile-use-outline-path t)
   (setq org-outline-path-complete-in-steps nil)
 
-  (global-set-key (kbd "C-c a") 'org-agenda)
   (setq org-agenda-files (list "~/Dropbox/org/audio_xal.org"
                                "~/Dropbox/org/tasks.org"
                                "~/Dropbox/org/notater.org"))
@@ -864,6 +776,7 @@
   :ensure t)
 
 (use-package org-roam
+  :disabled
   :ensure t
   :hook
   (after-init . org-roam-mode)
@@ -968,8 +881,7 @@
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-show-numbers t)
-  (setq company-minimum-prefix-length 1)
-  (add-to-list 'company-backends 'company-flow))
+  (setq company-minimum-prefix-length 1))
 
 ;; https://github.com/company-mode/company-quickhelp
 (use-package company-quickhelp
@@ -982,11 +894,6 @@
 (use-package company-box
   :ensure t
   :hook (company-mode . company-box-mode))
-
-(use-package company-flow
-  :disabled
-  :defer 2
-  :ensure t)
 
 (use-package json-mode
   :mode "\\.json\\'"
@@ -1031,12 +938,11 @@
                              (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
 
-(use-package typescript
+(use-package typescript-mode
   :defer 1
   :ensure t)
 
 (use-package tide
-  :defer 1
   :bind ("C-c r" . tide-rename-symbol)
   :ensure t)
 
@@ -1054,13 +960,6 @@
   :config
   (add-hook 'rust-mode-hook #'lsp)
   (add-hook 'rust-mode-hook (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
-
-(use-package flycheck-rust
-  :disabled
-  :ensure t
-  :config
-  (setq flycheck-rust-cargo-executable "/Users/fredrikmeyer/.cargo/bin/cargo")
-  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
 ;; https://github.com/kwrooijen/cargo.el
 (use-package cargo
@@ -1088,52 +987,29 @@
 (use-package smartparens
   :ensure t
   :defer 1
-  :hook ((web-mode . smartparens-mode)
-         (python-mode . smartparens-mode))
+  :hook ((prog-mode . smartparens-strict-mode))
   :bind (:map smartparens-mode-map
               ("C-M-f" . 'sp-forward-sexp)
               ("C-M-b" . 'sp-backward-sexp)
               ("C-M-d" . 'sp-down-sexp)
               ("C-M-a" . 'sp-backward-down-sexp)
               ("C-S-d" . 'sp-beginning-of-sexp)
-              ("C-S-a" . 'sp-beginning-of-sexp)
-              ("C-M-<left>" . 'sp-forward-barf-sexp)
-              ("C-M-<right>" . 'sp-forward-slurp-sexp)
-         )
+              ("C-S-a" . 'sp-end-of-sexp)
+              ("S-M-<right>" . 'sp-forward-slurp-sexp)
+              ("S-M-<left>" . 'sp-forward-barf-sexp))
   :config
   (require 'smartparens-config)
   (smartparens-global-mode t)
-  (smartparens-strict-mode t)
-  )
+  (smartparens-strict-mode t))
+
 
 ;; https://elpa.gnu.org/packages/sml-mode.html
 (use-package sml-mode
   :defer 2
   :ensure t)
 
-(use-package flow-minor-mode
-  :defer 2
-  :disabled
-  :ensure t
-  :hook (web-mode . flow-minor-enable-automatically))
-
 (use-package add-node-modules-path
   :defer 1
-  :ensure t)
-
-(use-package js2-mode
-  :disabled
-  :ensure t
-  :config
-  (setq-default indent-tabs-mode nil)
-  (setq js2-strict-missing-semi-warning nil)
-  (add-hook 'js-mode-hook 'js2-minor-mode)
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-  (add-hook 'js-mode-hook 'electric-pair-mode)
-  (add-hook 'js-mode-hook 'electric-indent-mode))
-
-(use-package tern
-  :disabled
   :ensure t)
 
 (use-package company-tabnine
@@ -1146,21 +1022,6 @@
   (add-hook 'python-mode-hook
             '(lambda ()
                (add-to-list (make-local-variable 'company-backends) #'company-tabnine))))
-
-
-(use-package company-tern
-  :disabled
-  :defer 1
-  :ensure t
-  :after tern
-  :init
-  (add-hook 'js2-mode-hook
-            (lambda ()
-              (add-to-list (make-local-variable 'company-backends)
-                           '(company-tern company-dabbrev))
-              (setq company-idle-delay 0)
-              (tern-mode t)
-              (company-mode))))
 
 (use-package glsl-mode
   :ensure t
@@ -1184,11 +1045,6 @@
         elm-package-command '("elm" "package")
         elm-package-json "elm.json"))
 
-(use-package elm-yasnippets
-  :disabled
-  :defer 3
-  :ensure t)
-
 ;; Ruby
 (use-package ruby-mode
   :mode "\\.rb\\'"
@@ -1199,7 +1055,6 @@
   :hook ruby-mode)
 
 ;; https://github.com/JoshCheek/seeing_is_believing
-;; https://github.com/jcinnamond/seeing-is-believing
 (use-package seeing-is-believing
   :ensure t
   :hook ruby-mode)
@@ -1254,15 +1109,13 @@
   (setq minimap-automatically-delete-window nil))
 
 (use-package helpful
-  :defer 2
   :ensure t
+  :bind (("C-h k" . 'helpful-key)
+         ("C-c C-d" . 'helpful-at-point))
   :after counsel
   :config
   (setq counsel-describe-function-function #'helpful-callable
-	counsel-describe-variable-function #'helpful-variable)
-
-  (global-set-key (kbd "C-h k") #'helpful-key)
-  (global-set-key (kbd "C-c C-d") #'helpful-at-point))
+	counsel-describe-variable-function #'helpful-variable))
 
 
 (use-package markdown-mode
@@ -1287,8 +1140,7 @@
 ;; https://github.com/TobiasZawada/texfrag
 (use-package texfrag
   :ensure t
-  :config
-  (add-hook 'markdown-mode-hook 'texfrag-mode))
+  :hook (markdown-mode . textfrag-mode))
 
 (use-package pdf-tools
   ;; :load-path "pdf-tools"
@@ -1323,14 +1175,16 @@
   (setq lsp-modeline-code-actions-segments '(count icon name))
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
-  (setq read-process-output-max (* 5 1024 1024)) ;; 5mb
-  (setq gc-cons-threshold 100000000)
+  (setq read-process-output-max (* 1 1024 1024)) ;; 5mb
+  (setq lsp-idle-delay 0.5)
+
+  (setq lsp-enable-file-watchers nil)
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
-  (require 'lsp-csharp)
+  ;; (require 'lsp-csharp)
   ;; (require 'lsp-pyright)
   (setq lsp-rust-server 'rust-analyzer)
 
@@ -1370,8 +1224,6 @@
   ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
   )
 
-
-;; LATEX
 
 (use-package company-auctex
   :defer 2
@@ -1422,15 +1274,12 @@
   :config
   (load-theme 'leuven t))
 
-(use-package modus-operandi-theme
+(use-package modus-themes
   :ensure t
   :config
   (load-theme 'modus-operandi t)
   (setq modus-operandi-theme-rainbow-headings t)
   (setq modus-operandi-theme-scale-headings t))
-
-(use-package modus-vivendi-theme
-  :ensure t)
 
 (use-package solarized-theme
   :ensure t
@@ -1447,7 +1296,6 @@
 
 ;; https://emacsredux.com/blog/2013/05/31/highlight-lines-that-exceed-a-certain-length-limit/
 (use-package whitespace
-  :defer 2
   :ensure t
   :hook (python-mode . whitespace-mode)
   :config
@@ -1465,11 +1313,9 @@
 ;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
   :ensure t
-  :defer 3
   :hook (prog-mode . yas-global-mode))
 
 (use-package yasnippet-snippets
-  :defer 3
   :ensure t
   :after yasnippet)
 
@@ -1575,8 +1421,8 @@
 
 ;; Yaml
 (use-package yaml-mode
-  :defer 1
   :ensure t
+  :mode "\\.y*ml"
   :config
   (add-hook 'yaml-mode-hook
             (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent)))
@@ -1585,27 +1431,6 @@
 (use-package julia-mode
   :defer 2
   :ensure t)
-
-(use-package csharp-mode
-  :disabled
-  :defer 2
-  :ensure t
-  :mode "\\.cs$"
-  :config
-  (add-hook 'csharp-mode-hook #'lsp)
-  (defun my-csharp-mode-setup ()
-    (omnisharp-mode)
-    (flycheck-mode 1))
-
-  ;; (add-hook 'csharp-mode-hook 'my-csharp-mode-setup t)
-  )
-
-(use-package omnisharp
-  :disabled
-  :defer 2
-  :ensure t
-  :config
-  (setq omnisharp-debug nil))
 
 (use-package dired-subtree
   :defer 2
@@ -1620,35 +1445,34 @@
 
 ;; Se på https://github.com/purcell/ibuffer-projectile?
 (use-package ibuffer
-  :bind ("C-x C-b" . ibuffer))
+  :bind ("C-x C-b" . ibuffer)
+  :config
+  ;; Shows a list of buffers
+  (defalias 'list-buffers  'ibuffer)
+  (setq ibuffer-saved-filter-groups
+        (quote (("default"
+                 ("dired" (mode . dired-mode))
+                 ("PDF" (mode . pdf-view-mode))
+                 ("python" (mode . python-mode))
+                 ("org" (or (mode . org-mode)
+                            (mode . org-agenda-mode)
+                            ))
+                 ("web" (mode . web-mode))
+                 ("emacs" (or
+                           (name . "^\\*scratch\\*$")
+                           (name . "^\\*Messages\\*$")))))))
 
-
-;; Shows a list of buffers
-(defalias 'list-buffers  'ibuffer)
-(setq ibuffer-saved-filter-groups
-      (quote (("default"
-               ("dired" (mode . dired-mode))
-               ("PDF" (mode . pdf-view-mode))
-               ("python" (mode . python-mode))
-               ("org" (or (mode . org-mode)
-                          (mode . org-agenda-mode)
-                          ))
-               ("web" (mode . web-mode))
-               ("emacs" (or
-                         (name . "^\\*scratch\\*$")
-                         (name . "^\\*Messages\\*$")))))))
-
-(setq ibuffer-formats
-      '((mark modified read-only " "
-              (name 30 30 :left :elide) ; change: 30s were originally 18s
-              " "
-              (size 9 -1 :right)
-              " "
-              (mode 16 16 :left :elide)
-              " " filename-and-process)
-        (mark " "
-              (name 16 -1)
-              " " filename)))
+  (setq ibuffer-formats
+        '((mark modified read-only " "
+                (name 30 30 :left :elide) ; change: 30s were originally 18s
+                " "
+                (size 9 -1 :right)
+                " "
+                (mode 16 16 :left :elide)
+                " " filename-and-process)
+          (mark " "
+                (name 16 -1)
+                " " filename))))
 
 
 
@@ -1696,8 +1520,6 @@
 (setq-default sh-basic-offset 2)
 (setq-default sh-indentation 2)
 
-;; (setq system-uses-terminfo nil)
-
 
 (setq sgml-quick-keys 'close)
 
@@ -1711,16 +1533,6 @@
 (global-display-line-numbers-mode 1)
 (column-number-mode 1)
 
-(when (fboundp 'scroll-bar-mode)
-  (scroll-bar-mode -1))
-
-;; increase font size for better readability
-(set-face-attribute 'default nil
-                    :height 140
-                    :weight 'normal
-                    :family "Jetbrains Mono")
-
-(setq initial-frame-alist '((top . 0) (left . 0) (width . 177) (height . 53)))
 
 ;; These settings relate to how emacs interacts with your operating system
 (setq ;; makes killing/yanking interact with the clipboard
@@ -1756,20 +1568,13 @@
 
 (show-paren-mode 1)
 
-(pretty-lambda-for-modes)
-
-;; (dolist (mode pretty-lambda-auto-modes)
-;;   ;; add paredit-mode to all mode-hooks
-;;   (add-hook (intern (concat (symbol-name mode) "-hook")) 'paredit-mode)
-;;   )
-
-
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 (use-package fm-common-lisp)
 (use-package fm-python)
+(use-package fm-swiper)
 
 ;;;; Useful functions
 
@@ -1845,7 +1650,5 @@
 
 (global-set-key [(meta up)]  'move-line-up)
 (global-set-key [(meta down)]  'move-line-down)
-
-(setq gc-cons-threshold (* 2 1000 1000))
 
 ;;; init.el ends here
