@@ -6,6 +6,14 @@
 
 ;; (byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
 
+(require 'package)
+;; (setq package-enable-at-startup nil)
+;; (package-initialize)
+
+(unless (package-installed-p 'use-package)
+	(package-refresh-contents)
+	(package-install 'use-package))
+
 (toggle-debug-on-error 1)
 ;; Less in the end of this file
 (setq gc-cons-threshold (* 100 1000 1000))
@@ -18,11 +26,11 @@
 (setq comp-async-report-warnings-errors nil)
 
 (setq ns-pop-up-frames nil)
+(setq locale-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
-(setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
@@ -31,9 +39,10 @@
 ;; No need for ~ files when editing
 (setq create-lockfiles nil
       auto-save-default nil
-      create-lockfiles nil)
-(setq default-directory (concat (getenv "HOME") "/"))
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+      create-lockfiles nil
+      default-directory (concat (getenv "HOME") "/")
+      custom-file (expand-file-name "custom.el" user-emacs-directory))
+
 (when (file-exists-p custom-file)
   (load custom-file))
 
@@ -44,12 +53,9 @@
       mac-command-modifier 'meta
       select-enable-clipboard t)
 
-;; (set-frame-font "Menlo-14")
-
 (setq inhibit-startup-message t
       initial-scratch-message nil
       use-dialog-box nil
-      ;; always split vertically
       split-width-threshold 160
       split-height-threshold 80
       )
@@ -69,25 +75,27 @@
 (delete-selection-mode 1)
 
 (setq c-default-style '((java-mode . "java")
-                      (awk-mode . "awk")
-                      (other . "stroustrup")))
+                        (awk-mode . "awk")
+                        (other . "stroustrup")))
 
 ;; First try to indent the current line, and if the line
 ;; was already indented, then try `completion-at-point'
 (setq tab-always-indent 'complete)
+(setq tab-first-completion nil)
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
 (add-hook 'prog-mode-hook (lambda ()
                             (setq-local show-trailing-whitespace t)))
 
-;; Dont show whitespaces in minibuffer
-(add-hook 'minibuffer-setup-hook (lambda () (setq-local show-trailing-whitespace nil)))
+;; Don't show whitespaces in minibuffer
+(add-hook 'minibuffer-setup-hook
+          (lambda () (setq-local show-trailing-whitespace nil)))
 
 (setq-default indicate-empty-lines 't)
 (setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
 
-;; HippieExpand: M-n for å fullføre noe
+;; HippieExpand: M-n for to complete
 ;; http://www.emacswiki.org/emacs/HippieExpand
 (setq hippie-expand-try-functions-list
       '(yas-hippie-try-expand
@@ -99,26 +107,24 @@
         try-expand-line
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol))
-(global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "M-n") 'hippie-expand)
 
-;; Utils
-
+;; From the docs: Set it to nil, if you use Control* or Proxy* options in
+;;your ssh configuration. (I do)
 (setq tramp-use-ssh-controlmaster-options nil)
+
 
 (defun add-auto-mode (mode &rest patterns)
   "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
   (dolist (pattern patterns)
     (add-to-list 'auto-mode-alist (cons pattern mode))))
 
-;; end utils
+;; (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+
+
+;; end util
 
 ;; Define package repositories
-(require 'package)
-;; (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-(package-initialize)
-
-(setq package-enable-at-startup nil)
 
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
@@ -132,12 +138,8 @@
 
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
-
-(unless (package-installed-p 'use-package)
-	(package-refresh-contents)
-	(package-install 'use-package))
-
-;; (custom-set-variables '(use-package-compute-statistics t))
+(eval-when-compile
+  (require 'use-package))
 
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
@@ -155,6 +157,7 @@
   :config
   (server-start))
 
+;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
   :ensure t)
 
@@ -168,14 +171,6 @@
 (use-package quelpa-use-package
   :ensure t)
 
-;; (use-package package-utils-upgrade-all-and-recompile
-;;   :commands (package-utils-upgrade-all-and-recompile)
-
-;;   :quelpa
-;;   (package-utils-upgrade-all-and-recompile
-;;    :fetcher gitlab
-;;    :repo "ideasman42/emacs-package-utils-upgrade-all-and-recompile"))
-
 (use-package benchmark-init
   :disabled
   :ensure t
@@ -184,13 +179,14 @@
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (use-package esup
-  :disabled
   :ensure t
+  :disabled
   :defer t
   ;; To use MELPA Stable use ":pin mepla-stable",
   :pin melpa-stable
   :commands (esup))
 
+;; https://github.com/emacsorphanage/popwin
 (use-package popwin
   :ensure t
   :config
@@ -210,16 +206,6 @@
 (use-package expand-region
   :ensure t
   :bind ("C-=" . 'er/expand-region))
-
-;; https://github.com/wakatime/wakatime-mode
-;; See ~/.wakatime.cfg
-;; (use-package wakatime-mode
-;;   :defer 1
-;;   :ensure t
-;;   :hook (prog-mode global-wakatime)
-;;   :config
-;;   ;; Running on my Raspberry Pi
-;;   (setq wakatime-api-key "c1af0bcd-9cfc-495a-ba27-2f66f5c308ef"))
 
 (use-package flycheck
   :ensure t
@@ -246,14 +232,13 @@
   "Run eslint fix current file."
   (interactive)
   (cond ((locate-dominating-file default-directory "package-lock.json")
-       (shell-command (concat "npm run eslint" " " "--fix" (buffer-file-name))))
+         (shell-command (concat "npm run eslint" " " "--fix" (buffer-file-name))))
         ((locate-dominating-file default-directory "yarn.lock")
          (call-process-shell-command
           (concat "yarn run eslint" " " "--fix " (buffer-file-name))
           nil "*Shell Command Output*" t))
         (t (message "No lock file.")))
-  (revert-buffer t t)
-  )
+  (revert-buffer t t))
 
 (defun eslint-fix-file-and-revert ()
   "Run eslint on current buffer."
@@ -292,88 +277,6 @@
   :ensure t
   :hook (prog-mode . paredit-everywhere-mode))
 
-(use-package flycheck-clj-kondo
-  :ensure t
-  :after (flycheck))
-
-;; key bindings and code colorization for Clojure
-;; https://github.com/clojure-emacs/clojure-mode
-(use-package clojure-mode
-  :ensure t
-  :mode "\\.edn$"
-  :mode "\\.boot$"
-  :mode "\\.clj$"
-  :hook ((clojure-mode . subword-mode) ;; For Java class names
-         (clojure-mode . electric-indent-mode)
-         (clojure-mode . electric-pair-mode)
-         ;; (clojure-mode . paredit-mode)
-         )
-  :config
-  (require 'flycheck-clj-kondo)
-  ;; Enable paredit for Clojure
-  ;; (add-hook 'clojure-mode-hook 'enable-paredit-mode)
-  (add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojurescript-mode))
-  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode)))
-
-;; extra syntax highlighting for clojure
-(use-package clojure-mode-extra-font-locking
-  :after clojure-mode
-  :ensure t)
-
-;; Integration with a Clojure REPL
-;; https://github.com/clojure-emacs/cider
-(use-package cider
-  :hook ((cider-mode . eldoc-mode)
-         (cider-mode . company-mode)
-         (cider-repl-mode . company-mode)
-         ;; (cider-mode . paredit-mode)
-         ;; (cider-repl-mode . paredit-mode)
-         )
-  :config
-  ;; go right to the REPL buffer when it's finished connecting
-  (setq cider-repl-pop-to-buffer-on-connect t)
-
-  ;; When there's a cider error, show its buffer and switch to it
-  (setq cider-show-error-buffer t)
-  (setq cider-auto-select-error-buffer t)
-
-  ;; Wrap when navigating history.
-  (setq cider-repl-wrap-history t)
-
-  ;; Where to store the cider history.
-  (setq cider-repl-history-file "~/.emacs.d/cider-history")
-
-  ;; Don't prompt and don't save
-  (setq cider-save-file-on-load nil)
-
-  (defun cider-start-http-server ()
-    (interactive)
-    (cider-load-current-buffer)
-    (let ((ns (cider-current-ns)))
-      (cider-repl-set-ns ns)
-      (cider-interactive-eval (format "(println '(def server (%s/start))) (println 'server)" ns))
-      (cider-interactive-eval (format "(def server (%s/start)) (println server)" ns))))
-
-  (defun cider-refresh ()
-    (interactive)
-    (cider-interactive-eval (format "(user/reset)")))
-
-  (defun cider-user-ns ()
-    (interactive)
-    (cider-repl-set-ns "user"))
-  (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
-  (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
-  (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
-  (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns))
-
-(use-package clj-refactor
-  :ensure t
-  :hook (clojure-mode . clj-refactor-mode)
-  :config
-  (add-hook 'clojure-mode-hook
-            (lambda ()
-              (cljr-add-keybindings-with-prefix "C-c C-m"))))
-
 (use-package prolog-mode
   :disabled
   :ensure t
@@ -407,11 +310,13 @@
   (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
   (setq eyebrowse-new-workspace t))
 
+;; https://www.emacswiki.org/emacs/WindMove
 (use-package windmove
-  :defer 2
   :ensure t
-  :config
-  (windmove-default-keybindings))
+  :bind (("<S-left>" . 'windmove-left)
+         ("<S-right>" . 'windmove-right)
+         ("<S-up>" . 'windmove-up)
+         ("<S-down>" . 'windmove-down)))
 
 (use-package buffer-move
   :ensure t
@@ -465,7 +370,7 @@
   :bind (("C-1" . anzu-query-replace)
          ("C-!" . anzu-query-replace-regexp))
   :config
-  (global-anzu-mode))
+  (global-anzu-mode 1))
 
 (use-package projectile
   :ensure t
@@ -511,6 +416,7 @@
   :ensure t
   :hook (dired-mode . all-the-icons-dired-mode))
 
+;; https://github.com/Fanael/rainbow-delimiters
 (use-package rainbow-delimiters
   :ensure t
   :hook (prog-mode . rainbow-delimiters-mode))
@@ -530,14 +436,6 @@
   :config
   (setq nyan-wavy-trail 1)
   (nyan-mode))
-
-;; lambda
-(use-package pretty-lambdada
-  :disabled
-  :defer 1
-  :ensure t
-  :config
-  (pretty-lambda-for-modes))
 
 (use-package undo-tree
   :ensure t
@@ -570,6 +468,7 @@
 ;; https://github.com/alphapapa/magit-todos#installation
 (use-package magit-todos
   :ensure t
+  :defer 10
   :config
   (magit-todos-mode t))
 
@@ -854,7 +753,7 @@
   :config
   (global-hl-todo-mode t))
 
-
+;; https://github.com/mickeynp/ligature.el
 (use-package ligature
   :load-path "~/.emacs.d/ligature.el"
   :config
@@ -878,6 +777,7 @@
   :hook (after-init . global-company-mode)
   :custom (company-dabbrev-downcase nil)
   :config
+  (define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common)
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-show-numbers t)
@@ -906,8 +806,9 @@
 (use-package web-mode
   :ensure t
   :after (add-node-modules-path)
-  :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
-  :mode "\\.tsx?$\\'"
+  :mode ("\\.[t|j]sx?$"   "\\.tsx?$\\'")
+  ;; :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
+  ;; :mode "\\.tsx?$\\'"
   :bind ("C-c r" . 'tide-rename-symbol-at-location)
   :config
   (setq web-mode-indentation-params '(("lineup-calls" . 1)))
@@ -987,7 +888,7 @@
 (use-package smartparens
   :ensure t
   :defer 1
-  :hook ((prog-mode . smartparens-strict-mode))
+  :hook ((prog-mode . smartparens-mode))
   :bind (:map smartparens-mode-map
               ("C-M-f" . 'sp-forward-sexp)
               ("C-M-b" . 'sp-backward-sexp)
@@ -999,8 +900,7 @@
               ("S-M-<left>" . 'sp-forward-barf-sexp))
   :config
   (require 'smartparens-config)
-  (smartparens-global-mode t)
-  (smartparens-strict-mode t))
+  (smartparens-global-mode t))
 
 
 ;; https://elpa.gnu.org/packages/sml-mode.html
@@ -1008,13 +908,14 @@
   :defer 2
   :ensure t)
 
+;; https://github.com/codesuki/add-node-modules-path
 (use-package add-node-modules-path
   :defer 1
   :ensure t)
 
 (use-package company-tabnine
-  :disabled
   :defer 2
+  :disabled
   :ensure t
   :config
   (setq company-tabnine-always-trigger nil)
@@ -1121,6 +1022,7 @@
 (use-package markdown-mode
   :ensure t
   :mode ("\\.md[x]?$")
+  :ensure-system-package pandoc
   :config
   (add-hook 'markdown-mode-hook 'visual-line-mode)
   (add-hook 'markdown-mode-hook
@@ -1139,6 +1041,7 @@
 
 ;; https://github.com/TobiasZawada/texfrag
 (use-package texfrag
+  :disabled ;; some error??
   :ensure t
   :hook (markdown-mode . textfrag-mode))
 
@@ -1166,11 +1069,22 @@
 
 ;; (byte-recompile-directory "~/.emacs.d/elpa" 0 t)
 
+(use-package lsp-python-ms
+  :ensure t
+  :disabled
+  :init (setq lsp-python-ms-auto-install-server t)
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-python-ms))))
+
 (use-package lsp-mode
   :defer 2
   :ensure t
   :init (setq lsp-keymap-prefix "C-c l")
+  :hook ((lsp-mode . lsp-enable-which-key-integration)
+         ;; (yaml-mode . lsp)
+         )
   :config
+  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
   (local-set-key (kbd "M-.") 'lsp-find-definition)
   (setq lsp-modeline-code-actions-segments '(count icon name))
 
@@ -1178,14 +1092,20 @@
   (setq read-process-output-max (* 1 1024 1024)) ;; 5mb
   (setq lsp-idle-delay 0.5)
 
-  (setq lsp-enable-file-watchers nil)
+  (setq lsp-file-watch-threshold 5000)
+  (setq lsp-enable-file-watchers t)
+
+  (setq lsp-signature-doc-lines 5)
+  (setq lsp-signature-render-documentation nil)
+  (setq lsp-lens-enable t)
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
   ;; (require 'lsp-csharp)
-  ;; (require 'lsp-pyright)
+  (require 'lsp-pyright)
+
   (setq lsp-rust-server 'rust-analyzer)
 
   ;; To enable mypy
@@ -1208,6 +1128,35 @@
   :after lsp
   :config
   (add-hook 'java-mode-hook 'lsp))
+
+(use-package lsp-yaml
+  :after lsp
+  :config
+  (setq lsp-yaml-custom-tags ["!And"
+                              "!If"
+                              "!Not"
+                               "!Equals"
+                               "!Or"
+                               "!FindInMap"
+                               "!Base64"
+                               "!Cidr"
+                               "!Ref"
+                               "!Sub"
+                               "!GetAtt"
+                               "!GetAZs"
+                               "!ImportValue"
+                               "!Select"
+                               "!Split"
+                               "!Join"]))
+
+(use-package lsp-json
+  :after lsp
+  :config
+  (add-hook 'json-mode-hook
+            (lambda ()
+              (make-local-variable 'js-indent-level)
+              (setq js-indent-level 2)))
+  (add-hook 'json-mode-hook #'lsp))
 
 (use-package dap-mode
   :disabled
@@ -1313,7 +1262,7 @@
 ;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
   :ensure t
-  :hook (prog-mode . yas-global-mode))
+  :hook (prog-mode . yas-minor-mode))
 
 (use-package yasnippet-snippets
   :ensure t
@@ -1353,6 +1302,7 @@
           ("https://qchu.wordpress.com/feed/" math)
           ("https://karthinks.com/software/index.xml" emacs)
           ("https://www.math.columbia.edu/~woit/wordpress" math physics)
+          ("https://corey.tech/feed.xml" aws tech blog)
           ))
   :config
   (defun elfeed-open-maybe-in-xwidget (&optional use-generic-p)
@@ -1364,7 +1314,8 @@
 
 (use-package xwwp
   :load-path "~/.emacs.d/xwwp"
-  :ensure t)
+  :ensure t
+  :defer 10)
 
 (use-package xwwp-follow-link
   :load-path "~/.emacs.d/xwwp-follow-link"
@@ -1494,7 +1445,6 @@
 ;; The forward naming method includes part of the file's directory
 ;; name at the beginning of the buffer name
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
-
 (use-package uniquify
   :defer 1
   :config
@@ -1575,6 +1525,8 @@
 (use-package fm-common-lisp)
 (use-package fm-python)
 (use-package fm-swiper)
+(use-package cfn-lint)
+(use-package fm-clojure)
 
 ;;;; Useful functions
 

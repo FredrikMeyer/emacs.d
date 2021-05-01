@@ -15,3 +15,6 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
 (setq initial-frame-alist '((top . 0) (left . 0) (width . 177) (height . 53)))
+
+(setq package-enable-at-startup nil)
+(package-initialize)

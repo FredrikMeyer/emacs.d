@@ -3,8 +3,6 @@
 ;;; Code:
 
 
-;;; Code:
-
 (use-package elpy
   :disabled
   :ensure t
@@ -26,11 +24,15 @@
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
 (use-package lsp-pyright
-  :disabled ;; test python-lsp again 
+  ;; :disabled ;; test python-lsp again 
   :ensure t
   :hook (python-mode . (lambda ()
                           (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
+                          (lsp)))
+  :config
+  (setq lsp-pyright-typechecking-mode "basic")
+  ;; (setq lsp-pyright)
+  )  ; or lsp-deferred
 
 
 (use-package python-pytest
@@ -43,9 +45,7 @@
             (lambda ()
               (when-let ((r (locate-dominating-file default-directory ".pyroot")))
                 (setq python-pytest-executable
-                      (concat "PYTHONPATH=" r " " "pytest")))))
-
-  )
+                      (concat "PYTHONPATH=" r " " "pytest"))))))
 
 (use-package python-docstring
   :ensure t
@@ -53,6 +53,13 @@
   (python-docstring-install))
 
 (setq python-shell-interpreter "python3")
+
+(use-package python-black
+  :ensure t
+  :after python)
+
+(use-package py-isort
+  :ensure t)
 
 (use-package pyvenv
   :defer 2

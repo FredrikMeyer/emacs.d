@@ -14,7 +14,7 @@
   :config
   (ivy-mode 1)
   (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers nil)
+  (setq enable-recursive-minibuffers t)
   (setq ivy-count-format "%d/%d ")
   (setq ivy-display-style 'fancy)
   (setq ivy-wrap t)
@@ -47,6 +47,11 @@
   (setq counsel-describe-variable-function #'helpful-variable)
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) "")
   (define-key minibuffer-local-map (kbd "C-r") 'counsel-expression-history))
+
+(use-package counsel-osx-app
+  :ensure t
+  :bind ("S-M-SPC" . counsel-osx-app)
+  :commands counsel-osx-app)
 
 
 ;; https://github.com/tumashu/ivy-posframe
