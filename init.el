@@ -51,6 +51,7 @@
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
+      mac-function-modifier 'super
       select-enable-clipboard t)
 
 (setq inhibit-startup-message t
@@ -206,6 +207,13 @@
 (use-package expand-region
   :ensure t
   :bind ("C-=" . 'er/expand-region))
+
+;; https://github.com/leoliu/easy-kill
+(use-package easy-kill
+  :ensure t
+  :config
+  (global-set-key [remap kill-ring-save] #'easy-kill)
+  (global-set-key [remap mark-sexp] #'easy-mark))
 
 (use-package flycheck
   :ensure t
@@ -777,7 +785,7 @@
   :hook (after-init . global-company-mode)
   :custom (company-dabbrev-downcase nil)
   :config
-  (define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common)
+  ;; (define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common)
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-show-numbers t)
@@ -888,7 +896,8 @@
 (use-package smartparens
   :ensure t
   :defer 1
-  :hook ((prog-mode . smartparens-mode))
+  :hook ((prog-mode . smartparens-mode)
+         (elisp-mode . smartparens-strict-mode))
   :bind (:map smartparens-mode-map
               ("C-M-f" . 'sp-forward-sexp)
               ("C-M-b" . 'sp-backward-sexp)
@@ -896,8 +905,13 @@
               ("C-M-a" . 'sp-backward-down-sexp)
               ("C-S-d" . 'sp-beginning-of-sexp)
               ("C-S-a" . 'sp-end-of-sexp)
-              ("S-M-<right>" . 'sp-forward-slurp-sexp)
-              ("S-M-<left>" . 'sp-forward-barf-sexp))
+              ;; ("S-M-<right>" . 'sp-forward-slurp-sexp)
+              ;; ("S-M-<left>" . 'sp-forward-barf-sexp)
+              ("C-<right>" . 'sp-forward-slurp-sexp)
+              ("C-<left>" . 'sp-forward-barf-sexp)
+              ("C-S-<left>" . 'sp-backward-slurp-sexp)
+              ("C-S-<right>" . 'sp-backward-barf-sexp)
+              )
   :config
   (require 'smartparens-config)
   (smartparens-global-mode t))
@@ -1003,6 +1017,7 @@
   :mode "Dockerfile\\'")
 
 (use-package minimap
+  :disabled
   :ensure t
   :bind ("C-x w" . minimap-mode)
   :config
@@ -1157,6 +1172,9 @@
               (make-local-variable 'js-indent-level)
               (setq js-indent-level 2)))
   (add-hook 'json-mode-hook #'lsp))
+
+(use-package lsp-ivy
+  :ensure t)
 
 (use-package dap-mode
   :disabled

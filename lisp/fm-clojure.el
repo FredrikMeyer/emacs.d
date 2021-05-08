@@ -19,6 +19,8 @@
   :hook ((clojure-mode . subword-mode) ;; For Java class names
          (clojure-mode . electric-indent-mode)
          (clojure-mode . electric-pair-mode)
+         (clojure-mode . smartparens-strict-mode)
+         (clojure-mode . cider-mode)
          ;; (clojure-mode . paredit-mode)
          )
   :config
@@ -38,10 +40,7 @@
 (use-package cider
   :hook ((cider-mode . eldoc-mode)
          (cider-mode . company-mode)
-         (cider-repl-mode . company-mode)
-         ;; (cider-mode . paredit-mode)
-         ;; (cider-repl-mode . paredit-mode)
-         )
+         (cider-repl-mode . company-mode))
   :config
   ;; go right to the REPL buffer when it's finished connecting
   (setq cider-repl-pop-to-buffer-on-connect t)
