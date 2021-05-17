@@ -39,7 +39,6 @@
 ;; No need for ~ files when editing
 (setq create-lockfiles nil
       auto-save-default nil
-      create-lockfiles nil
       default-directory (concat (getenv "HOME") "/")
       custom-file (expand-file-name "custom.el" user-emacs-directory))
 
@@ -142,6 +141,9 @@
 (eval-when-compile
   (require 'use-package))
 
+(use-package crux
+  :ensure t)
+
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
 (use-package exec-path-from-shell
@@ -228,6 +230,7 @@
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
+  (flycheck-add-mode 'html-tidy 'web-mode)
 
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.6.0/bin/tidy"))
 
@@ -489,12 +492,11 @@
   (setq git-messenger:show-detail t
         git-messenger:use-magit-popup t))
 
-;; https://github.com/nonsequitur/git-gutter-plus
-(use-package git-gutter+
-  :defer 2
+;; https://github.com/emacsorphanage/git-gutter
+(use-package git-gutter
   :ensure t
   :config
-  (global-git-gutter+-mode))
+  (global-git-gutter-mode 1))
 
 (use-package ob-ipython
   :disabled
@@ -814,23 +816,19 @@
 (use-package web-mode
   :ensure t
   :after (add-node-modules-path)
-  :mode ("\\.[t|j]sx?$"   "\\.tsx?$\\'")
+  :mode ("\\.[t|j]sx?$"   "\\.tsx?$\\'" "\\.html?\\'")
   ;; :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
   ;; :mode "\\.tsx?$\\'"
-  :bind ("C-c r" . 'tide-rename-symbol-at-location)
+  ;; :bind ("C-c r" . 'tide-rename-symbol-at-location)
   :config
   (setq web-mode-indentation-params '(("lineup-calls" . 1)))
   ;; (setq web-mode-indentation-params '())
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
   (setq web-mode-enable-auto-indentation nil)
+
   (add-hook 'web-mode-hook (lambda ()
-                             (tide-setup)
-                             (tide-hl-identifier-mode t)
-                             ;; (local-set-key (kbd "C-c r") 'tide-rename-symbol-at-location)
                              (flycheck-mode 1)
                              (yas-activate-extra-mode 'js2-mode)
-                             (if (string= (file-name-extension buffer-file-name) "ts")
-                                 (flycheck-add-mode 'typescript-tide 'web-mode))
                              (when (and (or (locate-dominating-file default-directory ".prettier.rc")
                                             (locate-dominating-file default-directory ".prettierrc.json")
                                             (locate-dominating-file default-directory ".prettierrc")))
@@ -853,7 +851,15 @@
 
 (use-package tide
   :bind ("C-c r" . tide-rename-symbol)
-  :ensure t)
+  :hook (web-mode . my-tide-mode-hook)
+  :ensure t
+  :config
+  (defun my-tide-mode-hook ()
+    (unless (string= (file-name-extension buffer-file-name) "html")
+      (tide-setup)
+      (flycheck-add-mode 'typescript-tide 'web-mode)
+      (tide-hl-identifier-mode +1))
+  ))
 
 (use-package plantuml-mode
   :defer 1
@@ -868,7 +874,8 @@
   :mode "\\.rs\\'"
   :config
   (add-hook 'rust-mode-hook #'lsp)
-  (add-hook 'rust-mode-hook (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
+  (add-hook 'rust-mode-hook (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t)))
+  )
 
 ;; https://github.com/kwrooijen/cargo.el
 (use-package cargo
@@ -905,6 +912,7 @@
               ("C-M-a" . 'sp-backward-down-sexp)
               ("C-S-d" . 'sp-beginning-of-sexp)
               ("C-S-a" . 'sp-end-of-sexp)
+              ("C-M-k" . 'sp-kill-sexp)
               ;; ("S-M-<right>" . 'sp-forward-slurp-sexp)
               ;; ("S-M-<left>" . 'sp-forward-barf-sexp)
               ("C-<right>" . 'sp-forward-slurp-sexp)
