@@ -370,7 +370,6 @@
 ;; https://github.com/hrehfeld/emacs-smart-hungry-delete
 (use-package smart-hungry-delete
   :ensure t
-  :defer 2
   :bind (("<backspace>" . smart-hungry-delete-backward-char)
 	 ("C-d" . smart-hungry-delete-forward-char))
   :defer nil ;; dont defer so we can add our functions to hooks
@@ -433,11 +432,11 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package geiser
-  :defer 2
+  :commands (run-geiser)
   :ensure t)
 
 (use-package ac-geiser
-  :defer 2
+  :after geiser
   :ensure t)
 
 ;; https://github.com/TeMPOraL/nyan-mode
@@ -458,7 +457,6 @@
 
 (use-package magit
   :ensure t
-  :defer 1
   :bind (("C-x g" . magit-status)
          ("C-x C-g" . magit-list-repositories)
          ("C-x C-S-B" . magit-blame-addition))
@@ -470,7 +468,6 @@
   (setq magit-list-refs-sortby "-creatordate"))
 
 (use-package forge
-  :defer 1
   :ensure t
   :after magit
   :config
@@ -485,7 +482,6 @@
 
 ;; https://github.com/syohex/emacs-git-messenger
 (use-package git-messenger
-  :defer 1
   :ensure t
   :bind ("C-c M" . git-messenger:popup-message)
   :config
@@ -841,7 +837,8 @@
                                (flycheck-add-mode 'javascript-eslint 'web-mode))
                              (electric-indent-mode nil)
                                ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
-
+                             (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                               (setup-tide-mode))
                              (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
 
@@ -851,14 +848,17 @@
 
 (use-package tide
   :bind ("C-c r" . tide-rename-symbol)
-  :hook (web-mode . my-tide-mode-hook)
+  ;; :hook (web-mode . my-tide-mode-hook)
+  :defer 10
+  :after (typescript-mode company flycheck)
+  :commands setup-tide-mode
   :ensure t
   :config
-  (defun my-tide-mode-hook ()
-    (unless (string= (file-name-extension buffer-file-name) "html")
-      (tide-setup)
-      (flycheck-add-mode 'typescript-tide 'web-mode)
-      (tide-hl-identifier-mode +1))
+  (defun setup-tide-mode ()
+    ;; (unless (string= (file-name-extension buffer-file-name) "html"))
+    (tide-setup)
+    (flycheck-add-mode 'typescript-tide 'web-mode)
+    (tide-hl-identifier-mode +1)
   ))
 
 (use-package plantuml-mode
@@ -927,7 +927,7 @@
 
 ;; https://elpa.gnu.org/packages/sml-mode.html
 (use-package sml-mode
-  :defer 2
+  :mode "\\.\\(sml\\|sig\\)\\'"
   :ensure t)
 
 ;; https://github.com/codesuki/add-node-modules-path
@@ -935,38 +935,9 @@
   :defer 1
   :ensure t)
 
-(use-package company-tabnine
-  :defer 2
-  :disabled
-  :ensure t
-  :config
-  (setq company-tabnine-always-trigger nil)
-  (setq company-tabnine-wait 0.5)
-  (add-hook 'python-mode-hook
-            '(lambda ()
-               (add-to-list (make-local-variable 'company-backends) #'company-tabnine))))
-
 (use-package glsl-mode
   :ensure t
   :mode "\\.glsl\\'")
-
-(use-package elm-mode
-  :ensure t
-  :disabled ;; dont use elm anymore
-  :config
-  (setq-default indent-tabs-mode nil)
-  (add-hook 'elm-mode-hook 'electric-pair-mode)
-  (add-hook 'elm-mode-hook 'electric-indent-mode)
-  (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
-  (add-hook 'elm-mode-hook 'company-mode)
-  (setq elm-format-on-save t)
-  (setq elm-interactive-command '("elm" "repl")
-        elm-reactor-command '("elm" "reactor")
-        elm-reactor-arguments '("--port" "8000")
-        elm-compile-command '("elm" "make")
-        elm-compile-arguments '("--output=elm.js" "--debug")
-        elm-package-command '("elm" "package")
-        elm-package-json "elm.json"))
 
 ;; Ruby
 (use-package ruby-mode
@@ -988,7 +959,7 @@
 
 ;; Haskell
 (use-package haskell-mode
-  :defer 2
+  :mode "\\.hs'"
   :ensure t
   :config
   (add-hook 'haskell-mode-hook 'haskell-mode)
@@ -1022,7 +993,7 @@
 
 (use-package dockerfile-mode
   :ensure t
-  :mode "Dockerfile\\'")
+  :mode "^Dockerfile\\'")
 
 (use-package minimap
   :disabled
@@ -1040,7 +1011,6 @@
   :config
   (setq counsel-describe-function-function #'helpful-callable
 	counsel-describe-variable-function #'helpful-variable))
-
 
 (use-package markdown-mode
   :ensure t
@@ -1201,10 +1171,10 @@
 
 
 (use-package company-auctex
-  :defer 2
   :ensure t
+  :hook (latex-mode . (lambda () (company-auctex-init)))
   :config
-  (add-hook 'latex-mode-hook (company-auctex-init))
+  ;; (add-hook 'latex-mode-hook (company-auctex-init))
   (setq TeX-auto-save t)
   (setq TeX-parse-self t))
 
@@ -1229,7 +1199,7 @@
 
 ;; https://github.com/johanvts/emacs-fireplace
 (use-package fireplace
-  :defer 2
+  :commands (fireplace)
   :ensure t)
 
 ;; https://github.com/abo-abo/ace-window
@@ -1406,11 +1376,10 @@
   (setq yaml-indent-offset 2))
 
 (use-package julia-mode
-  :defer 2
+  :mode "\\.jl'"
   :ensure t)
 
 (use-package dired-subtree
-  :defer 2
   :ensure t
   :after dired
   :bind (:map dired-mode-map
@@ -1450,8 +1419,6 @@
           (mark " "
                 (name 16 -1)
                 " " filename))))
-
-
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
