@@ -839,6 +839,8 @@
                                ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
                              (when (string-equal "tsx" (file-name-extension buffer-file-name))
                                (setup-tide-mode))
+                             (when (string-equal "ts" (file-name-extension buffer-file-name))
+                               (setup-tide-mode))
                              (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
 
@@ -988,6 +990,7 @@
 (use-package racket-mode
   :ensure t
   :mode "\\.rkt\\'"
+  :hook racket-xp-mode
   :config
   (setq racket-program "/usr/local/bin/racket"))
 
@@ -1151,8 +1154,8 @@
               (setq js-indent-level 2)))
   (add-hook 'json-mode-hook #'lsp))
 
-(use-package lsp-ivy
-  :ensure t)
+;; (use-package lsp-ivy
+;;   :ensure t)
 
 (use-package dap-mode
   :disabled
