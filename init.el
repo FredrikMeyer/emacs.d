@@ -1,29 +1,43 @@
-;;;
-;; EMACS config
-;;;
+;;; init.el --- My Emacs config -*- lexical-binding: t; -*-x
+
+;; Author: Fredrik Meyer
+
+;;; Commentary:
+
+;; My personal messy Emacs config
 
 ;;; Code:
 
 ;; (byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
 
-(require 'package)
+(assq-delete-all 'org package--builtins)
+(assq-delete-all 'org package--builtin-versions)
+
+
+;; (require 'package)
 ;; (setq package-enable-at-startup nil)
 ;; (package-initialize)
 
+(message "hei")
 (unless (package-installed-p 'use-package)
-	(package-refresh-contents)
-	(package-install 'use-package))
+  (message "!!!!!refresging...")
+  (package-refresh-contents)
+  (package-install 'use-package))
 
-(toggle-debug-on-error 1)
-;; Less in the end of this file
-(setq gc-cons-threshold (* 100 1000 1000))
+;; (toggle-debug-on-error 1)
+
+(setq gc-cons-threshold 100000000)
+(add-hook 'after-init-hook (lambda () (setq gc-cons-threshold 800000)))
 
 (setq lexical-binding t)
 
 (setq user-full-name "Fredrik Meyer"
       user-mail-address "hrmeyer@gmail.com")
 
-(setq comp-async-report-warnings-errors nil)
+;; (setq comp-async-report-warnings-errors nil)
+
+;; Full path in title bar
+(setq-default frame-title-format "Emacs %b (%f)")
 
 (setq ns-pop-up-frames nil)
 (setq locale-coding-system 'utf-8)
@@ -51,14 +65,12 @@
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
       mac-function-modifier 'super
-      select-enable-clipboard t)
-
-(setq inhibit-startup-message t
+      select-enable-clipboard t
+      inhibit-startup-message t
       initial-scratch-message nil
       use-dialog-box nil
       split-width-threshold 160
-      split-height-threshold 80
-      )
+      split-height-threshold 80)
 
 (custom-set-variables '(calendar-week-start-day 1))
 
@@ -66,7 +78,8 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 
 
-(setq auth-source-debug 'trivia)
+;; (setq auth-source-debug 'trivia)
+
 ;; EDITING
 
 ;; Highlights matching parenthesis
@@ -74,13 +87,18 @@
 (global-hl-line-mode 1)
 (delete-selection-mode 1)
 
+;; Show line numbers
+(global-display-line-numbers-mode 1)
+(column-number-mode 1)
+(setq-default cursor-type 'bar)
+
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
                         (other . "stroustrup")))
 
 ;; First try to indent the current line, and if the line
 ;; was already indented, then try `completion-at-point'
-(setq tab-always-indent 'complete)
+(setq tab-always-indent t)
 (setq tab-first-completion nil)
 
 ;; Don't use hard tabs
@@ -93,6 +111,7 @@
           (lambda () (setq-local show-trailing-whitespace nil)))
 
 (setq-default indicate-empty-lines 't)
+
 (setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
 
 ;; HippieExpand: M-n for to complete
@@ -107,6 +126,7 @@
         try-expand-line
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol))
+
 (global-set-key (kbd "M-n") 'hippie-expand)
 
 ;; From the docs: Set it to nil, if you use Control* or Proxy* options in
@@ -119,12 +139,10 @@
   (dolist (pattern patterns)
     (add-to-list 'auto-mode-alist (cons pattern mode))))
 
-;; (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-
-
-;; end util
-
 ;; Define package repositories
+
+(add-to-list 'package-archives
+             '("gnu" . "https://elpa.gnu.org/packages/"))
 
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
@@ -133,7 +151,10 @@
              '("melpa-stable" . "http://stable.melpa.org/packages/"))
 
 (add-to-list 'package-archives
-             '("org" . "https://orgmode.org/elpa/"))
+             '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+
+;; (add-to-list 'package-archives
+;;              '("org" . "https://orgmode.org/elpa/"))
 
 
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
@@ -151,14 +172,14 @@
   :ensure t
   :config
   (setq exec-path-from-shell-arguments nil)
-  (exec-path-from-shell-copy-envs
-   '("PATH" "WORKON_HOME"))
+  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME"))
+
   (exec-path-from-shell-initialize))
 
-(use-package server
-  :defer 2
-  :config
-  (server-start))
+;; (use-package server
+;;   :defer 2
+;;   :config
+;;   (server-start))
 
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
@@ -196,7 +217,8 @@
   (popwin-mode 1))
 
 (use-package try
-  :defer 2
+  :commands try
+  :defer 5
   :ensure t)
 
 (use-package which-key
@@ -213,6 +235,7 @@
 ;; https://github.com/leoliu/easy-kill
 (use-package easy-kill
   :ensure t
+  :disabled
   :config
   (global-set-key [remap kill-ring-save] #'easy-kill)
   (global-set-key [remap mark-sexp] #'easy-mark))
@@ -228,11 +251,16 @@
 
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
+
+  (setq flycheck-eslint-args "--cache \*\*/\_.ts")
   ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
   (flycheck-add-mode 'html-tidy 'web-mode)
 
-  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.6.0/bin/tidy"))
+  (setq flycheck-checker-error-threshold 2000)
+
+  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.6.0/bin/tidy")
+  )
 
 (use-package flycheck-color-mode-line
   :ensure t
@@ -305,7 +333,7 @@
 
 ;; https://github.com/wasamasa/eyebrowse
 (use-package eyebrowse
-  :defer 1
+  :defer 5
   :ensure t
   :init
   (dotimes (n 10)
@@ -338,6 +366,7 @@
    ("C-c q r" . 'buf-move-right)))
 
 (use-package fennel-mode
+  :disabled
   :mode "\\.fnl$'"
   :ensure t)
 
@@ -388,17 +417,19 @@
               (("M-p" . 'projectile-command-map)
                ("C-c p" . 'projectile-command-map)))
   :config
-  (setq projectile-project-compilation-cmd ""))
+  (setq projectile-project-compilation-cmd ""
+        projectile-completion-system 'ivy
+        projectile-enable-caching t))
 
 
 (use-package projectile-ripgrep
   :after projectile
-  :defer 1
+  :defer 5
   :ensure t)
 
 ;; https://github.com/dajva/rg.el
 (use-package rg
-  :defer 1
+  :defer 5
   :ensure t
   :ensure-system-package (rg . ripgrep)
   :config
@@ -468,7 +499,8 @@
   (setq magit-list-refs-sortby "-creatordate"))
 
 (use-package forge
-  :ensure t
+  :ensuret
+  :disabled
   :after magit
   :config
   (setq forge-topic-list-order '(number . >)))
@@ -513,10 +545,11 @@
   :config
   (org-super-agenda-mode t))
 
+
 (use-package org
   :defer 1
-  :ensure org-plus-contrib
-  :pin org
+  :ensure t ;org-plus-contrib
+  :pin gnu
   :bind (("C-c l" . org-store-link)
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
@@ -536,6 +569,7 @@
         org-log-done 'time
         org-confirm-babel-evaluate nil
         org-edit-src-content-indentation 0
+        org-image-actual-width nil
         org-startup-indented t
         org-directory "~/Dropbox/org")
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
@@ -550,6 +584,7 @@
                                (shell . t)
                                (plantuml . t)
                                (http . t)
+                               (js . t)
                                (gnuplot . t)))
   (setq org-plantuml-exec-mode 'plantuml)
   (setq org-plantuml-jar-path "/usr/local/bin/plantuml")
@@ -659,7 +694,8 @@
   (add-to-list 'org-modules 'org-habit t)
   (add-to-list 'org-modules 'org-habit t)
   (setq org-agenda-include-diary t)
-  (require 'org-mac-iCal)
+
+  ;; (require 'org-mac-iCal)
   )
 
 (use-package ox-md
@@ -712,6 +748,7 @@
 
 (use-package treemacs
   :ensure t
+  :disabled
   :bind
   (:map global-map
          ;; ("M-0"       . treemacs-select-window)
@@ -722,15 +759,18 @@
         ("C-z t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-projectile
+  :disabled
   :after treemacs projectile
   :ensure t)
 
 (use-package treemacs-icons-dired
+  :disabled
   :after treemacs dired
   :ensure t
   :config (treemacs-icons-dired-mode))
 
 (use-package treemacs-magit
+  :disabled
   :after treemacs magit
   :ensure t)
 
@@ -789,6 +829,9 @@
   (setq company-show-numbers t)
   (setq company-minimum-prefix-length 1))
 
+(use-package pos-tip
+  :ensure t)
+
 ;; https://github.com/company-mode/company-quickhelp
 (use-package company-quickhelp
   :after company
@@ -812,9 +855,7 @@
 (use-package web-mode
   :ensure t
   :after (add-node-modules-path)
-  :mode ("\\.[t|j]sx?$"   "\\.tsx?$\\'" "\\.html?\\'")
-  ;; :mode "\\.[t|j]sx?$" ;; autoenable for js, jsx, ts, tsx
-  ;; :mode "\\.tsx?$\\'"
+  :mode ("\\.[t|j]sx?$" "\\.tsx?$\\'" "\\.html?\\'")
   ;; :bind ("C-c r" . 'tide-rename-symbol-at-location)
   :config
   (setq web-mode-indentation-params '(("lineup-calls" . 1)))
@@ -834,13 +875,18 @@
                                ;; (add-hook 'before-save-hook 'tide-format-before-save)
                                )
                              (when (locate-dominating-file default-directory ".eslintrc.js")
-                               (flycheck-add-mode 'javascript-eslint 'web-mode))
+                               (flycheck-add-mode 'javascript-eslint 'web-mode)
+                               )
                              (electric-indent-mode nil)
                                ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
                              (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                               (setup-tide-mode))
+                               (setup-tide-mode)
+                               ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
+                               )
                              (when (string-equal "ts" (file-name-extension buffer-file-name))
-                               (setup-tide-mode))
+                               (setup-tide-mode)
+                               ;; (flycheck-add-next-checker 'javascript-eslint 'tsx-tide)
+                               )
                              (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
 
@@ -857,27 +903,39 @@
   :ensure t
   :config
   (defun setup-tide-mode ()
-    ;; (unless (string= (file-name-extension buffer-file-name) "html"))
     (tide-setup)
     (flycheck-add-mode 'typescript-tide 'web-mode)
     (tide-hl-identifier-mode +1)
   ))
 
+;; (use-package ob-plantuml
+;;   :after (org)
+;;   :config
+;;   (setq org-plantuml-jar-path "/usr/local/bin/plantuml"))
+
 (use-package plantuml-mode
   :defer 1
   :ensure t
+  :mode "\\.plantuml\\'"
   :config
   (setq plantuml-executable-path "/usr/local/bin/plantuml")
   (setq plantuml-output-type "png")
   (setq plantuml-default-exec-mode 'executable))
+
+;; https://github.com/alexmurray/flycheck-plantuml
+(use-package flycheck-plantuml
+  :ensure t
+  :after (plantuml-mode flycheck)
+  :config
+  (flycheck-plantuml-setup))
 
 (use-package rust-mode
   :ensure t
   :mode "\\.rs\\'"
   :config
   (add-hook 'rust-mode-hook #'lsp)
-  (add-hook 'rust-mode-hook (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t)))
-  )
+  (add-hook 'rust-mode-hook
+            (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
 
 ;; https://github.com/kwrooijen/cargo.el
 (use-package cargo
@@ -929,6 +987,7 @@
 
 ;; https://elpa.gnu.org/packages/sml-mode.html
 (use-package sml-mode
+  :disabled
   :mode "\\.\\(sml\\|sig\\)\\'"
   :ensure t)
 
@@ -962,6 +1021,7 @@
 ;; Haskell
 (use-package haskell-mode
   :mode "\\.hs'"
+  :disabled
   :ensure t
   :config
   (add-hook 'haskell-mode-hook 'haskell-mode)
@@ -984,7 +1044,7 @@
   (add-hook 'go-mode-hook 'electric-pair-mode)
   (add-hook 'go-mode-hook 'electric-indent-mode)
   (add-hook 'go-mode-hook (lambda ()
-            (setq tab-width 4))))
+            (setq tab-width 4)))) 
 
 ;; https://www.racket-mode.com
 (use-package racket-mode
@@ -1020,6 +1080,8 @@
   :mode ("\\.md[x]?$")
   :ensure-system-package pandoc
   :config
+  (setq-default fill-column 120)
+  (add-hook 'markdown-mode-hook 'auto-fill-mode nil t)
   (add-hook 'markdown-mode-hook 'visual-line-mode)
   (add-hook 'markdown-mode-hook
             (lambda ()
@@ -1070,7 +1132,19 @@
   :disabled
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
-                          (require 'lsp-python-ms))))
+                         (require 'lsp-python-ms)
+                         (lsp)))
+  :config
+  (setq lsp-python-ms-extra-paths '("~/.pyenv/versions/3.8.7/envs/audio_analytics/"))
+  )
+
+(use-package lsp-jedi
+  :disabled
+  :ensure t
+  :config
+  (with-eval-after-load "lsp-mode"
+    (add-to-list 'lsp-disabled-clients 'pyls)
+    (add-to-list 'lsp-enabled-clients 'jedi)))
 
 (use-package lsp-mode
   :defer 2
@@ -1086,21 +1160,36 @@
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
   (setq read-process-output-max (* 1 1024 1024)) ;; 5mb
-  (setq lsp-idle-delay 0.5)
+  (setq gc-cons-threshold 100000000)
+  (setq lsp-idle-delay 0.8)
 
-  (setq lsp-file-watch-threshold 5000)
+  (setq lsp-file-watch-threshold 7000)
   (setq lsp-enable-file-watchers t)
 
   (setq lsp-signature-doc-lines 5)
   (setq lsp-signature-render-documentation nil)
   (setq lsp-lens-enable t)
 
+  ;; try??
+  (setq lsp-tcp-connection-timeout 5)
+
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]docs\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]site\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]cdk.out\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.aws-sam\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.pytest_cache\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]__pycache__\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]/Users/fredrikmeyer/code/work/audio_analytics_internal/preliminary_study/\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.mypy_cache\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
+
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
   ;; (require 'lsp-csharp)
-  (require 'lsp-pyright)
+  ;; (require 'lsp-pyright)
+  ;; (require 'lsp-python-ms)
 
   (setq lsp-rust-server 'rust-analyzer)
 
@@ -1115,8 +1204,10 @@
   :defer 2
   :ensure t
   :config
-  (setq lsp-ui-sideline-delay 0.1))
-  ;; (setq lsp-ui-doc-position at))
+  (setq lsp-ui-sideline-delay 0.1)
+  (setq lsp-ui-doc-use-webkit t)
+  (setq lsp-ui-doc-webkit-max-width-px 1000)
+  )
 
 (use-package lsp-java
   :disabled
@@ -1145,6 +1236,15 @@
                                "!Split"
                                "!Join"]))
 
+(use-package lsp-metals
+  :ensure t
+  :custom
+  ;; Metals claims to support range formatting by default but it supports range
+  ;; formatting of multiline strings only. You might want to disable it so that
+  ;; emacs can use indentation provided by scala-mode.
+  (lsp-metals-server-args '("-J-Dmetals.allow-multiline-string-formatting=off"))
+  :hook (scala-mode . lsp))
+
 (use-package lsp-json
   :after lsp
   :config
@@ -1153,9 +1253,6 @@
               (make-local-variable 'js-indent-level)
               (setq js-indent-level 2)))
   (add-hook 'json-mode-hook #'lsp))
-
-;; (use-package lsp-ivy
-;;   :ensure t)
 
 (use-package dap-mode
   :disabled
@@ -1265,6 +1362,7 @@
 
 (use-package yasnippet-snippets
   :ensure t
+  :defer 10
   :after yasnippet)
 
 ;; https://github.com/magnars/multiple-cursors.el
@@ -1276,6 +1374,7 @@
   :ensure t)
 
 (use-package elfeed
+  :disabled ;; use rss.fredrikmeyer.net instead
   :defer 1
   :ensure t
   :init
@@ -1308,15 +1407,16 @@
     (interactive "P")
     (let ((browse-url-browser-function #'xwwp))
       (elfeed-show-visit use-generic-p)))
-  (define-key elfeed-show-mode-map (kbd "B") 'elfeed-open-maybe-in-xwidget)
-  )
+  (define-key elfeed-show-mode-map (kbd "B") 'elfeed-open-maybe-in-xwidget))
 
 (use-package xwwp
+  :disabled
   :load-path "~/.emacs.d/xwwp"
   :ensure t
   :defer 10)
 
 (use-package xwwp-follow-link
+  :disabled
   :load-path "~/.emacs.d/xwwp-follow-link"
   :custom
   (xwwp-follow-link-completion-system 'ivy)
@@ -1403,6 +1503,7 @@
                  ("dired" (mode . dired-mode))
                  ("PDF" (mode . pdf-view-mode))
                  ("python" (mode . python-mode))
+                 ("markdown" (mode . markdown-mode))
                  ("org" (or (mode . org-mode)
                             (mode . org-agenda-mode)
                             ))
@@ -1423,6 +1524,17 @@
                 (name 16 -1)
                 " " filename))))
 
+(setq dired-listing-switches "-alh")
+
+(use-package peep-dired
+  :ensure t)
+
+;; https://www.manueluberti.eu/emacs/2021/07/31/dictionary/
+(use-package dictionary
+  :bind ("C-c d" . #'dictionary-search)
+  :config
+  (setq dictionary-server "dict.org"))
+
 (add-hook 'ibuffer-mode-hook
           (lambda ()
             (ibuffer-switch-to-saved-filter-groups "default")))
@@ -1442,7 +1554,7 @@
 ;; name at the beginning of the buffer name
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
 (use-package uniquify
-  :defer 1
+  :defer 5
   :config
   (setq uniquify-buffer-name-style 'forward))
 
@@ -1460,12 +1572,9 @@
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
 
-(setq-default cursor-type 'bar)
-
 ;; shell scripts
 (setq-default sh-basic-offset 2)
 (setq-default sh-indentation 2)
-
 
 (setq sgml-quick-keys 'close)
 
@@ -1474,10 +1583,6 @@
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
 
-
-;; Show line numbers
-(global-display-line-numbers-mode 1)
-(column-number-mode 1)
 
 
 ;; These settings relate to how emacs interacts with your operating system
@@ -1500,9 +1605,6 @@
 
 ;; No cursor blinking, it's distracting
 (blink-cursor-mode 0)
-
-;; Full path in title bar
-(setq-default frame-title-format "Emacs %b (%f)")
 
 ;; don't pop up font menu
 (global-set-key (kbd "s-t") '(lambda () (interactive)))

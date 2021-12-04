@@ -35,4 +35,4 @@
   (setq company-box-doc-delay 1))
 
 (provide 'fm-common-lisp)
-;;; fm-common-lisp ends here
+;;; fm-common-lisp.el ends here

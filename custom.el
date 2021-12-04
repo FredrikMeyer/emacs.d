@@ -57,12 +57,13 @@
      ("s" . "src")
      ("v" . "verse")))
  '(package-selected-packages
-   '(git-gutter py-autopep8 crux easy-kill lsp-ivy pretty-lambdada python-black company-tabnine py-isort lsp-pyright counsel-osx-app all-the-icons-ivy-rich racket-mode seeing-is-believing tide prettier-js company-quickhelp org-bullets ac-geiser flycheck-clj-kondo yasnippet-snippets yaml-mode xwwp which-key web-mode use-package-ensure-system-package try treemacs-projectile treemacs-magit treemacs-icons-dired texfrag sml-mode smartparens smart-hungry-delete slime-company ruby-electric rg rainbow-delimiters quelpa-use-package pyvenv python-pytest python-docstring projectile-ripgrep popwin plantuml-mode package-utils org-superstar org-super-agenda org-roam org-plus-contrib ob-http neotree modus-vivendi-theme modus-operandi-theme minions minimap magit-todos lsp-ui julia-mode json-mode ivy-rich ivy-prescient ivy-posframe inf-ruby helpful haskell-mode go-mode gnuplot glsl-mode git-messenger forge flycheck-color-mode-line fireplace fennel-mode eyebrowse expand-region exec-path-from-shell elfeed doom-modeline dockerfile-mode dired-subtree dashboard counsel-projectile company-restclient company-box company-auctex clojure-mode-extra-font-locking clj-refactor cargo buffer-move anzu all-the-icons-dired add-node-modules-path))
+   '(package-utils lsp-metals peep-dired flycheck-plantuml lsp-pyright git-gutter py-autopep8 crux easy-kill lsp-ivy pretty-lambdada python-black py-isort counsel-osx-app all-the-icons-ivy-rich racket-mode seeing-is-believing tide prettier-js company-quickhelp ac-geiser flycheck-clj-kondo yasnippet-snippets yaml-mode xwwp which-key web-mode use-package-ensure-system-package try treemacs-projectile treemacs-magit treemacs-icons-dired texfrag smartparens smart-hungry-delete slime-company ruby-electric rg rainbow-delimiters quelpa-use-package pyvenv python-pytest python-docstring projectile-ripgrep popwin plantuml-mode ob-http neotree modus-vivendi-theme modus-operandi-theme minions minimap magit-todos lsp-ui julia-mode json-mode ivy-rich ivy-prescient ivy-posframe inf-ruby helpful go-mode gnuplot glsl-mode git-messenger forge flycheck-color-mode-line fireplace eyebrowse expand-region exec-path-from-shell elfeed doom-modeline dockerfile-mode dired-subtree dashboard counsel-projectile company-restclient company-box company-auctex clojure-mode-extra-font-locking clj-refactor cargo buffer-move anzu all-the-icons-dired add-node-modules-path))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
  '(python-shell-exec-path '("python3"))
  '(safe-local-variable-values
-   '((lsp-enabled-clients . lsp-pyright)
+   '((eval pyvenv-workon "audio_analytics")
+     (lsp-enabled-clients . lsp-pyright)
      (eval message "Project directory set to `%s'." my-project-path)
      (eval set
            (make-local-variable 'my-project-path)
@@ -141,6 +142,8 @@
      (:type i18n :name yaml :mode yaml-mode)))
  '(wakatime-cli-path "/usr/local/bin/wakatime")
  '(wakatime-python-bin nil)
+ '(warning-suppress-log-types '((use-package) ((flycheck syntax-checker))))
+ '(warning-suppress-types '((comp) ((flycheck syntax-checker))))
  '(web-mode-code-indent-offset 2)
  '(weechat-color-list
    '(unspecified "#fdf6e3" "#eee8d5" "#a7020a" "#dc322f" "#5b7300" "#859900" "#866300" "#b58900" "#0061a8" "#268bd2" "#a00559" "#d33682" "#007d76" "#2aa198" "#657b83" "#839496"))

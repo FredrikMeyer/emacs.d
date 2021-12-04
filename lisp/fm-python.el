@@ -1,7 +1,9 @@
 ;;; fm-python.el --- Python editing -*- lexical-binding: t -*-
 ;;; Commentary:
-;;; Code:
 
+;; My Python specific configuration
+
+;;; Code:
 
 (use-package elpy
   :disabled
@@ -24,28 +26,27 @@
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
 (use-package lsp-pyright
-  ;; :disabled ;; test python-lsp again 
   :ensure t
   :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp)))
+                         (require 'lsp-pyright)
+                         (lsp)))
   :config
   (setq lsp-pyright-typechecking-mode "basic")
-  ;; (setq lsp-pyright)
-  )  ; or lsp-deferred
+  (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/")
+  )
 
 
 (use-package python-pytest
   :defer 2
   :ensure t
   :config
-  (setq python-pytest-executable "python -m pytest")
+  (setq python-pytest-executable "python -m pytest -o log_cli=true")
 
   (add-hook 'python-mode-hook
             (lambda ()
               (when-let ((r (locate-dominating-file default-directory ".pyroot")))
                 (setq python-pytest-executable
-                      (concat "PYTHONPATH=" r " " "pytest"))))))
+                      (concat "PYTHONPATH=" r " " "python -m pytest -o log_cli=true"))))))
 
 (use-package python-docstring
   :ensure t
@@ -79,7 +80,7 @@
                 (let
                     ((ipython (concat pyvenv-virtual-env "bin/ipython"))
                      (python (concat pyvenv-virtual-env "bin/python3")))
-                  (if (file-exists-p ipython)
+                  (if nil ;; (file-exists-p ipython)
                       (progn
                         (setq python-shell-interpreter ipython)
                         (setq python-shell-interpreter-args "--simple-prompt -i")
@@ -94,6 +95,12 @@
 
 (add-hook 'python-mode 'electric-pair-mode)
 
+(add-hook 'python-mode (lambda () (flycheck-add-next-checker 'lsp 'python-flake8)))
+
+(use-package python-mode
+  :config
+  :after lsp-mode
+  (flycheck-add-next-checker 'lsp 'python-flake8))
 
 (provide 'fm-python)
-;;; fm-python ends here
+;;; fm-python.el ends here

@@ -87,4 +87,4 @@
               (cljr-add-keybindings-with-prefix "C-c C-m"))))
 
 (provide 'fm-clojure)
-;;; fm-clojure ends here
+;;; fm-clojure.el ends here

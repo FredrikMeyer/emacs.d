@@ -92,4 +92,4 @@
 
 
 (provide 'fm-swiper)
-;;; fm-swiper ends here
+;;; fm-swiper.el ends here
