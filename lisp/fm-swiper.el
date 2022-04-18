@@ -5,8 +5,8 @@
 
 (use-package ivy
   :ensure t
-  :pin melpa
   :demand t
+  ;; :pin melpa
   :hook (emacs-startup . ivy-mode)
   :diminish (ivy-mode)
   :bind (("C-c C-r" . ivy-resume)
@@ -92,4 +92,5 @@
 
 
 (provide 'fm-swiper)
+
 ;;; fm-swiper.el ends here

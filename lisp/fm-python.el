@@ -27,6 +27,7 @@
 
 (use-package lsp-pyright
   :ensure t
+  :defer t
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp)))
@@ -97,10 +98,13 @@
 
 (add-hook 'python-mode (lambda () (flycheck-add-next-checker 'lsp 'python-flake8)))
 
-(use-package python-mode
-  :config
+(use-package pythonx
   :after lsp-mode
-  (flycheck-add-next-checker 'lsp 'python-flake8))
+  :config
+  (flycheck-add-next-checker 'lsp 'python-flake8)
+  (setq python-indent-offset 4))
+
+(setq flycheck-flake8-maximum-line-length 120)
 
 (provide 'fm-python)
 ;;; fm-python.el ends here

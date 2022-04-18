@@ -4,25 +4,23 @@
 
 ;;; Commentary:
 
-;; My personal messy Emacs config
+;; My personal messy Emacs config.
 
 ;;; Code:
 
-;; (byte-recompile-directory (expand-file-name "~/.emacs.d/elpa") 0)
+;; (byte-recompile-directory (expand-file-name "~/.emacs.d/") 0)
+;; (profiler-start 'cpu+mem)
 
+(require 'package)
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
 
-
-;; (require 'package)
-;; (setq package-enable-at-startup nil)
-;; (package-initialize)
-
-(message "hei")
 (unless (package-installed-p 'use-package)
-  (message "!!!!!refresging...")
+  (message "Refreshing package contents...")
   (package-refresh-contents)
   (package-install 'use-package))
+
+(setq use-package-verbose nil)
 
 ;; (toggle-debug-on-error 1)
 
@@ -54,13 +52,14 @@
 (setq create-lockfiles nil
       auto-save-default nil
       default-directory (concat (getenv "HOME") "/")
-      custom-file (expand-file-name "custom.el" user-emacs-directory))
+      custom-file (expand-file-name "custom.el" user-emacs-directory)
+      )
 
 (when (file-exists-p custom-file)
   (load custom-file))
 
-(unbind-key "C-z") ;; unbind the very annoying suspend-frame
-(unbind-key "<mouse-2>")
+;; (unbind-key "C-z") ;; unbind the very annoying suspend-frame
+;; (unbind-key "<mouse-2>")
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
@@ -162,8 +161,8 @@
 (eval-when-compile
   (require 'use-package))
 
-(use-package crux
-  :ensure t)
+;; (use-package crux
+;;   :ensure t)
 
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
@@ -192,8 +191,8 @@
   :ensure t)
 
 ;; https://github.com/quelpa/quelpa-use-package
-(use-package quelpa-use-package
-  :ensure t)
+;; (use-package quelpa-use-package
+;;   :ensure t)
 
 (use-package benchmark-init
   :disabled
@@ -204,7 +203,6 @@
 
 (use-package esup
   :ensure t
-  :disabled
   :defer t
   ;; To use MELPA Stable use ":pin mepla-stable",
   :pin melpa-stable
@@ -233,12 +231,12 @@
   :bind ("C-=" . 'er/expand-region))
 
 ;; https://github.com/leoliu/easy-kill
-(use-package easy-kill
-  :ensure t
-  :disabled
-  :config
-  (global-set-key [remap kill-ring-save] #'easy-kill)
-  (global-set-key [remap mark-sexp] #'easy-mark))
+;; (use-package easy-kill
+;;   :ensure t
+;;   :disabled
+;;   :config
+;;   (global-set-key [remap kill-ring-save] #'easy-kill)
+;;   (global-set-key [remap mark-sexp] #'easy-mark))
 
 (use-package flycheck
   :ensure t
@@ -417,9 +415,10 @@
               (("M-p" . 'projectile-command-map)
                ("C-c p" . 'projectile-command-map)))
   :config
-  (setq projectile-project-compilation-cmd ""
+  (setq  projectile-project-compilation-cmd ""
         projectile-completion-system 'ivy
-        projectile-enable-caching t))
+        projectile-enable-caching t)
+  )
 
 
 (use-package projectile-ripgrep
@@ -506,11 +505,11 @@
   (setq forge-topic-list-order '(number . >)))
 
 ;; https://github.com/alphapapa/magit-todos#installation
-(use-package magit-todos
-  :ensure t
-  :defer 10
-  :config
-  (magit-todos-mode t))
+;; (use-package magit-todos
+;;   :ensure t
+;;   :defer 10
+;;   :config
+;;   (magit-todos-mode t))
 
 ;; https://github.com/syohex/emacs-git-messenger
 (use-package git-messenger
@@ -536,12 +535,13 @@
 
 ;; https://github.com/zweifisch/ob-http
 ;; org mode source block http
-(use-package ob-http
-  :ensure t)
+;; (use-package ob-http
+;;   :ensure t)
 
 ;; https://github.com/alphapapa/org-super-agenda/#installation
 (use-package org-super-agenda
   :ensure t
+  :after org
   :config
   (org-super-agenda-mode t))
 
@@ -582,8 +582,9 @@
                                (calc . t)
                                (clojure . t)
                                (shell . t)
+                               (latex . t)
                                (plantuml . t)
-                               (http . t)
+                               ;; (http . t)
                                (js . t)
                                (gnuplot . t)))
   (setq org-plantuml-exec-mode 'plantuml)
@@ -821,12 +822,13 @@
   :defer
   :ensure t
   :hook (after-init . global-company-mode)
+  :bind ("C-<tab>" . company-complete)
   :custom (company-dabbrev-downcase nil)
   :config
   ;; (define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common)
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
-  (setq company-show-numbers t)
+  (setq company-show-quick-access t)
   (setq company-minimum-prefix-length 1))
 
 (use-package pos-tip
@@ -834,7 +836,7 @@
 
 ;; https://github.com/company-mode/company-quickhelp
 (use-package company-quickhelp
-  :after company
+  :after company pos-tip
   :ensure t
   :config
   (company-quickhelp-mode))
@@ -863,32 +865,35 @@
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
   (setq web-mode-enable-auto-indentation nil)
 
-  (add-hook 'web-mode-hook (lambda ()
-                             (flycheck-mode 1)
-                             (yas-activate-extra-mode 'js2-mode)
-                             (when (and (or (locate-dominating-file default-directory ".prettier.rc")
-                                            (locate-dominating-file default-directory ".prettierrc.json")
-                                            (locate-dominating-file default-directory ".prettierrc")))
-                                                              ;; (string= (file-name-extension buffer-file-name) "ts")
-                               (prettier-js-mode 1)
-                               (add-hook 'before-save-hook 'prettier-js nil t)
-                               ;; (add-hook 'before-save-hook 'tide-format-before-save)
-                               )
-                             (when (locate-dominating-file default-directory ".eslintrc.js")
-                               (flycheck-add-mode 'javascript-eslint 'web-mode)
-                               )
-                             (electric-indent-mode nil)
-                               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
-                             (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                               (setup-tide-mode)
-                               ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
-                               )
-                             (when (string-equal "ts" (file-name-extension buffer-file-name))
-                               (setup-tide-mode)
-                               ;; (flycheck-add-next-checker 'javascript-eslint 'tsx-tide)
-                               )
-                             (electric-pair-mode t)))
+  (add-hook 'web-mode-hook
+            (lambda ()
+              (flycheck-mode 1)
+              (yas-activate-extra-mode 'js2-mode)
+              (when (and (or (locate-dominating-file default-directory ".prettier.rc")
+                             (locate-dominating-file default-directory ".prettierrc.json")
+                             (locate-dominating-file default-directory ".prettierrc")))
+                ;; (string= (file-name-extension buffer-file-name) "ts")
+                (prettier-js-mode 1)
+                (add-hook 'before-save-hook 'prettier-js nil t)
+                ;; (add-hook 'before-save-hook 'tide-format-before-save)
+                )
+              (when (locate-dominating-file default-directory ".eslintrc.js")
+                (flycheck-add-mode 'javascript-eslint 'web-mode)
+                )
+              (electric-indent-mode nil)
+              ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
+              (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                (setup-tide-mode)
+                ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
+                )
+              (when (string-equal "ts" (file-name-extension buffer-file-name))
+                (setup-tide-mode)
+                ;; (flycheck-add-next-checker 'javascript-eslint 'tsx-tide)
+                )
+              (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
+
+(use-package jest)
 
 (use-package typescript-mode
   :defer 1
@@ -906,7 +911,10 @@
     (tide-setup)
     (flycheck-add-mode 'typescript-tide 'web-mode)
     (tide-hl-identifier-mode +1)
-  ))
+    ))
+
+(use-package helm-system-packages
+  :ensure t)
 
 ;; (use-package ob-plantuml
 ;;   :after (org)
@@ -929,6 +937,10 @@
   :config
   (flycheck-plantuml-setup))
 
+;; https://github.com/k1LoW/emacs-ansible
+(use-package ansible
+  :ensure t)
+
 (use-package rust-mode
   :ensure t
   :mode "\\.rs\\'"
@@ -942,14 +954,14 @@
   :ensure t
   :hook ((rust-mode . cargo-minor-mode)))
 
-(defun setup-vue-with-ts ()
-  "Setup vue."
-  (interactive)
-  (tide-setup)
-  (eldoc-mode +1)
-  (when (flycheck-may-enable-checker 'javascript-eslint)
-    (flycheck-select-checker 'javascript-eslint))
-  (tide-hl-identifier-mode t))
+;; (defun setup-vue-with-ts ()
+;;   "Setup vue."
+;;   (interactive)
+;;   (tide-setup)
+;;   (eldoc-mode +1)
+;;   (when (flycheck-may-enable-checker 'javascript-eslint)
+;;     (flycheck-select-checker 'javascript-eslint))
+;;   (tide-hl-identifier-mode t))
 
 (use-package vue-mode
   :disabled
@@ -957,8 +969,9 @@
   :mode "\\.vue\\'"
   :config
   (setq mmm-typescript-mode-submode-hook #'setup-vue-with-ts)
-  (set-face-background 'mmm-default-submode-face nil)
-  (setq css-indent-offset 2))
+  (set-face-background 'mmm-default-submode-face nil))
+
+(setq css-indent-offset 2)
 
 (use-package smartparens
   :ensure t
@@ -1044,7 +1057,7 @@
   (add-hook 'go-mode-hook 'electric-pair-mode)
   (add-hook 'go-mode-hook 'electric-indent-mode)
   (add-hook 'go-mode-hook (lambda ()
-            (setq tab-width 4)))) 
+            (setq tab-width 4))))
 
 ;; https://www.racket-mode.com
 (use-package racket-mode
@@ -1066,6 +1079,7 @@
   (setq minimap-window-location 'right)
   (setq minimap-automatically-delete-window nil))
 
+;; https://github.com/Wilfred/helpful
 (use-package helpful
   :ensure t
   :bind (("C-h k" . 'helpful-key)
@@ -1128,8 +1142,8 @@
 ;; (byte-recompile-directory "~/.emacs.d/elpa" 0 t)
 
 (use-package lsp-python-ms
-  :ensure t
   :disabled
+  :ensure t
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
                          (require 'lsp-python-ms)
@@ -1164,6 +1178,7 @@
   (setq lsp-idle-delay 0.8)
 
   (setq lsp-file-watch-threshold 7000)
+  (setq lsp-response-timeout 20)
   (setq lsp-enable-file-watchers t)
 
   (setq lsp-signature-doc-lines 5)
@@ -1181,6 +1196,7 @@
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]__pycache__\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]/Users/fredrikmeyer/code/work/audio_analytics_internal/preliminary_study/\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.mypy_cache\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\]\_build")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
@@ -1204,9 +1220,13 @@
   :defer 2
   :ensure t
   :config
+  (setq lsp-ui-doc-enable t)
   (setq lsp-ui-sideline-delay 0.1)
   (setq lsp-ui-doc-use-webkit t)
   (setq lsp-ui-doc-webkit-max-width-px 1000)
+
+  (setq lsp-ui-sideline-show-code-actions t)
+  (setq lsp-ui-sideline-show-hover t)
   )
 
 (use-package lsp-java
@@ -1272,6 +1292,7 @@
 
 (use-package company-auctex
   :ensure t
+  :after latex-mode
   :hook (latex-mode . (lambda () (company-auctex-init)))
   :config
   ;; (add-hook 'latex-mode-hook (company-auctex-init))
@@ -1324,7 +1345,12 @@
   :config
   (load-theme 'modus-operandi t)
   (setq modus-operandi-theme-rainbow-headings t)
-  (setq modus-operandi-theme-scale-headings t))
+  (setq modus-operandi-theme-scale-headings t)
+  ;; (setq modus-themes-syntax '(green-strings alt-syntax faint))
+  (setq modus-themes-syntax nil)
+  (setq modus-themes-completions 'super-opinionated)
+  )
+
 
 (use-package solarized-theme
   :ensure t
@@ -1363,7 +1389,9 @@
 (use-package yasnippet-snippets
   :ensure t
   :defer 10
-  :after yasnippet)
+  :after yasnippet
+  :config
+  (yas-load-directory yasnippet-snippets-dir))
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
@@ -1530,10 +1558,10 @@
   :ensure t)
 
 ;; https://www.manueluberti.eu/emacs/2021/07/31/dictionary/
-(use-package dictionary
-  :bind ("C-c d" . #'dictionary-search)
-  :config
-  (setq dictionary-server "dict.org"))
+;; (use-package dictionary
+;;   :bind ("C-c d" . #'dictionary-search)
+;;   :config
+;;   (setq dictionary-server "dict.org"))
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
@@ -1701,4 +1729,22 @@
 (global-set-key [(meta up)]  'move-line-up)
 (global-set-key [(meta down)]  'move-line-down)
 
+
+;; (profiler-cpu-stop)
 ;;; init.el ends here
+
+
+
+  ;; Overwrite existing scss-stylelint checker to not use --syntax
+  (flycheck-define-checker scss-stylelint
+  "A SCSS syntax and style checker using stylelint.
+
+See URL `http://stylelint.io/'."
+  :command ("stylelint"
+            (eval flycheck-stylelint-args)
+;; "--syntax" "scss"
+            (option-flag "--quiet" flycheck-stylelint-quiet)
+            (config-file "--config" flycheck-stylelintrc))
+  :standard-input t
+  :error-parser flycheck-parse-stylelint
+  :modes (scss-mode))

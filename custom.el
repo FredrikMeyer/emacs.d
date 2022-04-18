@@ -12,13 +12,14 @@
  '(cua-overwrite-cursor-color "#b58900")
  '(cua-read-only-cursor-color "#859900")
  '(custom-safe-themes
-   '("2422e84e81ce5ff243b9b8dd4076b8bab9b5c630c9b8a7533ec3c5b3fed23329" "96c56bd2aab87fd92f2795df76c3582d762a88da5c0e54d30c71562b7bf9c605" "7ea491e912d419e6d4be9a339876293fff5c8d13f6e84e9f75388063b5f794d6" "890a1a44aff08a726439b03c69ff210fe929f0eff846ccb85f78ee0e27c7b2ea" "378d52c38b53af751b50c0eba301718a479d7feea5f5ba912d66d7fe9ed64c8f" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "52588047a0fe3727e3cd8a90e76d7f078c9bd62c0b246324e557dfa5112e0d0c" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "1b6f7535c9526a5dbf9fb7e3604d0280feb7a07b970caf21ebd276ddc93ef07a" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "cf08ae4c26cacce2eebff39d129ea0a21c9d7bf70ea9b945588c1c66392578d1" "5ee12d8250b0952deefc88814cf0672327d7ee70b16344372db9460e9a0e3ffc" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "9e54a6ac0051987b4296e9276eecc5dfb67fdcd620191ee553f40a9b6d943e78" "aaffceb9b0f539b6ad6becb8e96a04f2140c8faa1de8039a343a4f1e009174fb" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default))
+   '("2420401709d448e5999b76005aece99fa3d27e17a6d2312b40636655f0efbc6f" "5d6cc3e22172f051d68c0c95d79f3dff0e800f2d107f6f6b9220ed5380285c50" "2422e84e81ce5ff243b9b8dd4076b8bab9b5c630c9b8a7533ec3c5b3fed23329" "96c56bd2aab87fd92f2795df76c3582d762a88da5c0e54d30c71562b7bf9c605" "7ea491e912d419e6d4be9a339876293fff5c8d13f6e84e9f75388063b5f794d6" "890a1a44aff08a726439b03c69ff210fe929f0eff846ccb85f78ee0e27c7b2ea" "378d52c38b53af751b50c0eba301718a479d7feea5f5ba912d66d7fe9ed64c8f" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "52588047a0fe3727e3cd8a90e76d7f078c9bd62c0b246324e557dfa5112e0d0c" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "1b6f7535c9526a5dbf9fb7e3604d0280feb7a07b970caf21ebd276ddc93ef07a" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "285d1bf306091644fb49993341e0ad8bafe57130d9981b680c1dbd974475c5c7" "cf08ae4c26cacce2eebff39d129ea0a21c9d7bf70ea9b945588c1c66392578d1" "5ee12d8250b0952deefc88814cf0672327d7ee70b16344372db9460e9a0e3ffc" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "9e54a6ac0051987b4296e9276eecc5dfb67fdcd620191ee553f40a9b6d943e78" "aaffceb9b0f539b6ad6becb8e96a04f2140c8faa1de8039a343a4f1e009174fb" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" "d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default))
  '(debug-on-error nil)
  '(electric-indent-mode t)
  '(electric-pair-mode t)
  '(elpy-rpc-python-command "python3")
  '(fci-rule-color "#eee8d5")
  '(flycheck-javascript-flow-args nil)
+ '(flycheck-stylelintrc ".stylelintrc.json")
  '(global-company-mode t)
  '(highlight-changes-colors '("#d33682" "#6c71c4"))
  '(highlight-symbol-colors
@@ -57,12 +58,13 @@
      ("s" . "src")
      ("v" . "verse")))
  '(package-selected-packages
-   '(package-utils lsp-metals peep-dired flycheck-plantuml lsp-pyright git-gutter py-autopep8 crux easy-kill lsp-ivy pretty-lambdada python-black py-isort counsel-osx-app all-the-icons-ivy-rich racket-mode seeing-is-believing tide prettier-js company-quickhelp ac-geiser flycheck-clj-kondo yasnippet-snippets yaml-mode xwwp which-key web-mode use-package-ensure-system-package try treemacs-projectile treemacs-magit treemacs-icons-dired texfrag smartparens smart-hungry-delete slime-company ruby-electric rg rainbow-delimiters quelpa-use-package pyvenv python-pytest python-docstring projectile-ripgrep popwin plantuml-mode ob-http neotree modus-vivendi-theme modus-operandi-theme minions minimap magit-todos lsp-ui julia-mode json-mode ivy-rich ivy-prescient ivy-posframe inf-ruby helpful go-mode gnuplot glsl-mode git-messenger forge flycheck-color-mode-line fireplace eyebrowse expand-region exec-path-from-shell elfeed doom-modeline dockerfile-mode dired-subtree dashboard counsel-projectile company-restclient company-box company-auctex clojure-mode-extra-font-locking clj-refactor cargo buffer-move anzu all-the-icons-dired add-node-modules-path))
+   '(ansible helm-system-packages jest esup package-utils lsp-metals peep-dired flycheck-plantuml lsp-pyright git-gutter py-autopep8 crux easy-kill lsp-ivy pretty-lambdada python-black py-isort counsel-osx-app all-the-icons-ivy-rich racket-mode seeing-is-believing tide prettier-js company-quickhelp ac-geiser flycheck-clj-kondo yasnippet-snippets yaml-mode xwwp which-key web-mode use-package-ensure-system-package try treemacs-projectile treemacs-magit treemacs-icons-dired texfrag smartparens smart-hungry-delete slime-company ruby-electric rg rainbow-delimiters quelpa-use-package pyvenv python-pytest python-docstring projectile-ripgrep popwin plantuml-mode ob-http neotree modus-vivendi-theme modus-operandi-theme minions minimap magit-todos lsp-ui julia-mode json-mode ivy-rich ivy-prescient ivy-posframe inf-ruby helpful go-mode gnuplot glsl-mode git-messenger forge flycheck-color-mode-line fireplace eyebrowse expand-region exec-path-from-shell elfeed doom-modeline dockerfile-mode dired-subtree dashboard counsel-projectile company-restclient company-box company-auctex clojure-mode-extra-font-locking clj-refactor cargo buffer-move anzu all-the-icons-dired add-node-modules-path))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
  '(python-shell-exec-path '("python3"))
  '(safe-local-variable-values
-   '((eval pyvenv-workon "audio_analytics")
+   '((eval pyvenv-workon "pipi")
+     (eval pyvenv-workon "audio_analytics")
      (lsp-enabled-clients . lsp-pyright)
      (eval message "Project directory set to `%s'." my-project-path)
      (eval set
