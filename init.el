@@ -59,7 +59,9 @@
   (load custom-file))
 
 ;; (unbind-key "C-z") ;; unbind the very annoying suspend-frame
-;; (unbind-key "<mouse-2>")
+(unbind-key "<mouse-2>")
+
+(global-set-key (kbd "C-x g") 'revert-buffer)
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
@@ -167,13 +169,15 @@
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns x))
+  ;; :if (memq window-system '(mac ns x))
   :ensure t
   :config
   (setq exec-path-from-shell-arguments nil)
-  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME"))
+  ;; (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME"))
 
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+
+  (setenv "WORKON_HOME" "~/miniconda3/envs"))
 
 ;; (use-package server
 ;;   :defer 2
@@ -596,9 +600,9 @@
   (setq org-refile-use-outline-path t)
   (setq org-outline-path-complete-in-steps nil)
 
-  (setq org-agenda-files (list "~/Dropbox/org/audio_xal.org"
-                               "~/Dropbox/org/tasks.org"
-                               "~/Dropbox/org/notater.org"))
+;;  (setq org-agenda-files (list "~/Dropbox/org/audio_xal.org"
+;;                               "~/Dropbox/org/tasks.org"
+ ;;                              "~/Dropbox/org/notater.org"))
 
   (setq org-super-agenda-groups nil)
 
@@ -666,7 +670,7 @@
                          (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
                          (org-agenda-overriding-header "ALL NONSCHEDULED TASKS")
                       )))
-           ((org-agenda-files '("~/Dropbox/org/audio_xal.org"))
+           ((org-agenda-files '("~/agenda.org"))
             (org-agenda-span 'day)
             (org-agenda-compact-blocks t))
            )
@@ -676,20 +680,21 @@
              (org-mac-iCal)))))
           ))
 
-  (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
+  (setq org-default-notes-file "~/daglige_notater.org")
 
   ;; org capture
   (setq org-capture-templates
         '(
-          ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
-          ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
-          ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
-           "* TODO %?\n%U")
+          ("n" "Note" entry (file "~/daglige_notater.org") "* %U\n%?")
+          ;; ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
+          ;; ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
+          ;;  "* TODO %?\n%U")
           ("a" "Audio project" entry
-           (file+headline "~/Dropbox/org/audio_xal.org" "Usorterte todos")
+           (file+headline "~/agenda.org" "Usorterte todos")
            "* TODO [#C] %?\n")
-          ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
-           "** TODO %?\n%U" :empty-lines 1)))
+          ;;("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
+;;           "** TODO %?\n%U" :empty-lines 1)
+          ))
   (require 'org-tempo)
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit t)
@@ -775,23 +780,26 @@
   :after treemacs magit
   :ensure t)
 
-(global-set-key (kbd "C-c o")
-                (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
+;; (global-set-key (kbd "C-c o")
+;;                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
-(global-set-key (kbd "C-c n")
-                (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
+;; (global-set-key (kbd "C-c n")
+;;                 (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
 
-(global-set-key (kbd "C-c ø")
-                (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
+;; (global-set-key (kbd "C-c ø")
+;;                 (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
+
+;; (global-set-key (kbd "C-c æ")
+                ;; (lambda () (interactive) (find-file "~/Dropbox/org/audio_xal.org")))
 
 (global-set-key (kbd "C-c æ")
-                (lambda () (interactive) (find-file "~/Dropbox/org/audio_xal.org")))
+                (lambda () (interactive) (find-file "~/agenda.org")))
 
 (global-set-key (kbd "C-c i")
                 (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
-(global-set-key (kbd "C-c d")
-                (lambda () (interactive) (find-file "~/Dropbox/org/dagbok.org")))
+;; (global-set-key (kbd "C-c d")
+;;                 (lambda () (interactive) (find-file "~/Dropbox/org/dagbok.org")))
 
 
 ;; https://github.com/tarsius/hl-todo
