@@ -61,7 +61,7 @@
 ;; (unbind-key "C-z") ;; unbind the very annoying suspend-frame
 (unbind-key "<mouse-2>")
 
-(global-set-key (kbd "C-x g") 'revert-buffer)
+(global-set-key (kbd "C-x x g") 'revert-buffer)
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
@@ -172,12 +172,13 @@
   ;; :if (memq window-system '(mac ns x))
   :ensure t
   :config
-  (setq exec-path-from-shell-arguments nil)
-  ;; (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME"))
+  (setq exec-path-from-shell-arguments '("-l" "-i"))
+  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH" "REQUESTS_CA_BUNDLE" "SSL_CERT_FILE" "TS_DATA_SERVICE_PORT"))
 
   (exec-path-from-shell-initialize)
 
-  (setenv "WORKON_HOME" "~/miniconda3/envs"))
+  (setenv "WORKON_HOME" "~/miniconda3/envs")
+  )
 
 ;; (use-package server
 ;;   :defer 2
@@ -380,6 +381,9 @@
   (setq-default save-place t)
   (setq save-place-file (concat user-emacs-directory "places")))
 
+(use-package protobuf-mode
+  :ensure t)
+
 ;; https://github.com/hrs/engine-mode
 (use-package engine-mode
   :disabled
@@ -569,7 +573,7 @@
 
   (setq org-src-fontify-natively t
         org-src-tab-acts-natively nil
-        org-hide-emphasis-markers t
+        org-hide-emphasis-markers nil
         org-log-done 'time
         org-confirm-babel-evaluate nil
         org-edit-src-content-indentation 0
@@ -591,8 +595,11 @@
                                ;; (http . t)
                                (js . t)
                                (gnuplot . t)))
+
+  (setq org-babel-python-command "/opt/miniconda3/envs/promo38/bin/python3.8")
+  
   (setq org-plantuml-exec-mode 'plantuml)
-  (setq org-plantuml-jar-path "/usr/local/bin/plantuml")
+  (setq org-plantuml-jar-path "/bin/plantuml")
   (setq org-babel-clojure-backend 'cider)
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
@@ -681,6 +688,8 @@
           ))
 
   (setq org-default-notes-file "~/daglige_notater.org")
+
+  (setq org-todo-keywords '("TODO(t)" "DOING(t)" "|" "DONE(d)"))
 
   ;; org capture
   (setq org-capture-templates
@@ -1079,6 +1088,10 @@
   :ensure t
   :mode "^Dockerfile\\'")
 
+(use-package docker-compose-mode
+  :ensure t
+  :mode "^docker-compose(.)+.yaml\\'")
+
 (use-package minimap
   :disabled
   :ensure t
@@ -1230,7 +1243,7 @@
   :config
   (setq lsp-ui-doc-enable t)
   (setq lsp-ui-sideline-delay 0.1)
-  (setq lsp-ui-doc-use-webkit t)
+  (setq lsp-ui-doc-use-webkit nil)
   (setq lsp-ui-doc-webkit-max-width-px 1000)
 
   (setq lsp-ui-sideline-show-code-actions t)

@@ -7,7 +7,7 @@
 
 ;; increase font size for better readability
 (set-face-attribute 'default nil
-                    :height 140
+                    :height 120
                     :weight 'normal
                     :family "Jetbrains Mono")
 
