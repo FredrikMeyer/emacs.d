@@ -96,9 +96,9 @@
 
 (add-hook 'python-mode 'electric-pair-mode)
 
-(add-hook 'python-mode (lambda () (flycheck-add-next-checker 'lsp 'python-flake8)))
+;; (add-hook 'python-mode (lambda () (flycheck-add-next-checker 'lsp 'python-flake8)))
 
-(use-package pythonx
+(use-package python
   :after lsp-mode
   :config
   (flycheck-add-next-checker 'lsp 'python-flake8)
