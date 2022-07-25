@@ -167,12 +167,12 @@
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns x))
+  ;; :if (memq window-system '(mac ns x))
   :ensure t
   :config
-  (setq exec-path-from-shell-arguments nil)
-  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME"))
-
+  (setq exec-path-from-shell-arguments '("-l" "-i"))
+  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH"))
+  (setenv "WORKON_HOME" "~/miniconda/envs")
   (exec-path-from-shell-initialize))
 
 ;; (use-package server
@@ -417,7 +417,7 @@
   :config
   (setq  projectile-project-compilation-cmd ""
         projectile-completion-system 'ivy
-        projectile-enable-caching t)
+        projectile-enable-caching nil)
   )
 
 
@@ -571,7 +571,7 @@
         org-edit-src-content-indentation 0
         org-image-actual-width nil
         org-startup-indented t
-        org-directory "~/Dropbox/org")
+        org-directory "~/org")
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   (add-hook 'org-mode-hook
             (lambda ()
@@ -596,9 +596,7 @@
   (setq org-refile-use-outline-path t)
   (setq org-outline-path-complete-in-steps nil)
 
-  (setq org-agenda-files (list "~/Dropbox/org/audio_xal.org"
-                               "~/Dropbox/org/tasks.org"
-                               "~/Dropbox/org/notater.org"))
+  (setq org-agenda-files (list "~/code/statkraft-notater/agenda.org"))
 
   (setq org-super-agenda-groups nil)
 
@@ -615,33 +613,6 @@
           ("n" "Agenda all all TODOs"
            ((agenda "")
             (alltodo "")))
-          ("p" "Private view"
-           (
-            (agenda "" ((org-super-agenda-groups
-                       '(
-                         (:name "Top prio"
-                                :priority "A")
-                         (:name "Next prio"
-                                :priority<= "B")
-                         (:auto-outline-path t)
-                         ))
-                        ))
-            (alltodo ""
-                     ((org-super-agenda-groups
-                       '(
-                         (:name "Top prio todo"
-                                :priority "A"
-                                :order 0)
-                         (:auto-outline-path t)
-                         ))
-                      (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
-                      (org-agenda-overriding-header "ALL normal priority tasks:")
-                      )
-                  ))
-           ((org-agenda-files '("~/Dropbox/org/notater.org" "~/Dropbox/org/tasks.org"))
-            (org-agenda-span 'day)
-            (org-agenda-show-log t)
-            ))
           ("w" "Work view"
            (
             (agenda "" ((org-agenda-overriding-header "XXXXX")
@@ -666,7 +637,7 @@
                          (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
                          (org-agenda-overriding-header "ALL NONSCHEDULED TASKS")
                       )))
-           ((org-agenda-files '("~/Dropbox/org/audio_xal.org"))
+           ((org-agenda-files '("~/code/statkraft-notater/agenda.org"))
             (org-agenda-span 'day)
             (org-agenda-compact-blocks t))
            )
@@ -676,20 +647,16 @@
              (org-mac-iCal)))))
           ))
 
-  (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
+  (setq org-default-notes-file "~/code/statkraft-notater/agenda.org")
 
   ;; org capture
   (setq org-capture-templates
         '(
-          ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
-          ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
-          ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
-           "* TODO %?\n%U")
           ("a" "Audio project" entry
-           (file+headline "~/Dropbox/org/audio_xal.org" "Usorterte todos")
+           (file+headline "~/code/statkraft-notater/agenda.org" "Usorterte todos")
            "* TODO [#C] %?\n")
-          ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
-           "** TODO %?\n%U" :empty-lines 1)))
+	  )
+	)
   (require 'org-tempo)
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit t)
@@ -717,24 +684,6 @@
   :defer 2
   :ensure t)
 
-(use-package org-roam
-  :disabled
-  :ensure t
-  :hook
-  (after-init . org-roam-mode)
-  :custom
-  (org-roam-directory "~/Dropbox/org/roam/")
-  :bind (:map org-roam-mode-map
-              (("C-c n l" . org-roam)
-               ("C-c n r" . org-roam-buffer-toggle-display)
-               ("C-c n f" . org-roam-find-file)
-               ("C-c n g" . org-roam-graph))
-              :map org-mode-map
-              (("C-c n i" . org-roam-insert))
-              (("C-c n I" . org-roam-insert-immediate)))
-  :config
-  (setq org-roam-completion-everywhere t)
-  (require 'org-roam-protocol))
 
 ;; https://github.com/IvanMalison/org-projectile
 (use-package org-projectile
@@ -775,23 +724,12 @@
   :after treemacs magit
   :ensure t)
 
-(global-set-key (kbd "C-c o")
-                (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
-
-(global-set-key (kbd "C-c n")
-                (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
-
-(global-set-key (kbd "C-c ø")
-                (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
 
 (global-set-key (kbd "C-c æ")
-                (lambda () (interactive) (find-file "~/Dropbox/org/audio_xal.org")))
+                (lambda () (interactive) (find-file "~/code/statkraft-notater/agenda.org")))
 
 (global-set-key (kbd "C-c i")
                 (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
-
-(global-set-key (kbd "C-c d")
-                (lambda () (interactive) (find-file "~/Dropbox/org/dagbok.org")))
 
 
 ;; https://github.com/tarsius/hl-todo
@@ -801,21 +739,21 @@
   (global-hl-todo-mode t))
 
 ;; https://github.com/mickeynp/ligature.el
-(use-package ligature
-  :load-path "~/.emacs.d/ligature.el"
-  :config
-    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-                                      "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-                                      "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-                                      "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-                                      "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-                                      "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-                                      ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-                                      "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-                                      "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-                                      "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-                                      "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-    (global-ligature-mode 1))
+;; (use-package ligature
+;;   :load-path "~/.emacs.d/ligature.el"
+;;   :config
+;;     (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+;;                                       "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+;;                                       "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+;;                                       "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+;;                                       "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+;;                                       "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+;;                                       ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+;;                                       "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+;;                                       "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+;;                                       "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+;;                                       "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+;;     (global-ligature-mode 1))
 
 
 (use-package company
@@ -881,6 +819,8 @@
                 (flycheck-add-mode 'javascript-eslint 'web-mode)
                 )
               (electric-indent-mode nil)
+              (setq web-mode-markup-indent-offset 2)
+              (setq web-mode-code-indent-offset 2)
               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
               (when (string-equal "tsx" (file-name-extension buffer-file-name))
                 (setup-tide-mode)
@@ -893,7 +833,7 @@
               (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
 
-(use-package jest)
+;; (use-package jest)
 
 (use-package typescript-mode
   :defer 1
@@ -1352,6 +1292,8 @@
   )
 
 
+(set-face-attribute 'default nil :height 70)
+
 (use-package solarized-theme
   :ensure t
   :disabled
@@ -1648,11 +1590,11 @@
                                                "backups"))))
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-(use-package fm-common-lisp)
+;; (use-package fm-common-lisp)
 (use-package fm-python)
 (use-package fm-swiper)
-(use-package cfn-lint)
-(use-package fm-clojure)
+;; (use-package cfn-lint)
+;; (use-package fm-clojure)
 
 ;;;; Useful functions
 
