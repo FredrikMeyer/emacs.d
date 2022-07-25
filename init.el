@@ -11,6 +11,18 @@
 ;; (byte-recompile-directory (expand-file-name "~/.emacs.d/") 0)
 ;; (profiler-start 'cpu+mem)
 
+;; Define package repositories
+
+(add-to-list 'package-archives
+             '("gnu" . "https://elpa.gnu.org/packages/"))
+
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+
+(add-to-list 'package-archives
+             '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+
+
 (require 'package)
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
@@ -138,19 +150,8 @@
   (dolist (pattern patterns)
     (add-to-list 'auto-mode-alist (cons pattern mode))))
 
-;; Define package repositories
-
-(add-to-list 'package-archives
-             '("gnu" . "https://elpa.gnu.org/packages/"))
-
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/"))
-
-(add-to-list 'package-archives
-             '("melpa-stable" . "http://stable.melpa.org/packages/"))
-
-(add-to-list 'package-archives
-             '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+;; (add-to-list 'package-archives
+;;              '("melpa-stable" . "http://stable.melpa.org/packages/"))
 
 ;; (add-to-list 'package-archives
 ;;              '("org" . "https://orgmode.org/elpa/"))
@@ -205,7 +206,7 @@
   :ensure t
   :defer t
   ;; To use MELPA Stable use ":pin mepla-stable",
-  :pin melpa-stable
+  ;;  :pin melpa-stable
   :commands (esup))
 
 ;; https://github.com/emacsorphanage/popwin
@@ -231,12 +232,12 @@
   :bind ("C-=" . 'er/expand-region))
 
 ;; https://github.com/leoliu/easy-kill
-;; (use-package easy-kill
-;;   :ensure t
-;;   :disabled
-;;   :config
-;;   (global-set-key [remap kill-ring-save] #'easy-kill)
-;;   (global-set-key [remap mark-sexp] #'easy-mark))
+(use-package easy-kill
+  :ensure t
+  :disabled
+  :config
+  (global-set-key [remap kill-ring-save] #'easy-kill)
+  (global-set-key [remap mark-sexp] #'easy-mark))
 
 (use-package flycheck
   :ensure t
@@ -257,7 +258,7 @@
 
   (setq flycheck-checker-error-threshold 2000)
 
-  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.6.0/bin/tidy")
+  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
   )
 
 (use-package flycheck-color-mode-line
@@ -395,12 +396,20 @@
     :docstring "Searchin' the wikis."))
 
 ;; https://github.com/hrehfeld/emacs-smart-hungry-delete
+;; (use-package smart-hungry-delete
+;;   :ensure t
+;;   ;; :disabled
+;;   :bind (("<backspace>" . smart-hungry-delete-backward-char)
+;; 	 ("C-d" . smart-hungry-delete-forward-char))
+;;   :defer nil ;; dont defer so we can add our functions to hooks
+;;   :config (smart-hungry-delete-add-default-hooks))
+
 (use-package smart-hungry-delete
   :ensure t
-  :bind (("<backspace>" . smart-hungry-delete-backward-char)
-	 ("C-d" . smart-hungry-delete-forward-char))
-  :defer nil ;; dont defer so we can add our functions to hooks
-  :config (smart-hungry-delete-add-default-hooks))
+  :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
+	       ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+	       ([remap delete-char] . smart-hungry-delete-forward-char))
+  :init (smart-hungry-delete-add-default-hooks))
 
 (use-package anzu
   :ensure t
@@ -478,8 +487,8 @@
   (nyan-mode))
 
 (use-package undo-tree
-  :ensure t
   :disabled
+  :ensure t
   :init
   (global-undo-tree-mode)
   :config
@@ -498,7 +507,7 @@
   (setq magit-list-refs-sortby "-creatordate"))
 
 (use-package forge
-  :ensuret
+  :ensure t
   :disabled
   :after magit
   :config
@@ -556,7 +565,7 @@
          ("C-c ." . org-save-all-org-buffers)
          ("C-c b" . org-switchb))
   :config
-  (org-clock-persistence-insinuate)
+  ;; (org-clock-persistence-insinuate)
   (setq org-clock-persist t)
   (add-hook 'org-mode-hook (lambda ()
                              (visual-line-mode t)
@@ -573,6 +582,7 @@
         org-startup-indented t
         org-directory "~/org")
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+
   (add-hook 'org-mode-hook
             (lambda ()
               (add-hook 'after-save-hook 'org-preview-latex-fragment nil 'make-it-local)))
@@ -587,9 +597,6 @@
                                ;; (http . t)
                                (js . t)
                                (gnuplot . t)))
-  (setq org-plantuml-exec-mode 'plantuml)
-  (setq org-plantuml-jar-path "/usr/local/bin/plantuml")
-  (setq org-babel-clojure-backend 'cider)
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
   (setq org-refile-targets '((nil :maxlevel . 3) (org-agenda-files :maxlevel . 9)))
@@ -675,9 +682,9 @@
   :ensure t
   :hook (org-mode . org-bullets-mode))
 
-(use-package org-superstar
-  :ensure t
-  :hook (org-mode . org-superstar-mode))
+;; (use-package org-superstar
+;;   :ensure t
+;;   :hook (org-mode . org-superstar-mode))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
@@ -1137,6 +1144,10 @@
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]/Users/fredrikmeyer/code/work/audio_analytics_internal/preliminary_study/\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.mypy_cache\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\]\_build")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]build/lib\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]cloud_infrastructure/dashboard\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]cloud_infrastructure/cdk-cleanup\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]data_exploration\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
@@ -1162,7 +1173,7 @@
   :config
   (setq lsp-ui-doc-enable t)
   (setq lsp-ui-sideline-delay 0.1)
-  (setq lsp-ui-doc-use-webkit t)
+  (setq lsp-ui-doc-use-webkit nil)
   (setq lsp-ui-doc-webkit-max-width-px 1000)
 
   (setq lsp-ui-sideline-show-code-actions t)
