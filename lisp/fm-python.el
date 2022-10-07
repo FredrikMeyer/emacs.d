@@ -50,6 +50,7 @@
                       (concat "PYTHONPATH=" r " " "python -m pytest -o log_cli=true"))))))
 
 (use-package python-docstring
+  :disabled
   :ensure t
   :config
   (python-docstring-install))
@@ -100,11 +101,12 @@
 
 (use-package python
   :after lsp-mode
+  :ensure t
   :config
   (flycheck-add-next-checker 'lsp 'python-flake8)
   (setq python-indent-offset 4))
 
-(setq flycheck-flake8-maximum-line-length 120)
+;; (setq flycheck-flake8-maximum-line-length 120)
 
 (provide 'fm-python)
 ;;; fm-python.el ends here
