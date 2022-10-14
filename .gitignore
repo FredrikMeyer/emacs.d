@@ -91,3 +91,8 @@ eln-cache/
 texfrag-x/
 
 racket-mode/
+
+diary
+projects
+workspace
+semanticdb/
