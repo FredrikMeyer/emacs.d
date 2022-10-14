@@ -1072,6 +1072,7 @@
   (setq-default fill-column 120)
   (add-hook 'markdown-mode-hook 'auto-fill-mode nil t)
   (add-hook 'markdown-mode-hook 'visual-line-mode)
+  (add-hook 'markdown-mode 'pandoc-mode)
   (add-hook 'markdown-mode-hook
             (lambda ()
               (let ((file (file-name-nondirectory buffer-file-name)))
@@ -1206,7 +1207,7 @@
   )
 
 (use-package lsp-java
-  :disabled
+  ;; :disabled
   :ensure t
   :after lsp
   :config
@@ -1611,7 +1612,7 @@
 (blink-cursor-mode 0)
 
 ;; don't pop up font menu
-(global-set-key (kbd "s-t") #(lambda () (interactive)))
+(global-set-key (kbd "s-t") (lambda () (interactive)))
 
 ;; no bell
 (setq ring-bell-function 'ignore)
