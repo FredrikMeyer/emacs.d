@@ -32,7 +32,7 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(setq use-package-verbose nil)
+(setq use-package-verbose t)
 
 ;; (toggle-debug-on-error 1)
 
@@ -87,7 +87,6 @@
 
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
-
 
 ;; (setq auth-source-debug 'trivia)
 
@@ -165,13 +164,17 @@
 ;; (use-package crux
 ;;   :ensure t)
 
+
+(setenv "SHELL" "/usr/bin/zsh")
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
 (use-package exec-path-from-shell
   ;; :if (memq window-system '(mac ns x))
   :ensure t
   :config
+  (setenv "SHELL" "/usr/bin/zsh")
   (setq exec-path-from-shell-arguments '("-l" "-i"))
+  (setq exec-path-from-shell-shell-name "/usr/bin/zsh")
   (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH"))
   (setenv "WORKON_HOME" "~/miniconda/envs")
   (exec-path-from-shell-initialize))
@@ -234,7 +237,6 @@
 ;; https://github.com/leoliu/easy-kill
 (use-package easy-kill
   :ensure t
-  :disabled
   :config
   (global-set-key [remap kill-ring-save] #'easy-kill)
   (global-set-key [remap mark-sexp] #'easy-mark))
@@ -259,6 +261,7 @@
   (setq flycheck-checker-error-threshold 2000)
 
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
+  (setq flycheck-protoc-import-path (list "/opt/src/predictive_maintenance/hydro/statkraft/predictive_maintenance/hydro/grpc/proto"))
   )
 
 (use-package flycheck-color-mode-line
@@ -659,7 +662,7 @@
   ;; org capture
   (setq org-capture-templates
         '(
-          ("a" "Audio project" entry
+          ("a" "PROMO" entry
            (file+headline "~/code/statkraft-notater/agenda.org" "Usorterte todos")
            "* TODO [#C] %?\n")
 	  )
@@ -857,23 +860,26 @@
   (defun setup-tide-mode ()
     (tide-setup)
     (flycheck-add-mode 'typescript-tide 'web-mode)
+    (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
+    (flycheck-add-next-checker 'typescript-tide 'javascript-eslint)
     (tide-hl-identifier-mode +1)
     ))
 
 (use-package helm-system-packages
   :ensure t)
 
-;; (use-package ob-plantuml
-;;   :after (org)
-;;   :config
-;;   (setq org-plantuml-jar-path "/usr/local/bin/plantuml"))
+(use-package ob-plantuml
+  :after (org)
+  :config
+  (setq org-plantuml-executable-path "/usr/bin/plantuml")
+  (setq org-plantuml-jar-path "~/Downloads/plantuml-1.2022.7.jar"))
 
 (use-package plantuml-mode
   :defer 1
   :ensure t
   :mode "\\.plantuml\\'"
   :config
-  (setq plantuml-executable-path "/usr/local/bin/plantuml")
+  (setq plantuml-executable-path "/usr/bin/plantuml")
   (setq plantuml-output-type "png")
   (setq plantuml-default-exec-mode 'executable))
 
@@ -1096,7 +1102,7 @@
                          (require 'lsp-python-ms)
                          (lsp)))
   :config
-  (setq lsp-python-ms-extra-paths '("~/.pyenv/versions/3.8.7/envs/audio_analytics/"))
+  ;; (setq lsp-python-ms-extra-paths '("~/.pyenv/versions/3.8.7/envs/audio_analytics/"))
   )
 
 (use-package lsp-jedi
@@ -1178,6 +1184,8 @@
 
   (setq lsp-ui-sideline-show-code-actions t)
   (setq lsp-ui-sideline-show-hover t)
+
+  (setq lsp-ui-imenu-auto-refresh t)
   )
 
 (use-package lsp-java
@@ -1190,6 +1198,7 @@
 (use-package lsp-yaml
   :after lsp
   :config
+  (add-hook 'yaml-mode-hook #'lsp)
   (setq lsp-yaml-custom-tags ["!And"
                               "!If"
                               "!Not"
@@ -1303,7 +1312,7 @@
   )
 
 
-(set-face-attribute 'default nil :height 70)
+(set-face-attribute 'default nil :height 100)
 
 (use-package solarized-theme
   :ensure t

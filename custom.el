@@ -6,7 +6,11 @@
  '(calendar-week-start-day 1)
  '(org-agenda-files nil)
  '(package-selected-packages
-   '(protobuf-mode julia-mode fireplace company-auctex lsp-metals racket-mode go-mode inf-ruby seeing-is-believing ruby-electric glsl-mode cargo rust-mode ansible flycheck-plantuml plantuml-mode gnuplot ac-geiser geiser neotree buffer-move try esup saveplace yasnippet-snippets yaml-mode which-key web-mode use-package-ensure-system-package tide smartparens smart-hungry-delete rg rainbow-delimiters pyvenv python-pytest python-docstring python-black py-isort py-autopep8 projectile-ripgrep prettier-js popwin peep-dired package-utils org-superstar org-super-agenda org-bullets multiple-cursors modus-themes minions magit lsp-ui lsp-pyright json-mode ivy-prescient ivy-posframe hl-todo helpful helm-system-packages git-messenger git-gutter flycheck-color-mode-line eyebrowse expand-region exec-path-from-shell doom-modeline dockerfile-mode dired-subtree dashboard counsel-projectile counsel-osx-app company-restclient company-quickhelp company-box anzu all-the-icons-ivy-rich all-the-icons-dired add-node-modules-path ace-window))
+   '(easy-kill protobuf-mode julia-mode fireplace company-auctex lsp-metals racket-mode go-mode inf-ruby seeing-is-believing ruby-electric glsl-mode cargo rust-mode ansible flycheck-plantuml plantuml-mode gnuplot ac-geiser geiser neotree buffer-move try esup saveplace yasnippet-snippets yaml-mode which-key web-mode use-package-ensure-system-package tide smartparens smart-hungry-delete rg rainbow-delimiters pyvenv python-pytest python-docstring python-black py-isort py-autopep8 projectile-ripgrep prettier-js popwin peep-dired package-utils org-superstar org-super-agenda org-bullets multiple-cursors modus-themes minions magit lsp-ui lsp-pyright json-mode ivy-prescient ivy-posframe hl-todo helpful helm-system-packages git-messenger git-gutter flycheck-color-mode-line eyebrowse expand-region exec-path-from-shell doom-modeline dockerfile-mode dired-subtree dashboard counsel-projectile counsel-osx-app company-restclient company-quickhelp company-box anzu all-the-icons-ivy-rich all-the-icons-dired add-node-modules-path ace-window))
+ '(safe-local-variable-values
+   '((flycheck-protoc-import-path list "/opt/src/predictive_maintenance/hydro/statkraft/predictive_maintenance/hydro/grpc/proto")
+     (flycheck-protoc-vvimport-path list 'default-directory)
+     (flycheck-protoc-import-path list default-directory)))
  '(warning-suppress-log-types '((modus-themes))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
