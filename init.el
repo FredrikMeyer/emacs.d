@@ -13,6 +13,8 @@
 
 ;; Define package repositories
 
+(package-initialize)
+
 (add-to-list 'package-archives
              '("gnu" . "https://elpa.gnu.org/packages/"))
 
@@ -21,7 +23,6 @@
 
 (add-to-list 'package-archives
              '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
-
 
 (require 'package)
 (assq-delete-all 'org package--builtins)
@@ -380,33 +381,7 @@
   (setq-default save-place t)
   (setq save-place-file (concat user-emacs-directory "places")))
 
-;; https://github.com/hrs/engine-mode
-(use-package engine-mode
-  :disabled
-  :ensure t
-  :defer 2
-  :config
-  (engine-mode t)
-  (defengine github
-    "https://github.com/search?ref=simplesearch&q=%s"
-    :keybinding "G")
-  (defengine google
-    "http://www.google.com/search?ie=utf-8&oe=utf-8&q=%s"
-    :keybinding "g")
-  (defengine wikipedia
-    "http://www.wikipedia.org/search-redirect.php?language=en&go=Go&search=%s"
-    :keybinding "w"
-    :docstring "Searchin' the wikis."))
-
 ;; https://github.com/hrehfeld/emacs-smart-hungry-delete
-;; (use-package smart-hungry-delete
-;;   :ensure t
-;;   ;; :disabled
-;;   :bind (("<backspace>" . smart-hungry-delete-backward-char)
-;; 	 ("C-d" . smart-hungry-delete-forward-char))
-;;   :defer nil ;; dont defer so we can add our functions to hooks
-;;   :config (smart-hungry-delete-add-default-hooks))
-
 (use-package smart-hungry-delete
   :ensure t
   :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
@@ -427,7 +402,7 @@
               (("M-p" . 'projectile-command-map)
                ("C-c p" . 'projectile-command-map)))
   :config
-  (setq  projectile-project-compilation-cmd ""
+  (setq projectile-project-compilation-cmd ""
         projectile-completion-system 'ivy
         projectile-enable-caching nil)
   )
@@ -511,10 +486,10 @@
 
 (use-package forge
   :ensure t
-  :disabled
   :after magit
   :config
-  (setq forge-topic-list-order '(number . >)))
+  (setq forge-topic-list-order '(updated . string>))
+  )
 
 ;; https://github.com/alphapapa/magit-todos#installation
 ;; (use-package magit-todos
@@ -672,8 +647,6 @@
   (add-to-list 'org-modules 'org-habit t)
   (add-to-list 'org-modules 'org-habit t)
   (setq org-agenda-include-diary t)
-
-  ;; (require 'org-mac-iCal)
   )
 
 (use-package ox-md
@@ -749,21 +722,22 @@
   (global-hl-todo-mode t))
 
 ;; https://github.com/mickeynp/ligature.el
-;; (use-package ligature
-;;   :load-path "~/.emacs.d/ligature.el"
-;;   :config
-;;     (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-;;                                       "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-;;                                       "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-;;                                       "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-;;                                       "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-;;                                       "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-;;                                       ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-;;                                       "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-;;                                       "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-;;                                       "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-;;                                       "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-;;     (global-ligature-mode 1))
+(use-package ligature
+  :disabled
+  :load-path "~/.emacs.d/ligature.el"
+  :config
+    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
+                                      "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
+                                      "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
+                                      "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
+                                      "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
+                                      "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
+                                      ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
+                                      "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
+                                      "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
+                                      "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
+                                      "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
+    (global-ligature-mode 1))
 
 
 (use-package company
@@ -809,7 +783,6 @@
   ;; :bind ("C-c r" . 'tide-rename-symbol-at-location)
   :config
   (setq web-mode-indentation-params '(("lineup-calls" . 1)))
-  ;; (setq web-mode-indentation-params '())
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
   (setq web-mode-enable-auto-indentation nil)
 
@@ -834,7 +807,7 @@
               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
               (when (string-equal "tsx" (file-name-extension buffer-file-name))
                 (setup-tide-mode)
-                ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
+                (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
                 )
               (when (string-equal "ts" (file-name-extension buffer-file-name))
                 (setup-tide-mode)
@@ -843,7 +816,9 @@
               (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
 
-;; (use-package jest)
+(use-package jest
+  :disabled
+  :ensure t)
 
 (use-package typescript-mode
   :defer 1
@@ -867,12 +842,6 @@
 
 (use-package helm-system-packages
   :ensure t)
-
-(use-package ob-plantuml
-  :after (org)
-  :config
-  (setq org-plantuml-executable-path "/usr/bin/plantuml")
-  (setq org-plantuml-jar-path "~/Downloads/plantuml-1.2022.7.jar"))
 
 (use-package plantuml-mode
   :defer 1
@@ -906,15 +875,6 @@
 (use-package cargo
   :ensure t
   :hook ((rust-mode . cargo-minor-mode)))
-
-;; (defun setup-vue-with-ts ()
-;;   "Setup vue."
-;;   (interactive)
-;;   (tide-setup)
-;;   (eldoc-mode +1)
-;;   (when (flycheck-may-enable-checker 'javascript-eslint)
-;;     (flycheck-select-checker 'javascript-eslint))
-;;   (tide-hl-identifier-mode t))
 
 (use-package vue-mode
   :disabled
@@ -984,6 +944,12 @@
   :ensure t
   :hook (ruby-mode . inf-ruby-minor-mode))
 
+(use-package rbenv
+  :ensure t
+  :init
+  (setq rbenv-installation-dir "/usr/local/bin/rbenv")
+  )
+
 ;; Haskell
 (use-package haskell-mode
   :mode "\\.hs'"
@@ -1050,6 +1016,7 @@
   (setq-default fill-column 120)
   (add-hook 'markdown-mode-hook 'auto-fill-mode nil t)
   (add-hook 'markdown-mode-hook 'visual-line-mode)
+  (add-hook 'markdown-mode 'pandoc-mode)
   (add-hook 'markdown-mode-hook
             (lambda ()
               (let ((file (file-name-nondirectory buffer-file-name)))
@@ -1063,6 +1030,8 @@
        " --from=markdown --to=html"
        " --standalone --mathjax --highlight-style=pygments")))
 
+(use-package pandoc-mode
+  :ensure t)
 
 ;; https://github.com/TobiasZawada/texfrag
 (use-package texfrag
@@ -1092,8 +1061,6 @@
 ;; Requires `brew install ghostscript`
 
 
-;; (byte-recompile-directory "~/.emacs.d/elpa" 0 t)
-
 (use-package lsp-python-ms
   :disabled
   :ensure t
@@ -1105,20 +1072,12 @@
   ;; (setq lsp-python-ms-extra-paths '("~/.pyenv/versions/3.8.7/envs/audio_analytics/"))
   )
 
-(use-package lsp-jedi
-  :disabled
-  :ensure t
-  :config
-  (with-eval-after-load "lsp-mode"
-    (add-to-list 'lsp-disabled-clients 'pyls)
-    (add-to-list 'lsp-enabled-clients 'jedi)))
-
 (use-package lsp-mode
   :defer 2
   :ensure t
   :init (setq lsp-keymap-prefix "C-c l")
   :hook ((lsp-mode . lsp-enable-which-key-integration)
-         ;; (yaml-mode . lsp)
+         (sh-mode . lsp)
          )
   :config
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
@@ -1126,7 +1085,7 @@
   (setq lsp-modeline-code-actions-segments '(count icon name))
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
-  (setq read-process-output-max (* 1 1024 1024)) ;; 5mb
+  (setq read-process-output-max (* 5 1024 1024)) ;; 5mb
   (setq gc-cons-threshold 100000000)
   (setq lsp-idle-delay 0.8)
 
@@ -1157,7 +1116,7 @@
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
-  (add-hook 'python-mode-hook #'lsp)
+  ;; (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
   ;; (require 'lsp-csharp)
@@ -1170,8 +1129,10 @@
   ;; https://github.com/tomv564/pyls-mypy
   ;; Also had to install this from source:
   ; pip3 install git+https://github.com/tomv564/pyls-mypy.git
-  (lsp-register-custom-settings '(("pyls.plugins.pyls_mypy.enabled" t t)))
-  (lsp-register-custom-settings '(("pyls.plugins.pyls_isort.enabled" t t))))
+  ;; (lsp-register-custom-settings '(("pyls.plugins.pyls_mypy.enabled" t t)))
+  ;; (lsp-register-custom-settings '(("pyls.plugins.pyls_isort.enabled" t t)))
+  )
+
 
 (use-package lsp-ui
   :defer 2
@@ -1181,6 +1142,9 @@
   (setq lsp-ui-sideline-delay 0.1)
   (setq lsp-ui-doc-use-webkit nil)
   (setq lsp-ui-doc-webkit-max-width-px 1000)
+  (setq lsp-ui-doc-header t)
+  (setq lsp-ui-doc-include-signature t)
+  (setq lsp-ui-doc-enhanced-markdown t)
 
   (setq lsp-ui-sideline-show-code-actions t)
   (setq lsp-ui-sideline-show-hover t)
@@ -1189,7 +1153,7 @@
   )
 
 (use-package lsp-java
-  :disabled
+  ;; :disabled
   :ensure t
   :after lsp
   :config
@@ -1217,6 +1181,7 @@
                                "!Join"]))
 
 (use-package lsp-metals
+  :disabled
   :ensure t
   :custom
   ;; Metals claims to support range formatting by default but it supports range
@@ -1306,7 +1271,6 @@
   (load-theme 'modus-operandi t)
   (setq modus-operandi-theme-rainbow-headings t)
   (setq modus-operandi-theme-scale-headings t)
-  ;; (setq modus-themes-syntax '(green-strings alt-syntax faint))
   (setq modus-themes-syntax nil)
   (setq modus-themes-completions 'super-opinionated)
   )
@@ -1398,24 +1362,6 @@
     (let ((browse-url-browser-function #'xwwp))
       (elfeed-show-visit use-generic-p)))
   (define-key elfeed-show-mode-map (kbd "B") 'elfeed-open-maybe-in-xwidget))
-
-(use-package xwwp
-  :disabled
-  :load-path "~/.emacs.d/xwwp"
-  :ensure t
-  :defer 10)
-
-(use-package xwwp-follow-link
-  :disabled
-  :load-path "~/.emacs.d/xwwp-follow-link"
-  :custom
-  (xwwp-follow-link-completion-system 'ivy)
-  :bind (:map xwidget-webkit-mode-map
-              ("v" . xwwp-follow-link)))
-
-(global-set-key (kbd "C-å") (lambda ()
-                              (interactive)
-                              (xwwp (thing-at-point 'url 'no-properties))))
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
 (use-package dashboard
@@ -1597,7 +1543,7 @@
 (blink-cursor-mode 0)
 
 ;; don't pop up font menu
-(global-set-key (kbd "s-t") '(lambda () (interactive)))
+(global-set-key (kbd "s-t") (lambda () (interactive)))
 
 ;; no bell
 (setq ring-bell-function 'ignore)
@@ -1692,7 +1638,6 @@
 (global-set-key [(meta down)]  'move-line-down)
 
 
-;; (profiler-cpu-stop)
 ;;; init.el ends here
 
 
