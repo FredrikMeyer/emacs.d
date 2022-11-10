@@ -38,6 +38,7 @@
 ;; Integration with a Clojure REPL
 ;; https://github.com/clojure-emacs/cider
 (use-package cider
+  :ensure t
   :hook ((cider-mode . eldoc-mode)
          (cider-mode . company-mode)
          (cider-repl-mode . company-mode))

@@ -13,6 +13,9 @@
 
 ;; Define package repositories
 
+;; (custom-set-variables
+;;  '(gnutls-algorithm-priority "normal:-vers-tls1.3"))
+
 (package-initialize)
 
 (add-to-list 'package-archives
@@ -20,6 +23,9 @@
 
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
+
+(add-to-list 'package-archives
+             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 (add-to-list 'package-archives
              '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
@@ -394,6 +400,7 @@
 
 (use-package projectile
   :ensure t
+  :ensure-system-package fd
   :bind (:map projectile-mode-map
               (("M-p" . 'projectile-command-map)
                ("C-c p" . 'projectile-command-map)))
@@ -883,13 +890,15 @@
   :ensure t)
 
 (use-package tide
-  :bind ("C-c r" . tide-rename-symbol)
-  ;; :hook (web-mode . my-tide-mode-hook)
+  :bind (("C-c r" . tide-rename-symbol)
+         ("C-c C-p" . tide-references))
   :defer 10
   :after (typescript-mode company flycheck)
   :commands setup-tide-mode
   :ensure t
   :config
+  (setq tide-always-show-documentation t
+        tide-completion-detailed t)
   (defun setup-tide-mode ()
     (tide-setup)
     (flycheck-add-mode 'typescript-tide 'web-mode)
@@ -985,7 +994,10 @@
 ;; Ruby
 (use-package ruby-mode
   :mode "\\.rb\\'"
-  :ensure t)
+  :ensure t
+  :config
+  ;; (add-hook 'ruby-mode-hook 'seeing-is-believing)
+  )
 
 (use-package ruby-electric
   :ensure t
@@ -994,7 +1006,7 @@
 ;; https://github.com/JoshCheek/seeing_is_believing
 (use-package seeing-is-believing
   :ensure t
-  :hook ruby-mode)
+  :disabled)
 
 (use-package inf-ruby
   :ensure t
@@ -1003,7 +1015,16 @@
 (use-package rbenv
   :ensure t
   :init
-  (setq rbenv-installation-dir "/usr/local/bin/rbenv")
+  (setq rbenv-installation-dir nil)
+  (setq rbenv-executable "/usr/local/bin/rbenv")
+  )
+
+(use-package robe
+  :ensure t
+  :config
+  (add-hook 'ruby-mode-hook 'robe-mode)
+  (eval-after-load 'company
+  '(push 'company-robe company-backends))
   )
 
 ;; Haskell
@@ -1724,3 +1745,4 @@ See URL `http://stylelint.io/'."
   :standard-input t
   :error-parser flycheck-parse-stylelint
   :modes (scss-mode))
+
