@@ -18,7 +18,7 @@
   :mode "\\.clj$"
   :hook ((clojure-mode . subword-mode) ;; For Java class names
          (clojure-mode . electric-indent-mode)
-         (clojure-mode . electric-pair-mode)
+         ;; (clojure-mode . electric-pair-mode)
          (clojure-mode . smartparens-strict-mode)
          (clojure-mode . cider-mode)
          ;; (clojure-mode . paredit-mode)
@@ -77,13 +77,16 @@
   (define-key clojure-mode-map (kbd "C-c C-v") 'cider-start-http-server)
   (define-key clojure-mode-map (kbd "C-M-r") 'cider-refresh)
   (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
-  (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns))
+  (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)
+
+  (add-hook 'before-save-hook 'cider-format-buffer t t)
+  )
 
 (use-package clj-refactor
   :ensure t
   :hook (clojure-mode . clj-refactor-mode)
   :config
-  (add-hook 'clojure-mode-hook
+  (add-hook 'clojure-refactor-mode
             (lambda ()
               (cljr-add-keybindings-with-prefix "C-c C-m"))))
 

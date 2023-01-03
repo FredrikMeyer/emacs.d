@@ -16,42 +16,33 @@
 ;; (custom-set-variables
 ;;  '(gnutls-algorithm-priority "normal:-vers-tls1.3"))
 
-(package-initialize)
+(setq gc-cons-threshold 100000000)
+(add-hook 'after-init-hook
+          (lambda () (setq gc-cons-threshold 800000)))
 
-(add-to-list 'package-archives
-             '("gnu" . "https://elpa.gnu.org/packages/"))
-
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/"))
-
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-
-(add-to-list 'package-archives
-             '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+(add-to-list 'load-path "~/src/org-mode/lisp")
 
 (require 'package)
-(assq-delete-all 'org package--builtins)
-(assq-delete-all 'org package--builtin-versions)
+
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("gnu" . "https://elpa.gnu.org/packages/")
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                         ;; ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
 
 (unless (package-installed-p 'use-package)
-  (message "Refreshing package contents...")
-  (package-refresh-contents)
   (package-install 'use-package))
 
-(setq use-package-verbose nil)
 
-;; (toggle-debug-on-error 1)
-
-(setq gc-cons-threshold 100000000)
-(add-hook 'after-init-hook (lambda () (setq gc-cons-threshold 800000)))
-
-(setq lexical-binding t)
+(setq use-package-verbose t)
 
 (setq user-full-name "Fredrik Meyer"
       user-mail-address "hrmeyer@gmail.com")
-
-;; (setq comp-async-report-warnings-errors nil)
 
 ;; Full path in title bar
 (setq-default frame-title-format "Emacs %b (%f)")
@@ -77,8 +68,13 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;; (unbind-key "C-z") ;; unbind the very annoying suspend-frame
+(unbind-key "C-z") ;; unbind the very annoying suspend-frame
 ;; (unbind-key "<mouse-2>")
+
+(defun my-package-recompile()
+  "Recompile all packages"
+  (interactive)
+  (byte-recompile-directory "~/.emacs.d/elpa" 0 t))
 
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
@@ -101,13 +97,34 @@
 ;; EDITING
 
 ;; Highlights matching parenthesis
-(show-paren-mode 1)
-(global-hl-line-mode 1)
-(delete-selection-mode 1)
+(use-package paren
+  :ensure nil
+  :config
+  (show-paren-mode 1))
+
+(use-package hl-line
+  :ensure nil
+  :config
+  (global-hl-line-mode 1))
+
+(use-package delsel
+  :ensure nil
+  :config
+  (delete-selection-mode 1))
+
 
 ;; Show line numbers
-(global-display-line-numbers-mode 1)
-(column-number-mode 1)
+(use-package display-line-numbers
+  :ensure nil
+  :config
+  (global-display-line-numbers-mode 1)
+  )
+
+(use-package simple
+  :ensure nil
+  :config
+  (column-number-mode 1))
+
 (setq-default cursor-type 'bar)
 
 (setq c-default-style '((java-mode . "java")
@@ -116,13 +133,11 @@
 
 ;; First try to indent the current line, and if the line
 ;; was already indented, then try `completion-at-point'
-(setq tab-always-indent t)
-(setq tab-first-completion nil)
+(setq tab-always-indent t
+      tab-first-completion nil)
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
-(add-hook 'prog-mode-hook (lambda ()
-                            (setq-local show-trailing-whitespace t)))
 
 ;; Don't show whitespaces in minibuffer
 (add-hook 'minibuffer-setup-hook
@@ -132,36 +147,10 @@
 
 (setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
 
-;; HippieExpand: M-n for to complete
-;; http://www.emacswiki.org/emacs/HippieExpand
-(setq hippie-expand-try-functions-list
-      '(yas-hippie-try-expand
-        try-expand-dabbrev
-        try-expand-dabbrev-from-kill
-        try-expand-dabbrev-all-buffers
-        try-expand-whole-kill
-        try-complete-file-name
-        try-expand-line
-        try-complete-lisp-symbol-partially
-        try-complete-lisp-symbol))
-
-(global-set-key (kbd "M-n") 'hippie-expand)
-
-;; From the docs: Set it to nil, if you use Control* or Proxy* options in
-;;your ssh configuration. (I do)
-(setq tramp-use-ssh-controlmaster-options nil)
-
-
 (defun add-auto-mode (mode &rest patterns)
   "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
   (dolist (pattern patterns)
     (add-to-list 'auto-mode-alist (cons pattern mode))))
-
-;; (add-to-list 'package-archives
-;;              '("melpa-stable" . "http://stable.melpa.org/packages/"))
-
-;; (add-to-list 'package-archives
-;;              '("org" . "https://orgmode.org/elpa/"))
 
 
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
@@ -177,16 +166,19 @@
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns x))
   :ensure t
+  :init
+  (setq
+   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
+   exec-path-from-shell-arguments nil)
   :config
-  (setq exec-path-from-shell-arguments nil)
-  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME"))
-
   (exec-path-from-shell-initialize))
 
-;; (use-package server
-;;   :defer 2
-;;   :config
-;;   (server-start))
+;; From the docs: Set it to nil, if you use Control* or Proxy* options in
+;;your ssh configuration. (I do)
+(use-package tramp-sh
+  :ensure nil
+  :init
+  (setq tramp-use-ssh-controlmaster-options nil))
 
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
@@ -198,347 +190,27 @@
 (use-package package-utils
   :ensure t)
 
-;; https://github.com/quelpa/quelpa-use-package
-;; (use-package quelpa-use-package
-;;   :ensure t)
-
-(use-package benchmark-init
-  :disabled
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
-
-(use-package esup
-  :ensure t
-  :defer t
-  ;; To use MELPA Stable use ":pin mepla-stable",
-  ;;  :pin melpa-stable
-  :commands (esup))
-
-;; https://github.com/emacsorphanage/popwin
-(use-package popwin
-  :ensure t
-  :config
-  (popwin-mode 1))
-
-(use-package try
-  :commands try
-  :defer 5
-  :ensure t)
-
-(use-package which-key
-  :ensure t
-  :config
-  (which-key-mode)
-  (which-key-setup-side-window-bottom))
-
-;; https://github.com/magnars/expand-region.le
-(use-package expand-region
-  :ensure t
-  :bind ("C-=" . 'er/expand-region))
-
-;; https://github.com/leoliu/easy-kill
-(use-package easy-kill
-  :ensure t
-  :config
-  (global-set-key [remap kill-ring-save] #'easy-kill)
-  (global-set-key [remap mark-sexp] #'easy-mark))
-
-(use-package flycheck
-  :ensure t
-  :defer 1
-  :config
-  (global-flycheck-mode)
-
-  (setq flycheck-display-errors-delay 0.2)
-  (setq eldoc-idle-delay 0.1)
-
-  (add-hook 'flycheck-mode-hook 'add-node-modules-path)
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
-
-  (setq flycheck-eslint-args "--cache \*\*/\_.ts")
-  ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
-  (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
-  (flycheck-add-mode 'html-tidy 'web-mode)
-
-  (setq flycheck-checker-error-threshold 2000)
-
-  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
-  )
-
-(use-package flycheck-color-mode-line
-  :ensure t
-  :hook (flycheck-mode . flycheck-color-mode-line-mode))
-
-;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
-(defun eslint-fix-file ()
-  "Run eslint fix current file."
-  (interactive)
-  (cond ((locate-dominating-file default-directory "package-lock.json")
-         (shell-command (concat "npm run eslint" " " "--fix" (buffer-file-name))))
-        ((locate-dominating-file default-directory "yarn.lock")
-         (call-process-shell-command
-          (concat "yarn run eslint" " " "--fix " (buffer-file-name))
-          nil "*Shell Command Output*" t))
-        (t (message "No lock file.")))
-  (revert-buffer t t))
-
-(defun eslint-fix-file-and-revert ()
-  "Run eslint on current buffer."
-  (interactive)
-  (eslint-fix-file)
-  (revert-buffer t t))
-
-;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
-;; More at http://www.emacswiki.org/emacs/ParEdit
-(use-package paredit
-  :disabled
-  :defer 2
-  :ensure t
-  :config
-  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-
-  (dolist (m '(emacs-lisp-mode-hook
-	       racket-mode-hook
-	       racket-repl-mode-hook))
-    (add-hook m #'paredit-mode))
-  (bind-keys :map paredit-mode-map
-	     ("{"   . paredit-open-curly)
-	     ("}"   . paredit-close-curly))
-  (unless terminal-frame
-    (bind-keys :map paredit-mode-map
-	       ("M-[" . paredit-wrap-square)
-	       ("M-{" . paredit-wrap-curly))))
-
-(use-package paredit-everywhere
-  :disabled
-  :defer 2
-  :ensure t
-  :hook (prog-mode . paredit-everywhere-mode))
-
-(use-package prolog-mode
-  :disabled
-  :ensure t
-  :mode "\\.pl$")
-
-(use-package restclient
-  :ensure t
-  :mode "\\.http$\\'")
-
-(use-package company-restclient
-  :ensure t
-  :after restclient
-  :config
-  (add-to-list 'company-backends 'company-restclient))
-
-;; https://github.com/wasamasa/eyebrowse
-(use-package eyebrowse
-  :defer 5
-  :ensure t
+;; HippieExpand: M-n for to complete
+;; http://www.emacswiki.org/emacs/HippieExpand
+(use-package hippie-exp
+  :ensure nil
+  :bind ("M-n" . hippie-expand)
   :init
-  (dotimes (n 10)
-    (global-unset-key (kbd (format "C-%d" n)))
-    (global-unset-key (kbd (format "M-%d" n))))
-  (setq eyebrowse-keymap-prefix (kbd "C-C M-e"))
-  :config
-  (define-key eyebrowse-mode-map (kbd "M-1") 'eyebrowse-switch-to-window-config-1)
-  (define-key eyebrowse-mode-map (kbd "M-2") 'eyebrowse-switch-to-window-config-2)
-  (define-key eyebrowse-mode-map (kbd "M-3") 'eyebrowse-switch-to-window-config-3)
-  (define-key eyebrowse-mode-map (kbd "M-4") 'eyebrowse-switch-to-window-config-4)
-  (eyebrowse-mode t)
-  (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
-  (setq eyebrowse-new-workspace t))
-
-;; https://www.emacswiki.org/emacs/WindMove
-(use-package windmove
-  :ensure t
-  :bind (("<S-left>" . 'windmove-left)
-         ("<S-right>" . 'windmove-right)
-         ("<S-up>" . 'windmove-up)
-         ("<S-down>" . 'windmove-down)))
-
-(use-package buffer-move
-  :ensure t
-  :bind
-  (("C-c q u" . 'buf-move-up)
-   ("C-c q d" . 'buf-move-down)
-   ("C-c q l" . 'buf-move-left)
-   ("C-c q r" . 'buf-move-right)))
-
-(use-package fennel-mode
-  :disabled
-  :mode "\\.fnl$'"
-  :ensure t)
-
-;; http://www.emacswiki.org/emacs/SavePlace
-(use-package saveplace
-  :defer 1
-  :ensure t
-  :config
-  (setq-default save-place t)
-  (setq save-place-file (concat user-emacs-directory "places")))
-
-;; https://github.com/hrehfeld/emacs-smart-hungry-delete
-(use-package smart-hungry-delete
-  :ensure t
-  :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
-	       ([remap delete-backward-char] . smart-hungry-delete-backward-char)
-	       ([remap delete-char] . smart-hungry-delete-forward-char))
-  :init (smart-hungry-delete-add-default-hooks))
-
-(use-package anzu
-  :ensure t
-  :bind (("C-1" . anzu-query-replace)
-         ("C-!" . anzu-query-replace-regexp))
-  :config
-  (global-anzu-mode 1))
-
-(use-package projectile
-  :ensure t
-  :ensure-system-package fd
-  :bind (:map projectile-mode-map
-              (("M-p" . 'projectile-command-map)
-               ("C-c p" . 'projectile-command-map)))
-  :config
-  (setq projectile-project-compilation-cmd ""
-        projectile-completion-system 'ivy
-        projectile-enable-caching nil)
-  )
-
-
-(use-package projectile-ripgrep
-  :after projectile
-  :defer 5
-  :ensure t)
-
-;; https://github.com/dajva/rg.el
-(use-package rg
-  :defer 5
-  :ensure t
-  :ensure-system-package (rg . ripgrep)
-  :config
-  (rg-enable-default-bindings)
-  (setq rg-executable "/usr/local/bin/rg"))
-
-(use-package neotree
-  :ensure t
-  :bind ("C-x t" . neotree-toggle)
-  :config
-  (setq neo-smart-open t)
-  (setq neo-theme 'icons)
-  (setq neo-window-fixed-size nil)
-  (setq neo-show-hidden-files t)
-  ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
-  (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
-
-;; https://github.com/domtronn/all-the-icons.el
-(use-package all-the-icons
-  :defer 1
-  :ensure t)
-
-;; https://github.com/jtbm37/all-the-icons-dired
-(use-package all-the-icons-dired
-  :ensure t
-  :hook (dired-mode . all-the-icons-dired-mode))
-
-;; https://github.com/Fanael/rainbow-delimiters
-(use-package rainbow-delimiters
-  :ensure t
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package geiser
-  :commands (run-geiser)
-  :ensure t)
-
-(use-package ac-geiser
-  :after geiser
-  :ensure t)
-
-;; https://github.com/TeMPOraL/nyan-mode
-(use-package nyan-mode
-  :ensure t
-  :disabled
-  :config
-  (setq nyan-wavy-trail 1)
-  (nyan-mode))
-
-(use-package undo-tree
-  :disabled
-  :ensure t
-  :init
-  (global-undo-tree-mode)
-  :config
-  (undo-tree))
-
-(use-package magit
-  :ensure t
-  :bind (("C-x g" . magit-status)
-         ("C-x C-g" . magit-list-repositories)
-         ("C-x C-S-B" . magit-blame-addition))
-  :config
-  (setq magit-repository-directories
-        `(("~/code" . 1)
-          ("~/code/work" . 1)
-          (,user-emacs-directory . 0)))
-  (setq magit-list-refs-sortby "-creatordate"))
-
-(use-package forge
-  :ensure t
-  :after magit
-  :config
-  (setq forge-topic-list-order '(updated . string>))
-  )
-
-;; https://github.com/alphapapa/magit-todos#installation
-;; (use-package magit-todos
-;;   :ensure t
-;;   :defer 10
-;;   :config
-;;   (magit-todos-mode t))
-
-;; https://github.com/syohex/emacs-git-messenger
-(use-package git-messenger
-  :ensure t
-  :bind ("C-c M" . git-messenger:popup-message)
-  :config
-  (setq git-messenger:show-detail t
-        git-messenger:use-magit-popup t))
-
-;; https://github.com/emacsorphanage/git-gutter
-(use-package git-gutter
-  :ensure t
-  :config
-  (global-git-gutter-mode 1))
-
-(use-package ob-ipython
-  :disabled
-  :after company
-  :ensure t
-  :config
-  (add-hook 'ob-ipython-mode-hook
-            (lambda () (company-mode 1))))
-
-;; https://github.com/zweifisch/ob-http
-;; org mode source block http
-;; (use-package ob-http
-;;   :ensure t)
-
-;; https://github.com/alphapapa/org-super-agenda/#installation
-(use-package org-super-agenda
-  :ensure t
-  :after org
-  :config
-  (org-super-agenda-mode t))
+  (setq hippie-expand-try-functions-list
+      '(yas-hippie-try-expand
+        try-expand-dabbrev
+        try-expand-dabbrev-from-kill
+        try-expand-dabbrev-all-buffers
+        try-expand-whole-kill
+        try-complete-file-name
+        try-expand-line
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol)))
 
 
 (use-package org
-  :defer 1
-  :ensure t ;org-plus-contrib
+  :defer t
+  ;; :ensure org-plus-contrib
   :pin gnu
   :bind (("C-c l" . org-store-link)
          ("C-c c" . org-capture)
@@ -688,9 +360,357 @@
   (setq org-agenda-include-diary t)
   )
 
+;; https://github.com/quelpa/quelpa-use-package
+;; (use-package quelpa-use-package
+;;   :ensure t)
+
+(use-package benchmark-init
+  :disabled
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
+(use-package esup
+  :ensure t
+  ;; To use MELPA Stable use ":pin mepla-stable",
+  ;;  :pin melpa-stable
+  :commands (esup))
+
+;; https://github.com/emacsorphanage/popwin
+(use-package popwin
+  :ensure t
+  :config
+  (popwin-mode 1))
+
+(use-package try
+  :commands try
+  :ensure t)
+
+(use-package which-key
+  :ensure t
+  :config
+  (which-key-mode)
+  (which-key-setup-side-window-bottom))
+
+;; https://github.com/magnars/expand-region.le
+(use-package expand-region
+  :ensure t
+  :bind ("C-=" . 'er/expand-region))
+
+;; https://github.com/leoliu/easy-kill
+(use-package easy-kill
+  :ensure t
+  :config
+  (global-set-key [remap kill-ring-save] #'easy-kill)
+  (global-set-key [remap mark-sexp] #'easy-mark))
+
+(use-package flycheck
+  :ensure t
+  :init
+  (setq flycheck-display-errors-delay 0.2)
+  (setq eldoc-idle-delay 0.1)
+  :config
+  (global-flycheck-mode)
+
+  (add-hook 'flycheck-mode-hook 'add-node-modules-path)
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+
+  (setq flycheck-eslint-args "--cache \*\*/\_.ts")
+  ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
+  (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
+  (flycheck-add-mode 'html-tidy 'web-mode)
+
+  (setq flycheck-checker-error-threshold 2000)
+  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
+  )
+
+(use-package flycheck-aspell
+  :disabled
+  :ensure t
+  :config
+  (add-to-list 'flycheck-checkers 'markdown-aspell-dynamic))
+
+(use-package flycheck-color-mode-line
+  :ensure t
+  :hook (flycheck-mode . flycheck-color-mode-line-mode))
+
+;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
+(defun eslint-fix-file ()
+  "Run eslint fix current file."
+  (interactive)
+  (cond ((locate-dominating-file default-directory "package-lock.json")
+         (shell-command (concat "npm run eslint" " " "--fix" (buffer-file-name))))
+        ((locate-dominating-file default-directory "yarn.lock")
+         (call-process-shell-command
+          (concat "yarn run eslint" " " "--fix " (buffer-file-name))
+          nil "*Shell Command Output*" t))
+        (t (message "No lock file.")))
+  (revert-buffer t t))
+
+(defun eslint-fix-file-and-revert ()
+  "Run eslint on current buffer."
+  (interactive)
+  (eslint-fix-file)
+  (revert-buffer t t))
+
+;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
+;; More at http://www.emacswiki.org/emacs/ParEdit
+(use-package paredit
+  :disabled
+  :defer t
+  :ensure t
+  :config
+  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
+
+  (dolist (m '(emacs-lisp-mode-hook
+	       racket-mode-hook
+	       racket-repl-mode-hook))
+    (add-hook m #'paredit-mode))
+  (bind-keys :map paredit-mode-map
+	     ("{"   . paredit-open-curly)
+	     ("}"   . paredit-close-curly))
+  (unless terminal-frame
+    (bind-keys :map paredit-mode-map
+	       ("M-[" . paredit-wrap-square)
+	       ("M-{" . paredit-wrap-curly))))
+
+(use-package paredit-everywhere
+  :disabled
+  :defer t
+  :ensure t
+  :hook (prog-mode . paredit-everywhere-mode))
+
+(use-package prolog-mode
+  :disabled
+  :ensure t
+  :mode "\\.pl$")
+
+(use-package restclient
+  :ensure t
+  :mode "\\.http$\\'")
+
+(use-package company-restclient
+  :ensure t
+  :after restclient
+  :config
+  (add-to-list 'company-backends 'company-restclient))
+
+;; https://github.com/wasamasa/eyebrowse
+(use-package eyebrowse
+  :ensure t
+  :bind (:map eyebrowse-mode-map
+              ("M-1" . 'eyebrowse-switch-to-window-config-1)
+              ("M-2" . 'eyebrowse-switch-to-window-config-2)
+              ("M-3" . 'eyebrowse-switch-to-window-config-3)
+              ("M-4" . 'eyebrowse-switch-to-window-config-4)
+              )
+  :init
+  (dotimes (n 10)
+    (global-unset-key (kbd (format "C-%d" n)))
+    (global-unset-key (kbd (format "M-%d" n))))
+  (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
+  (setq eyebrowse-new-workspace t)
+  (setq eyebrowse-keymap-prefix (kbd "C-C M-e"))
+  :config
+  (eyebrowse-mode t))
+
+;; https://www.emacswiki.org/emacs/WindMove
+(use-package windmove
+  :ensure t
+  :bind (("<S-left>" . 'windmove-left)
+         ("<S-right>" . 'windmove-right)
+         ("<S-up>" . 'windmove-up)
+         ("<S-down>" . 'windmove-down)))
+
+(use-package buffer-move
+  :ensure t
+  :bind
+  (("C-c q u" . 'buf-move-up)
+   ("C-c q d" . 'buf-move-down)
+   ("C-c q l" . 'buf-move-left)
+   ("C-c q r" . 'buf-move-right)))
+
+(use-package fennel-mode
+  :disabled
+  :mode "\\.fnl$'"
+  :ensure t)
+
+;; http://www.emacswiki.org/emacs/SavePlace
+(setq-default save-place t)
+(setq save-place-file (concat user-emacs-directory "places"))
+
+;; https://github.com/hrehfeld/emacs-smart-hungry-delete
+(use-package smart-hungry-delete
+  :ensure t
+  :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
+	       ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+	       ([remap delete-char] . smart-hungry-delete-forward-char))
+  :init (smart-hungry-delete-add-default-hooks))
+
+(use-package anzu
+  :ensure t
+  :bind (("C-1" . anzu-query-replace)
+         ("C-!" . anzu-query-replace-regexp))
+  :config
+  (global-anzu-mode 1))
+
+(use-package projectile
+  :ensure t
+  :ensure-system-package fd
+  :bind (:map projectile-mode-map
+              (("M-p" . 'projectile-command-map)
+               ("C-c p" . 'projectile-command-map)))
+  :config
+  (setq projectile-project-compilation-cmd ""
+        projectile-completion-system 'ivy
+        projectile-enable-caching nil)
+  )
+
+
+(use-package projectile-ripgrep
+  :after projectile
+  :defer t
+  :ensure t)
+
+;; https://github.com/dajva/rg.el
+(use-package rg
+  :defer t
+  :ensure t
+  :ensure-system-package (rg . ripgrep)
+  :config
+  (rg-enable-default-bindings)
+  (setq rg-executable "/usr/local/bin/rg"))
+
+(use-package neotree
+  :ensure t
+  :bind ("C-x t" . neotree-toggle)
+  :config
+  (setq neo-smart-open t)
+  (setq neo-theme 'icons)
+  (setq neo-window-fixed-size nil)
+  (setq neo-show-hidden-files t)
+  ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
+  (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
+
+;; https://github.com/domtronn/all-the-icons.el
+(use-package all-the-icons
+  :defer 1
+  :ensure t)
+
+;; https://github.com/jtbm37/all-the-icons-dired
+(use-package all-the-icons-dired
+  :defer t
+  :ensure t
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(when (string= system-type "darwin")
+  (setq dired-use-ls-dired nil))
+
+;; https://github.com/Fanael/rainbow-delimiters
+(use-package rainbow-delimiters
+  :ensure t)
+
+(defun show-trailing-whitespace-local ()
+  (setq-local show-trailing-whitespace t))
+
+(use-package prog-mode
+  :ensure nil
+  :hook ((prog-mode . rainbow-delimiters-mode)
+         (prog-mode . show-trailing-whitespace-local)))
+
+(use-package geiser
+  :commands (run-geiser)
+  :ensure t)
+
+(use-package ac-geiser
+  :after geiser
+  :ensure t)
+
+;; https://github.com/TeMPOraL/nyan-mode
+(use-package nyan-mode
+  :ensure t
+  :disabled
+  :config
+  (setq nyan-wavy-trail 1)
+  (nyan-mode))
+
+(use-package undo-tree
+  :disabled
+  :ensure t
+  :init
+  (global-undo-tree-mode)
+  :config
+  (undo-tree))
+
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status)
+         ("C-x C-g" . magit-list-repositories)
+         ("C-x C-S-B" . magit-blame-addition))
+  :init
+  (setq magit-repository-directories
+        `(("~/code" . 1)
+          ("~/code/work" . 1)
+          (,user-emacs-directory . 0)))
+  (setq magit-list-refs-sortby "-creatordate"))
+
+(use-package forge
+  :ensure t
+  :after magit
+  :init
+  (setq forge-topic-list-order '(updated . string>))
+  )
+
+;; https://github.com/alphapapa/magit-todos#installation
+;; (use-package magit-todos
+;;   :ensure t
+;;   :defer 10
+;;   :config
+;;   (magit-todos-mode t))
+
+;; https://github.com/syohex/emacs-git-messenger
+(use-package git-messenger
+  :ensure t
+  :bind ("C-c M" . git-messenger:popup-message)
+  :init
+  (setq git-messenger:show-detail t
+        git-messenger:use-magit-popup t))
+
+;; https://github.com/emacsorphanage/git-gutter
+(use-package git-gutter
+  :ensure t
+  :config
+  (global-git-gutter-mode 1))
+
+(use-package ob-ipython
+  :disabled
+  :after company
+  :ensure t
+  :config
+  (add-hook 'ob-ipython-mode-hook
+            (lambda () (company-mode 1))))
+
+;; https://github.com/zweifisch/ob-http
+;; org mode source block http
+;; (use-package ob-http
+;;   :ensure t)
+
+;; https://github.com/alphapapa/org-super-agenda/#installation
+(use-package org-super-agenda
+  :ensure t
+  :after org
+  :config
+  (org-super-agenda-mode t))
+
+
 (use-package ox-md
   :ensure nil
-  :defer 3
+  :defer t
   :after org)
 
 (use-package org-bullets
@@ -703,7 +723,7 @@
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
-  :defer 2
+  :defer t
   :ensure t)
 
 (use-package org-roam
@@ -728,7 +748,7 @@
 ;; https://github.com/IvanMalison/org-projectile
 (use-package org-projectile
   :disabled
-  :defer 3
+  :defer t
   :ensure t
   :config
   (setq org-projectile-projects-file "~/Dropbox/org/prosjekter.org")
@@ -809,7 +829,6 @@
 
 
 (use-package company
-  :defer
   :ensure t
   :hook (after-init . global-company-mode)
   :bind ("C-<tab>" . company-complete)
@@ -841,7 +860,7 @@
   :ensure t)
 
 (use-package prettier-js
-  :defer 2
+  :defer t
   :ensure t)
 
 (use-package web-mode
@@ -883,16 +902,16 @@
   (setq web-mode-enable-auto-quoting nil))
 
 (use-package jest
-  :ensure t)
+  :ensure t
+  :defer t
+  )
 
 (use-package typescript-mode
-  :defer 1
   :ensure t)
 
 (use-package tide
   :bind (("C-c r" . tide-rename-symbol)
          ("C-c C-p" . tide-references))
-  :defer 10
   :after (typescript-mode company flycheck)
   :commands setup-tide-mode
   :ensure t
@@ -909,7 +928,6 @@
   :ensure t)
 
 (use-package plantuml-mode
-  :defer 1
   :ensure t
   :mode "\\.plantuml\\'"
   :config
@@ -951,9 +969,23 @@
 
 (setq css-indent-offset 2)
 
+
+;; https://github.com/emacs-dashboard/emacs-dashboard
+(use-package dashboard
+  :ensure t
+  :init
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-items '((recents  . 5)
+                          (projects . 10)
+                          (bookmarks . 5)
+                          (agenda . 5)))
+  :config
+  (dashboard-setup-startup-hook))
+
+
 (use-package smartparens
   :ensure t
-  :defer 1
   :hook ((prog-mode . smartparens-mode)
          (elisp-mode . smartparens-strict-mode))
   :bind (:map smartparens-mode-map
@@ -984,7 +1016,6 @@
 
 ;; https://github.com/codesuki/add-node-modules-path
 (use-package add-node-modules-path
-  :defer 1
   :ensure t)
 
 (use-package glsl-mode
@@ -1015,17 +1046,16 @@
 (use-package rbenv
   :ensure t
   :init
-  (setq rbenv-installation-dir nil)
+  ;; (setq rbenv-installation-dir nil)
   (setq rbenv-executable "/usr/local/bin/rbenv")
   )
 
 (use-package robe
   :ensure t
+  :hook (ruby-mode . robe-mode)
   :config
-  (add-hook 'ruby-mode-hook 'robe-mode)
   (eval-after-load 'company
-  '(push 'company-robe company-backends))
-  )
+    '(push 'company-robe company-backends)))
 
 ;; Haskell
 (use-package haskell-mode
@@ -1081,7 +1111,7 @@
   :bind (("C-h k" . 'helpful-key)
          ("C-c C-d" . 'helpful-at-point))
   :after counsel
-  :config
+  :init
   (setq counsel-describe-function-function #'helpful-callable
 	counsel-describe-variable-function #'helpful-variable))
 
@@ -1093,7 +1123,6 @@
   (setq-default fill-column 120)
   (add-hook 'markdown-mode-hook 'auto-fill-mode nil t)
   (add-hook 'markdown-mode-hook 'visual-line-mode)
-  (add-hook 'markdown-mode 'pandoc-mode)
   (add-hook 'markdown-mode-hook
             (lambda ()
               (let ((file (file-name-nondirectory buffer-file-name)))
@@ -1150,15 +1179,12 @@
   )
 
 (use-package lsp-mode
-  :defer 2
   :ensure t
   :init (setq lsp-keymap-prefix "C-c l")
   :hook ((lsp-mode . lsp-enable-which-key-integration)
          (sh-mode . lsp)
          )
-  :config
-  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-  (local-set-key (kbd "M-.") 'lsp-find-definition)
+  :init
   (setq lsp-modeline-code-actions-segments '(count icon name))
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
@@ -1176,6 +1202,9 @@
 
   ;; try??
   (setq lsp-tcp-connection-timeout 5)
+  :config
+  (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+  (local-set-key (kbd "M-.") 'lsp-find-definition)
 
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]docs\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]site\\'")
@@ -1212,9 +1241,9 @@
 
 
 (use-package lsp-ui
-  :defer 2
+  :defer t
   :ensure t
-  :config
+  :init
   (setq lsp-ui-doc-enable t)
   (setq lsp-ui-sideline-delay 0.1)
   (setq lsp-ui-doc-use-webkit nil)
@@ -1222,13 +1251,11 @@
   (setq lsp-ui-doc-header t)
   (setq lsp-ui-doc-include-signature t)
   (setq lsp-ui-doc-enhanced-markdown t)
-
   (setq lsp-ui-sideline-show-code-actions t)
   (setq lsp-ui-sideline-show-hover t)
   )
 
 (use-package lsp-java
-  ;; :disabled
   :ensure t
   :after lsp
   :config
@@ -1301,7 +1328,7 @@
 ;; Tabs and ribbons for the mode line
 ;; https://github.com/tarsius/moody
 (use-package moody
-  :defer 2
+  :defer t
   :ensure t
   :disabled
   :config
@@ -1375,7 +1402,7 @@
 ;; commonly but not currently enabled minor-modes.
 ;; https://github.com/tarsius/minions
 (use-package minions
-  :defer 1
+  :defer t
   :ensure t
   :config (minions-mode 1))
 
@@ -1386,9 +1413,8 @@
 
 (use-package yasnippet-snippets
   :ensure t
-  :defer 10
   :after yasnippet
-  :config
+  :init
   (yas-load-directory yasnippet-snippets-dir))
 
 ;; https://github.com/magnars/multiple-cursors.el
@@ -1398,72 +1424,6 @@
          ("C-<" . 'mc/mark-previous-like-this)
          ("C-c C-<" . 'mc/mark-all-like-this))
   :ensure t)
-
-(use-package elfeed
-  :disabled ;; use rss.fredrikmeyer.net instead
-  :defer 1
-  :ensure t
-  :init
-  (setq elfeed-feeds
-        '(
-          ("http://blag.xkcd.com/feed/" blog)
-          ("https://xkcd.com/rss.xml" blog cartoon)
-          ("http://jvns.ca/atom.xml" blog)
-          ("https://www.johndcook.com/blog/feed" blog math)
-          ("https://nhigham.com/feed/" blog math)
-          ("https://www.newth.net/eirik/feed/" blog)
-          ("https://nullprogram.com/feed/" blog)
-          ("https://nrkbeta.no/feed/" blog tech)
-          ("https://slatestarcodex.com/feed/" blog skeptic)
-          ("https://lichess.org/blog.atom" chess blog)
-          ("http://bit-player.org/feed" math blog)
-          ("http://www.jeffgeerling.com/blog.xml" raspberry blog)
-          ("https://jvns.ca/atom.xml" blog)
-          ("https://aws.amazon.com/blogs/opensource/feed/" aws blog)
-          ("http://www.realtimerendering.com/blog/feed/" blog graphics)
-          ("https://0fps.net/feed/" blog graphics)
-          ("https://golem.ph.utexas.edu/category/atom10.xml" blog math)
-          ("https://qchu.wordpress.com/feed/" math)
-          ("https://karthinks.com/software/index.xml" emacs)
-          ("https://www.math.columbia.edu/~woit/wordpress" math physics)
-          ("https://corey.tech/feed.xml" aws tech blog)
-          ))
-  :config
-  (defun elfeed-open-maybe-in-xwidget (&optional use-generic-p)
-    (interactive "P")
-    (let ((browse-url-browser-function #'xwwp))
-      (elfeed-show-visit use-generic-p)))
-  (define-key elfeed-show-mode-map (kbd "B") 'elfeed-open-maybe-in-xwidget))
-
-;; (use-package xwwp
-;;   :disabled
-;;   :load-path "~/.emacs.d/xwwp"
-;;   :ensure t
-;;   :defer 10)
-
-;; (use-package xwwp-follow-link
-;;   :disabled
-;;   :load-path "~/.emacs.d/xwwp-follow-link"
-;;   :custom
-;;   (xwwp-follow-link-completion-system 'ivy)
-;;   :bind (:map xwidget-webkit-mode-map
-;;               ("v" . xwwp-follow-link)))
-
-;; (global-set-key (kbd "C-å") (lambda ()
-;;                               (interactive)
-;;                               (xwwp (thing-at-point 'url 'no-properties))))
-
-;; https://github.com/emacs-dashboard/emacs-dashboard
-(use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-items '((recents  . 5)
-                          (projects . 10)
-                          (bookmarks . 5)
-                          (agenda . 5))))
 
 ;; https://github.com/gonewest818/dimmer.el
 (use-package dimmer
@@ -1580,7 +1540,7 @@
 ;; name at the beginning of the buffer name
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
 (use-package uniquify
-  :defer 5
+  :defer t
   :config
   (setq uniquify-buffer-name-style 'forward))
 
@@ -1649,8 +1609,14 @@
 (use-package fm-common-lisp)
 (use-package fm-python)
 (use-package fm-swiper)
-(use-package cfn-lint)
+;; (use-package cfn-lint)
 (use-package fm-clojure)
+
+(define-minor-mode sticky-buffer-mode
+  "Make the current window always display this buffer."
+  :init-value nil :lighter "sticky" :keymap nil
+  (set-window-dedicated-p (selected-window)
+                          sticky-buffer-mode))
 
 ;;;; Useful functions
 

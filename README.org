@@ -10,8 +10,8 @@ Current Emacs version:
 #+end_src
 
 #+RESULTS:
-: GNU Emacs 28.0.50 (build 1, x86_64-apple-darwin20.3.0, NS appkit-2022.30 Version 11.2.3 (Build 20D91))
-:  of 2021-04-13
+: GNU Emacs 29.0.60 (build 1, x86_64-apple-darwin22.1.0, NS appkit-2299.00 Version 13.0.1 (Build 22A400))
+:  of 2022-12-28
 
 ** Dependencies
 
@@ -22,3 +22,8 @@ Current Emacs version:
  - Test the configuratin elsewhere
  - Remove unused packages
  - Improve startup time (right now it is quite slow...)
+** Inspiration
+
+[[https://github.com/daviwil/emacs-from-scratch][https://github.com/daviwil/emacs-from-scratch]]
+
+

@@ -1,7 +1,12 @@
 ;;; early-init.el --- early bird  -*- no-byte-compile: t -*-
 
 
-;;; Code
+;;; Code:
+
+;; From https://emacs.stackexchange.com/questions/5636/when-installing-a-package-with-package-el-how-to-never-show-the-compile-log-buf
+;; Tested working to avoid site-lisp byte-compile warning buffer being displayed at start
+(setq byte-compile-warnings nil)
+
 (setq load-prefer-newer t)
 
 (when (fboundp 'scroll-bar-mode)

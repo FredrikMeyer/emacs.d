@@ -11,8 +11,7 @@
   :diminish (ivy-mode)
   :bind (("C-c C-r" . ivy-resume)
          ("C-x b" . ivy-switch-buffer))
-  :config
-  (ivy-mode 1)
+  :init
   (setq ivy-use-virtual-buffers t)
   (setq enable-recursive-minibuffers t)
   (setq ivy-count-format "%d/%d ")
@@ -25,7 +24,9 @@
           (swiper-isearch . ivy--regex-plus)
           (counsel-projectile-find-file . ivy--regex-plus)
           (counsel-M-x . ivy--regex-plus)
-          (t . ivy--regex-plus))))
+          (t . ivy--regex-plus)))
+  :config
+  (ivy-mode 1))
 
 (use-package counsel
   :after ivy
@@ -42,7 +43,7 @@
    ("C-h o" . counsel-describe-symbol)
    ("<backspace>" . 'ivy-backward-delete-char))
   :config
-  (counsel-mode)
+  (counsel-mode 1)
   (setq counsel-describe-function-function #'helpful-callable)
   (setq counsel-describe-variable-function #'helpful-variable)
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) "")
@@ -61,7 +62,8 @@
 
 (use-package ivy-prescient
   :ensure t
-  :config
+  :after ivy
+  :init
   (ivy-prescient-mode t))
 
 (use-package swiper

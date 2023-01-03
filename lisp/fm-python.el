@@ -5,18 +5,6 @@
 
 ;;; Code:
 
-(use-package elpy
-  :disabled
-  :ensure t
-  ;; :after pyenv-mode
-  :init (elpy-enable)
-  :config
-  (add-hook 'pyenv-mode-hook (lambda () (elpy-enable)))
-  (add-hook 'elpy-mode-hook 'flycheck-mode)
-  (setq elpy-rpc-backend "jedi")
-  (when (load "flycheck" t t)
-    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))))
-
 (use-package flycheck-pycheckers
   :defer 2
   :disabled
@@ -31,15 +19,14 @@
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp)))
-  :config
+  :init
   (setq lsp-pyright-typechecking-mode "basic")
-  (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/")
-  )
+  (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/"))
 
 
 (use-package python-pytest
-  :defer 2
   :ensure t
+  :hook (python-mode . python-pytest-mode)
   :config
   (setq python-pytest-executable "python -m pytest -o log_cli=true")
 
@@ -49,32 +36,22 @@
                 (setq python-pytest-executable
                       (concat "PYTHONPATH=" r " " "python -m pytest -o log_cli=true"))))))
 
-(use-package python-docstring
-  :disabled
-  :ensure t
-  :config
-  (python-docstring-install))
-
-(setq python-shell-interpreter "python3")
-
 (use-package python-black
   :ensure t
   :after python)
 
 (use-package py-autopep8
   :ensure t
-  :config
+  :init
   (setq py-autopep8-options '("--max-line-length=120")))
 
 (use-package py-isort
-  :ensure t)
+  :ensure t
+  :after python)
 
 (use-package pyvenv
-  :defer 2
   :ensure t
-  :config
-  (pyvenv-mode t)
-
+  :init
   ;; Set correct Python interpreter
   ;; TODO: auto detect virtual env (f.ex via a dotfile)
   (setq pyvenv-post-activate-hooks
@@ -93,18 +70,22 @@
                       (setq python-shell-interpreter python)))))))
   (setq pyvenv-post-deactivate-hooks
         (list (lambda ()
-                (setq python-shell-interpreter "python3")))))
-
-(add-hook 'python-mode 'electric-pair-mode)
+                (setq python-shell-interpreter "python3"))))
+  :config
+  (pyvenv-mode t))
 
 ;; (add-hook 'python-mode (lambda () (flycheck-add-next-checker 'lsp 'python-flake8)))
 
 (use-package python
   :after lsp-mode
   :ensure t
+  :hook (python-mode . electric-pair-mode)
+  :init
+  (setq python-shell-interpreter "python3")
   :config
-  (flycheck-add-next-checker 'lsp 'python-flake8)
+  ;; (flycheck-add-next-checker 'lsp 'python-flake8)
   (setq python-indent-offset 4))
+
 
 ;; (setq flycheck-flake8-maximum-line-length 120)
 
