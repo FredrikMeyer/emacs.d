@@ -30,6 +30,7 @@
   (add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojurescript-mode))
   (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode)))
 
+
 ;; extra syntax highlighting for clojure
 (use-package clojure-mode-extra-font-locking
   :after clojure-mode
@@ -39,6 +40,7 @@
 ;; https://github.com/clojure-emacs/cider
 (use-package cider
   :ensure t
+  :bind (("C-c f" . 'cider-format-buffer))
   :hook ((cider-mode . eldoc-mode)
          (cider-mode . company-mode)
          (cider-repl-mode . company-mode))
@@ -84,11 +86,13 @@
 
 (use-package clj-refactor
   :ensure t
-  :hook (clojure-mode . clj-refactor-mode)
   :config
-  (add-hook 'clojure-refactor-mode
-            (lambda ()
-              (cljr-add-keybindings-with-prefix "C-c C-m"))))
+  (defun my-clojure-mode-hook ()
+                  (clj-refactor-mode 1)
+              (yas-minor-mode 1)
+              (cljr-add-keybindings-with-prefix "C-c C-m")
+    )
+  (add-hook 'clj-refactor-mode #'my-clojure-mode-hook))
 
 (provide 'fm-clojure)
 ;;; fm-clojure.el ends here

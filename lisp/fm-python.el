@@ -18,15 +18,17 @@
   :defer t
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
-                         (lsp)))
+                         (lsp)
+                         (flycheck-add-next-checker 'lsp 'python-mypy)))
   :init
   (setq lsp-pyright-typechecking-mode "basic")
-  (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/"))
+  ;; (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/")
+  )
 
 
 (use-package python-pytest
   :ensure t
-  :hook (python-mode . python-pytest-mode)
+  ;; :hook (python-mode . python-pytest-mode)
   :config
   (setq python-pytest-executable "python -m pytest -o log_cli=true")
 
@@ -38,10 +40,13 @@
 
 (use-package python-black
   :ensure t
+  :commands (python-black-buffer)
+  :bind ("C-c C-b" . python-black-buffer)
   :after python)
 
 (use-package py-autopep8
   :ensure t
+  :commands (py-autopep8-buffer py-autopep8-region)
   :init
   (setq py-autopep8-options '("--max-line-length=120")))
 
@@ -85,6 +90,11 @@
   :config
   ;; (flycheck-add-next-checker 'lsp 'python-flake8)
   (setq python-indent-offset 4))
+
+(defun activate-flake8 ()
+  (interactive)
+  (flycheck-add-next-checker 'lsp 'python-flake8)
+  )
 
 
 ;; (setq flycheck-flake8-maximum-line-length 120)

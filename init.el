@@ -18,7 +18,7 @@
 
 (setq gc-cons-threshold 100000000)
 (add-hook 'after-init-hook
-          (lambda () (setq gc-cons-threshold 800000)))
+          (lambda () (setq gc-cons-threshold 134217728)))
 
 (add-to-list 'load-path "~/src/org-mode/lisp")
 
@@ -43,6 +43,8 @@
 
 (setq user-full-name "Fredrik Meyer"
       user-mail-address "hrmeyer@gmail.com")
+
+
 
 ;; Full path in title bar
 (setq-default frame-title-format "Emacs %b (%f)")
@@ -175,10 +177,10 @@
 
 ;; From the docs: Set it to nil, if you use Control* or Proxy* options in
 ;;your ssh configuration. (I do)
-(use-package tramp-sh
-  :ensure nil
-  :init
-  (setq tramp-use-ssh-controlmaster-options nil))
+;; (use-package tramp-sh
+;;   :ensure nil
+;;   :init
+;;   (setq tramp-use-ssh-controlmaster-options nil))
 
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
@@ -207,6 +209,19 @@
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol)))
 
+
+(use-package add-log
+  :config
+  (setq change-log-default-name "CHANGELOG")
+  (add-hook 'change-log-mode-hook
+	  (lambda ()
+	    (make-local-variable 'tab-width)
+	    (make-local-variable 'left-margin)
+	    (setq tab-width   2
+		  left-margin 2)))
+  :custom
+  (add-log-full-name "Fredrik Meyer")
+  )
 
 (use-package org
   :defer t
@@ -249,9 +264,11 @@
                                (clojure . t)
                                (shell . t)
                                (latex . t)
+                               (java . t)
                                (plantuml . t)
                                ;; (http . t)
                                (js . t)
+                               (haskell . t)
                                (gnuplot . t)))
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
@@ -372,6 +389,7 @@
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (use-package esup
+  :disabled
   :ensure t
   ;; To use MELPA Stable use ":pin mepla-stable",
   ;;  :pin melpa-stable
@@ -424,6 +442,10 @@
   (setq flycheck-checker-error-threshold 2000)
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
   )
+
+(use-package flycheck-posframe
+  :ensure t
+  :hook (flycheck-mode . flycheck-posframe-mode))
 
 (use-package flycheck-aspell
   :disabled
@@ -492,7 +514,7 @@
 
 (use-package restclient
   :ensure t
-  :mode "\\.http$\\'")
+  :mode ("\\.http\\'" . restclient-mode))
 
 (use-package company-restclient
   :ensure t
@@ -513,6 +535,7 @@
   (dotimes (n 10)
     (global-unset-key (kbd (format "C-%d" n)))
     (global-unset-key (kbd (format "M-%d" n))))
+
   (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
   (setq eyebrowse-new-workspace t)
   (setq eyebrowse-keymap-prefix (kbd "C-C M-e"))
@@ -548,8 +571,8 @@
 (use-package smart-hungry-delete
   :ensure t
   :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
-	       ([remap delete-backward-char] . smart-hungry-delete-backward-char)
-	       ([remap delete-char] . smart-hungry-delete-forward-char))
+	 ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+	 ([remap delete-char] . smart-hungry-delete-forward-char))
   :init (smart-hungry-delete-add-default-hooks))
 
 (use-package anzu
@@ -634,7 +657,7 @@
 ;; https://github.com/TeMPOraL/nyan-mode
 (use-package nyan-mode
   :ensure t
-  :disabled
+  ;; :disabled
   :config
   (setq nyan-wavy-trail 1)
   (nyan-mode))
@@ -713,6 +736,11 @@
   :defer t
   :after org)
 
+;; https://github.com/snosov1/toc-org
+(use-package toc-org
+  :ensure t
+  :hook (org-mode . toc-org-mode))
+
 (use-package org-bullets
   :ensure t
   :hook (org-mode . org-bullets-mode))
@@ -727,23 +755,25 @@
   :ensure t)
 
 (use-package org-roam
-  :disabled
   :ensure t
-  :hook
-  (after-init . org-roam-mode)
+  :after org
   :custom
   (org-roam-directory "~/Dropbox/org/roam/")
-  :bind (:map org-roam-mode-map
-              (("C-c n l" . org-roam)
-               ("C-c n r" . org-roam-buffer-toggle-display)
-               ("C-c n f" . org-roam-find-file)
-               ("C-c n g" . org-roam-graph))
-              :map org-mode-map
-              (("C-c n i" . org-roam-insert))
-              (("C-c n I" . org-roam-insert-immediate)))
+  :bind (("C-c n f" . org-roam-node-find)
+         ("C-c n r" . org-roam-node-random)
+         (:map org-roam-mode-map
+               (("C-c n l" . org-roam)
+                ("C-c n r" . org-roam-buffer-toggle-display)
+                ("C-c n f" . org-roam-find-file)
+                ("C-c n g" . org-roam-graph))
+               :map org-mode-map
+               (("C-c n i" . org-roam-node-insert))
+               (("C-c n I" . org-roam-insert-immediate))))
   :config
   (setq org-roam-completion-everywhere t)
-  (require 'org-roam-protocol))
+  (org-roam-db-autosync-mode t)
+  ;; (require 'org-roam-protocol)
+  )
 
 ;; https://github.com/IvanMalison/org-projectile
 (use-package org-projectile
@@ -787,8 +817,8 @@
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
-(global-set-key (kbd "C-c n")
-                (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
+;; (global-set-key (kbd "C-c n")
+;;                 (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
 
 (global-set-key (kbd "C-c ø")
                 (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
@@ -838,7 +868,8 @@
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-show-quick-access t)
-  (setq company-minimum-prefix-length 1))
+  (setq company-minimum-prefix-length 1)
+  )
 
 (use-package pos-tip
   :ensure t)
@@ -886,8 +917,7 @@
                 ;; (add-hook 'before-save-hook 'tide-format-before-save)
                 )
               (when (locate-dominating-file default-directory ".eslintrc.js")
-                (flycheck-add-mode 'javascript-eslint 'web-mode)
-                )
+                (flycheck-add-mode 'javascript-eslint 'web-mode))
               (electric-indent-mode nil)
               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
               (when (string-equal "tsx" (file-name-extension buffer-file-name))
@@ -902,9 +932,9 @@
   (setq web-mode-enable-auto-quoting nil))
 
 (use-package jest
+  :disabled
   :ensure t
-  :defer t
-  )
+  :defer t)
 
 (use-package typescript-mode
   :ensure t)
@@ -925,6 +955,7 @@
     ))
 
 (use-package helm-system-packages
+  :disabled
   :ensure t)
 
 (use-package plantuml-mode
@@ -978,7 +1009,7 @@
   (setq dashboard-set-file-icons t)
   (setq dashboard-items '((recents  . 5)
                           (projects . 10)
-                          (bookmarks . 5)
+                          ;; (bookmarks . 0)
                           (agenda . 5)))
   :config
   (dashboard-setup-startup-hook))
@@ -1019,6 +1050,7 @@
   :ensure t)
 
 (use-package glsl-mode
+  :disabled
   :ensure t
   :mode "\\.glsl\\'")
 
@@ -1032,6 +1064,7 @@
 
 (use-package ruby-electric
   :ensure t
+  :disabled
   :hook ruby-mode)
 
 ;; https://github.com/JoshCheek/seeing_is_believing
@@ -1041,10 +1074,12 @@
 
 (use-package inf-ruby
   :ensure t
+  :disabled
   :hook (ruby-mode . inf-ruby-minor-mode))
 
 (use-package rbenv
   :ensure t
+  :disabled
   :init
   ;; (setq rbenv-installation-dir nil)
   (setq rbenv-executable "/usr/local/bin/rbenv")
@@ -1052,6 +1087,7 @@
 
 (use-package robe
   :ensure t
+  :disabled
   :hook (ruby-mode . robe-mode)
   :config
   (eval-after-load 'company
@@ -1073,6 +1109,7 @@
 
 ;; Go
 (use-package go-mode
+  :disabled
   :ensure t
   :mode "\\.go\\'"
   :config
@@ -1341,7 +1378,8 @@
   :hook (after-init . doom-modeline-mode)
   :config
   (setq doom-modeline-buffer-encoding nil)
-  (setq doom-modeline-minor-modes t)
+  (setq doom-modeline-minor-modes nil)
+  (setq doom-modeline-icon t)
   (setq doom-modeline-buffer-file-name-style 'buffer-name))
 
 ;; https://github.com/johanvts/emacs-fireplace
@@ -1411,6 +1449,14 @@
   :ensure t
   :hook (prog-mode . yas-minor-mode))
 
+(use-package ivy-yasnippet
+  :ensure t
+  :after yasnippet)
+
+(use-package devdocs
+  :bind ("C-h #" . 'devdocs-lookup)
+  :ensure t)
+
 (use-package yasnippet-snippets
   :ensure t
   :after yasnippet
@@ -1465,6 +1511,7 @@
   (setq yaml-indent-offset 2))
 
 (use-package julia-mode
+  :disabled
   :mode "\\.jl'"
   :ensure t)
 
@@ -1609,7 +1656,7 @@
 (use-package fm-common-lisp)
 (use-package fm-python)
 (use-package fm-swiper)
-;; (use-package cfn-lint)
+(use-package cfn-lint)
 (use-package fm-clojure)
 
 (define-minor-mode sticky-buffer-mode
@@ -1620,15 +1667,24 @@
 
 ;;;; Useful functions
 
+(defun get-current-date ()
+  "Get current date as a string."
+  (shell-command-to-string "echo -n $(date +%Y-%m-%d)"))
+
 (defun insert-current-date ()
   "Insert current date."
   (interactive)
-  (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
+  (insert (get-current-date)))
 
 (defun insert-current-date-with-weekday ()
   "Insert current date with weekday."
   (interactive)
   (insert (shell-command-to-string "echo -n $(date +'%Y-%m-%d %A')")))
+
+(defun generate-scratch-buffer ()
+  "Create and switch to a temporary scratch buffer with a random name."
+  (interactive)
+  (switch-to-buffer (make-temp-name "scratch-")))
 
 
 (defun die-tabs ()
@@ -1698,8 +1754,8 @@
 
 
 
-  ;; Overwrite existing scss-stylelint checker to not use --syntax
-  (flycheck-define-checker scss-stylelint
+;; Overwrite existing scss-stylelint checker to not use --syntax
+(flycheck-define-checker scss-stylelint
   "A SCSS syntax and style checker using stylelint.
 
 See URL `http://stylelint.io/'."
@@ -1712,3 +1768,30 @@ See URL `http://stylelint.io/'."
   :error-parser flycheck-parse-stylelint
   :modes (scss-mode))
 
+
+;; Try Oz
+
+;; (setq my-oz-home "/Applications/Mozart2.app/Contents/Resources")
+
+;; (when (file-directory-p my-oz-home)
+;;   (setenv "OZHOME" my-oz-home)
+;; )
+
+;; ;; (setq my-mozart-elisp "/usr/share/mozart/elisp")
+;; (setq my-mozart-elisp "/Applications/Mozart2.app/Contents/Resources/share/mozart/elisp")
+
+;; (when (file-directory-p my-mozart-elisp)
+;;   (add-to-list 'load-path my-mozart-elisp)
+;;   (load "mozart")
+;;   (add-to-list 'auto-mode-alist '("\\.oz\\'" . oz-mode))
+;;   (add-to-list 'auto-mode-alist '("\\.ozg\\'" . oz-gump-mode))
+;;   (autoload 'run-oz "oz" "" t)
+;;   (autoload 'oz-mode "oz" "" t)
+;;   (autoload 'oz-gump-mode "oz" "" t)
+;;   (autoload 'oz-new-buffer "oz" "" t)
+;; )
+
+;; (eval-after-load "oz-mode"
+;;   '(progn
+;;     (define-key oz-mode-map (kbd "C-x SPC") 'rectangle-mark-mode)
+;; ))
