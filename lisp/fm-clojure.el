@@ -40,7 +40,7 @@
 ;; https://github.com/clojure-emacs/cider
 (use-package cider
   :ensure t
-  :bind (("C-c f" . 'cider-format-buffer))
+  :bind (:map cider-mode-map ("C-c f" . 'cider-format-buffer))
   :hook ((cider-mode . eldoc-mode)
          (cider-mode . company-mode)
          (cider-repl-mode . company-mode))

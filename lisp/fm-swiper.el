@@ -60,11 +60,17 @@
   :ensure t
   :hook (ivy-mode . ivy-posframe-mode))
 
+;; https://github.com/radian-software/prescient.el
+;; Simple but effective sorting and filtering for Emacs.
 (use-package ivy-prescient
   :ensure t
+  ;; :disabled
   :after ivy
   :init
-  (ivy-prescient-mode t))
+  (ivy-prescient-mode t)
+  (prescient-persist-mode t)
+  :config
+  (setq prescient-history-length 50))
 
 (use-package swiper
   :ensure t

@@ -765,6 +765,7 @@
                (("C-c n l" . org-roam)
                 ("C-c n r" . org-roam-buffer-toggle-display)
                 ("C-c n f" . org-roam-find-file)
+                ("C-c n t" . org-roam-tag-add)
                 ("C-c n g" . org-roam-graph))
                :map org-mode-map
                (("C-c n i" . org-roam-node-insert))
@@ -898,11 +899,15 @@
   :ensure t
   :after (add-node-modules-path)
   :mode ("\\.[t|j]sx?$" "\\.tsx?$\\'" "\\.html?\\'")
+  :bind (:map web-mode-map
+              ("C-c f" . prettier-js))
   ;; :bind ("C-c r" . 'tide-rename-symbol-at-location)
   :config
   (setq web-mode-indentation-params '(("lineup-calls" . 1)))
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
   (setq web-mode-enable-auto-indentation nil)
+  (setq js-indent-level 2)
+  (setq web-mode-markup-indent-offset 2)
 
   (add-hook 'web-mode-hook
             (lambda ()
@@ -912,10 +917,12 @@
                              (locate-dominating-file default-directory ".prettierrc.json")
                              (locate-dominating-file default-directory ".prettierrc")))
                 ;; (string= (file-name-extension buffer-file-name) "ts")
-                (prettier-js-mode 1)
-                (add-hook 'before-save-hook 'prettier-js nil t)
+
                 ;; (add-hook 'before-save-hook 'tide-format-before-save)
+
                 )
+              (prettier-js-mode 1)
+              (add-hook 'before-save-hook 'prettier-js nil t)
               (when (locate-dominating-file default-directory ".eslintrc.js")
                 (flycheck-add-mode 'javascript-eslint 'web-mode))
               (electric-indent-mode nil)

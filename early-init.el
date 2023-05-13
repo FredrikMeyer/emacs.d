@@ -16,7 +16,7 @@
 (set-face-attribute 'default nil
                     :height 140
                     :weight 'normal
-                    :family "Jetbrains Mono"
+                    ;; :family "Jetbrains Mono"
                     )
 
 ;; Removes tool-bar
