@@ -59,6 +59,7 @@
 
 (use-package python-black
   :ensure t
+  :bind ((("C-c C-b" . python-black-buffer)))
   :after python)
 
 (use-package py-autopep8

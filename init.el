@@ -24,6 +24,8 @@
 (add-to-list 'package-archives
              '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
 
+
+(toggle-debug-on-error)
 (require 'package)
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
@@ -33,7 +35,7 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(setq use-package-verbose t)
+(setq use-package-verbose nil)
 
 ;; (toggle-debug-on-error 1)
 
@@ -50,7 +52,7 @@
 ;; Full path in title bar
 (setq-default frame-title-format "Emacs %b (%f)")
 
-(setq ns-pop-up-frames nil)
+;; (setq ns-pop-up-frames nil)
 (setq locale-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
@@ -123,7 +125,7 @@
 
 (setq-default indicate-empty-lines 't)
 
-(setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
+(setq auth-sources '("~/.authinfo"))
 
 ;; HippieExpand: M-n for to complete
 ;; http://www.emacswiki.org/emacs/HippieExpand
@@ -254,7 +256,8 @@
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
 
-  (setq flycheck-eslint-args "--cache \*\*/\_.ts")
+  ;; (setq flycheck-eslint-args "--cache \*\*/\_.ts")
+  (setq flycheck-eslint-args "--cache")
   ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
   (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
   (flycheck-add-mode 'html-tidy 'web-mode)
@@ -264,6 +267,18 @@
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
   (setq flycheck-protoc-import-path (list "/opt/src/predictive_maintenance/hydro/statkraft/predictive_maintenance/hydro/grpc/proto"))
   )
+
+
+(defconst my-protobuf-style
+  '((c-basic-offset . 2)
+    (indent-tabs-mode . nil)))
+
+
+(use-package protobuf-mode
+  :ensure t
+  :config
+  (add-hook 'protobuf-mode-hook
+            (lambda () (c-add-style "my-style" my-protobuf-style t))))
 
 (use-package flycheck-color-mode-line
   :ensure t
@@ -313,6 +328,13 @@
 	       ("M-[" . paredit-wrap-square)
 	       ("M-{" . paredit-wrap-curly))))
 
+(use-package guru-mode
+  :ensure t
+  :config
+  (setq guru-warn-only t)
+
+  (guru-global-mode +1))
+
 (use-package paredit-everywhere
   :disabled
   :defer 2
@@ -359,14 +381,6 @@
          ("<S-right>" . 'windmove-right)
          ("<S-up>" . 'windmove-up)
          ("<S-down>" . 'windmove-down)))
-
-(use-package buffer-move
-  :ensure t
-  :bind
-  (("C-c q u" . 'buf-move-up)
-   ("C-c q d" . 'buf-move-down)
-   ("C-c q l" . 'buf-move-left)
-   ("C-c q r" . 'buf-move-right)))
 
 (use-package fennel-mode
   :disabled
@@ -420,7 +434,7 @@
   :ensure-system-package (rg . ripgrep)
   :config
   (rg-enable-default-bindings)
-  (setq rg-executable "/usr/local/bin/rg"))
+  (setq rg-executable "/usr/bin/rg"))
 
 (use-package neotree
   :ensure t
@@ -472,6 +486,10 @@
   :config
   (undo-tree))
 
+(use-package smerge-mode
+  :config
+  (setq smerge-command-prefix (kbd "C-c *")))
+
 (use-package magit
   :ensure t
   :bind (("C-x g" . magit-status)
@@ -484,12 +502,12 @@
           (,user-emacs-directory . 0)))
   (setq magit-list-refs-sortby "-creatordate"))
 
-(use-package forge
-  :ensure t
-  :after magit
-  :config
-  (setq forge-topic-list-order '(updated . string>))
-  )
+;(use-package forge
+;  :ensure t
+;  :after magit
+;  :config
+;  (setq forge-topic-list-order '(updated . string>))
+;  )
 
 ;; https://github.com/alphapapa/magit-todos#installation
 ;; (use-package magit-todos
@@ -532,6 +550,7 @@
   :config
   (org-super-agenda-mode t))
 
+(electric-pair-mode 0)
 
 (use-package org
   :defer 1
@@ -548,7 +567,7 @@
   (add-hook 'org-mode-hook (lambda ()
                              (visual-line-mode t)
                              (auto-save-mode t)
-                             (electric-pair-mode 0)))
+                             (electric-pair-local-mode 0)))
 
   (setq org-src-fontify-natively t
         org-src-tab-acts-natively nil
@@ -575,6 +594,8 @@
                                ;; (http . t)
                                (js . t)
                                (gnuplot . t)))
+
+  (setq org-plantuml-exec-mode 'plantuml)
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
   (setq org-refile-targets '((nil :maxlevel . 3) (org-agenda-files :maxlevel . 9)))
@@ -607,6 +628,8 @@
                          '(
                            (:name "Top prio"
                                   :priority "A")
+                           (:name "Prio B"
+                                  :priority "B")
                            (:time-grid t)
                            (:auto-outline-path t)
                            ))
@@ -617,6 +640,8 @@
                                    :todo "DOING")
                             (:name "Top prio"
                                    :priority "A")
+                            (:name "Prio B"
+                                   :priority "B")
                             (:auto-group t)
                          ))
                          (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
@@ -774,6 +799,7 @@
 
 (use-package prettier-js
   :defer 2
+  :bind ("C-c f" . prettier-js)
   :ensure t)
 
 (use-package web-mode
@@ -802,6 +828,7 @@
                 (flycheck-add-mode 'javascript-eslint 'web-mode)
                 )
               (electric-indent-mode nil)
+              (subword-mode +1)
               (setq web-mode-markup-indent-offset 2)
               (setq web-mode-code-indent-offset 2)
               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
@@ -813,7 +840,7 @@
                 (setup-tide-mode)
                 ;; (flycheck-add-next-checker 'javascript-eslint 'tsx-tide)
                 )
-              (electric-pair-mode t)))
+              (electric-pair-local-mode t)))
   (setq web-mode-enable-auto-quoting nil))
 
 (use-package jest
@@ -825,7 +852,11 @@
   :ensure t)
 
 (use-package tide
-  :bind ("C-c r" . tide-rename-symbol)
+  :bind (("C-c r" . tide-rename-symbol)
+         ("C-c d" . tide-documentation-at-point)
+         ("C-c x" . tide-refactor)
+         ("C-c u" . tide-references)
+         )
   ;; :hook (web-mode . my-tide-mode-hook)
   :defer 10
   :after (typescript-mode company flycheck)
@@ -920,7 +951,8 @@
 ;; https://github.com/codesuki/add-node-modules-path
 (use-package add-node-modules-path
   :defer 1
-  :ensure t)
+  :ensure t
+  )
 
 (use-package glsl-mode
   :ensure t
@@ -1067,10 +1099,7 @@
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
                          (require 'lsp-python-ms)
-                         (lsp)))
-  :config
-  ;; (setq lsp-python-ms-extra-paths '("~/.pyenv/versions/3.8.7/envs/audio_analytics/"))
-  )
+                         (lsp))))
 
 (use-package lsp-mode
   :defer 2
@@ -1200,12 +1229,13 @@
   (add-hook 'json-mode-hook #'lsp))
 
 (use-package dap-mode
-  :disabled
+  ;; :disabled
   :ensure t
   :after lsp-mode
   :hook ((lsp-mode . dap-mode)
          (lsp-mode . dap-ui-mode))
   :config
+  (require 'dap-python)
   ;; Maybe solves it...
   (dap-tooltip-mode -1)
   ;; (require 'dap-python)
@@ -1479,6 +1509,11 @@
 (global-set-key (kbd "M-i") 'indent-region)
 
 
+(define-minor-mode sticky-buffer-mode
+  "Make the current window always display this buffer."
+  nil " sticky" nil (set-window-dedicated-p (selected-window)
+    sticky-buffer-mode))
+
 ;; https://www.emacswiki.org/emacs/AutoIndentation
 (electric-indent-mode 1)
 
@@ -1561,6 +1596,13 @@
 (use-package fm-swiper)
 ;; (use-package cfn-lint)
 ;; (use-package fm-clojure)
+
+(use-package fm-buffer-move
+  :bind
+  (("C-c q u" . 'buf-move-up)
+   ("C-c q d" . 'buf-move-down)
+   ("C-c q l" . 'buf-move-left)
+   ("C-c q r" . 'buf-move-right)))
 
 ;;;; Useful functions
 

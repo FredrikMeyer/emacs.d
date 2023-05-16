@@ -30,6 +30,7 @@
 (use-package counsel
   :after ivy
   :ensure t
+  ;; :functions ('ivy-backward-delete-char)
   :bind
   (("M-y" . counsel-yank-pop)
    :map ivy-minibuffer-map
