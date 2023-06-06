@@ -41,13 +41,13 @@
   :defer 2
   :ensure t
   :config
-  (setq python-pytest-executable "python -m pytest -o log_cli=true")
+  (setq python-pytest-executable "LD_LIBRARY_PATH=~/miniconda/envs/promo38/lib/ python -m pytest -o log_cli=true")
 
   (add-hook 'python-mode-hook
             (lambda ()
               (when-let ((r (locate-dominating-file default-directory ".pyroot")))
                 (setq python-pytest-executable
-                      (concat "PYTHONPATH=" r " " "python -m pytest -o log_cli=true"))))))
+                      (concat "LD PYTHONPATH=" r " " "python -m pytest -o log_cli=true"))))))
 
 (use-package python-docstring
   :disabled
@@ -98,16 +98,16 @@
 
 (add-hook 'python-mode 'electric-pair-mode)
 
-(add-hook 'python-mode (lambda () (flycheck-add-next-checker 'lsp 'python-flake8)))
+(add-hook 'python-mode (lambda () (flycheck-add-next-checker 'lsp 'python-flake8 'python-ruff)))
 
 (use-package python
   :after lsp-mode
   :ensure t
   :config
   (require 'lsp-diagnostics)
-(lsp-diagnostics-flycheck-enable)
-(require 'flycheck)
-(flycheck-add-next-checker 'lsp 'python-flake8)
+  (lsp-diagnostics-flycheck-enable)
+  (require 'flycheck)
+  (flycheck-add-next-checker 'lsp 'python-ruff)
   (setq python-indent-offset 4))
 
 ;; (setq flycheck-flake8-maximum-line-length 120)

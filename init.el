@@ -76,6 +76,8 @@
 ;; (unbind-key "C-z") ;; unbind the very annoying suspend-frame
 ;; (unbind-key "<mouse-2>")
 
+(tool-bar-mode -1)
+
 (setq mac-option-modifier nil
       mac-command-modifier 'meta
       mac-function-modifier 'super
@@ -382,6 +384,24 @@
          ("<S-up>" . 'windmove-up)
          ("<S-down>" . 'windmove-down)))
 
+(use-package vterm
+  :ensure t
+  :config
+  (setq vterm-shell "/bin/zsh")
+  (add-hook 'vterm-mode-hook (lambda () (setq-local global-hl-line-mode nil)))
+  (define-key vterm-mode-map (kbd "C-q") #'vterm-send-next-key)
+  )
+
+(use-package vterm-toggle
+  :ensure t
+  :config
+  (global-set-key [f2] 'vterm-toggle)
+  (global-set-key (kbd "C-<escape>") 'vterm-toggle)
+  (define-key vterm-mode-map  [f2] 'vterm-toggle))
+
+(use-package indium
+  :ensure t)
+
 (use-package fennel-mode
   :disabled
   :mode "\\.fnl$'"
@@ -494,11 +514,12 @@
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x C-g" . magit-list-repositories)
-         ("C-x C-S-B" . magit-blame-addition))
+         ("C-x C-S-B" . magit-blame-addition)
+         ("s-x l" . magit-log-buffer-file)
+         ("s-x b" . magit-blame))
   :config
   (setq magit-repository-directories
         `(("~/code" . 1)
-          ("~/code/work" . 1)
           (,user-emacs-directory . 0)))
   (setq magit-list-refs-sortby "-creatordate"))
 
@@ -1697,3 +1718,29 @@ See URL `http://stylelint.io/'."
   :standard-input t
   :error-parser flycheck-parse-stylelint
   :modes (scss-mode))
+
+
+;; From https://github.com/flycheck/flycheck/issues/1974#issuecomment-1343495202
+(flycheck-define-checker python-ruff
+  "A Python syntax and style checker using the ruff utility.
+To override the path to the ruff executable, set
+`flycheck-python-ruff-executable'.
+See URL `http://pypi.python.org/pypi/ruff'."
+  :command ("ruff"
+            "--format=text"
+            (eval (when buffer-file-name
+                    (concat "--stdin-filename=" buffer-file-name)))
+            "-")
+  :standard-input t
+  :error-filter (lambda (errors)
+                  (let ((errors (flycheck-sanitize-errors errors)))
+                    (seq-map #'flycheck-flake8-fix-error-level errors)))
+  :error-patterns
+  ((warning line-start
+            (file-name) ":" line ":" (optional column ":") " "
+            (id (one-or-more (any alpha)) (one-or-more digit)) " "
+            (message (one-or-more not-newline))
+            line-end))
+  :modes python-mode)
+
+(add-to-list 'flycheck-checkers 'python-ruff)
