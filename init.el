@@ -373,7 +373,7 @@
   (define-key eyebrowse-mode-map (kbd "M-3") 'eyebrowse-switch-to-window-config-3)
   (define-key eyebrowse-mode-map (kbd "M-4") 'eyebrowse-switch-to-window-config-4)
   (eyebrowse-mode t)
-  (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
+  ;; (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
   (setq eyebrowse-new-workspace t))
 
 ;; https://www.emacswiki.org/emacs/WindMove
@@ -686,11 +686,13 @@
           ("a" "PROMO" entry
            (file+headline "~/code/statkraft-notater/agenda.org" "Usorterte todos")
            "* TODO [#C] %?\n")
+          ("i" "Ide" entry
+           (file+headline "~/code/statkraft-notater/agenda.org" "Ideer")
+           "* %?\n %T")
 	  )
 	)
   (require 'org-tempo)
   (require 'org-habit)
-  (add-to-list 'org-modules 'org-habit t)
   (add-to-list 'org-modules 'org-habit t)
   (setq org-agenda-include-diary t)
   )
