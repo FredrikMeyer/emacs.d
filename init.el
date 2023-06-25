@@ -20,6 +20,8 @@
 (add-hook 'after-init-hook
           (lambda () (setq gc-cons-threshold 134217728)))
 
+;; (toggle-debug-on-error 1)
+
 (add-to-list 'load-path "~/src/org-mode/lisp")
 
 (require 'package)
@@ -248,6 +250,7 @@
         org-edit-src-content-indentation 0
         org-image-actual-width nil
         org-startup-indented t
+        org-startup-with-inline-images t
         org-directory "~/Dropbox/org"
         org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
         org-plantuml-exec-mode 'plantuml
@@ -266,7 +269,7 @@
                                (latex . t)
                                (java . t)
                                (plantuml . t)
-                               ;; (http . t)
+                               (http . t)
                                (js . t)
                                (haskell . t)
                                (gnuplot . t)))
@@ -405,6 +408,14 @@
   :commands try
   :ensure t)
 
+(use-package dumb-jump
+  :ensure t
+  :config
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+
+  (setq xref-show-definitions-function #'xref-show-definitions-completing-read)
+  )
+
 (use-package which-key
   :ensure t
   :config
@@ -425,6 +436,7 @@
 
 (use-package flycheck
   :ensure t
+  :after (tide)
   :init
   (setq flycheck-display-errors-delay 0.2)
   (setq eldoc-idle-delay 0.1)
@@ -433,14 +445,17 @@
 
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
+  ;; (flycheck-add-mode 'javascript-eslint 'tide-mode)
+  (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
 
-  (setq flycheck-eslint-args "--cache \*\*/\_.ts")
+  (setq flycheck-eslint-args "--cache \*\*/\_.tsx?")
   ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
-  (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
-  (flycheck-add-mode 'html-tidy 'web-mode)
+  ;; (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
+  ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
+
+  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
 
   (setq flycheck-checker-error-threshold 2000)
-  (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
   )
 
 (use-package flycheck-posframe
@@ -610,6 +625,7 @@
   (setq rg-executable "/usr/local/bin/rg"))
 
 (use-package neotree
+  :disabled
   :ensure t
   :bind ("C-x t" . neotree-toggle)
   :config
@@ -720,8 +736,8 @@
 
 ;; https://github.com/zweifisch/ob-http
 ;; org mode source block http
-;; (use-package ob-http
-;;   :ensure t)
+(use-package ob-http
+  :ensure t)
 
 ;; https://github.com/alphapapa/org-super-agenda/#installation
 (use-package org-super-agenda
@@ -761,6 +777,7 @@
   (org-roam-directory "~/Dropbox/org/roam/")
   :bind (("C-c n f" . org-roam-node-find)
          ("C-c n r" . org-roam-node-random)
+         ("C-c n l" . org-roam-buffer-toggle)
          (:map org-roam-mode-map
                (("C-c n l" . org-roam)
                 ("C-c n r" . org-roam-buffer-toggle-display)
@@ -776,6 +793,14 @@
   ;; (require 'org-roam-protocol)
   )
 
+;; https://github.com/org-roam/org-roam-ui
+(use-package org-roam-ui
+  :ensure t
+  :commands (org-roam-ui-open))
+
+(use-package org-download
+  :ensure t)
+
 ;; https://github.com/IvanMalison/org-projectile
 (use-package org-projectile
   :disabled
@@ -789,18 +814,16 @@
 
 (use-package treemacs
   :ensure t
-  :disabled
   :bind
   (:map global-map
-         ;; ("M-0"       . treemacs-select-window)
-        ("C-z 1"   . treemacs-delete-other-windows)
-        ("C-z z z"   . treemacs)
-        ("C-z z B"   . treemacs-bookmark)
-        ("C-z z C-t" . treemacs-find-file)
-        ("C-z t M-t" . treemacs-find-tag)))
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-projectile
-  :disabled
   :after treemacs projectile
   :ensure t)
 
@@ -818,7 +841,7 @@
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
-;; (global-set-key (kbd "C-c n")
+;; (global-set-key (kbd "C-c n")[[id:37FA1736-B192-4204-9849-E090AB050C8E][Vaske Vinduer]]
 ;;                 (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
 
 (global-set-key (kbd "C-c ø")
@@ -900,40 +923,38 @@
   :after (add-node-modules-path)
   :mode ("\\.[t|j]sx?$" "\\.tsx?$\\'" "\\.html?\\'")
   :bind (:map web-mode-map
-              ("C-c f" . prettier-js))
-  ;; :bind ("C-c r" . 'tide-rename-symbol-at-location)
+              ("C-c f" . prettier-js)
+              ("C-c u" . tide-references))
   :config
-  (setq web-mode-indentation-params '(("lineup-calls" . 1)))
+  (setq web-mode-indentation-params '(("lineup-calls" . 2)))
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
   (setq web-mode-enable-auto-indentation nil)
   (setq js-indent-level 2)
-  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-markup-indent-offset 2
+        web-mode-code-indent-offset 2
+        web-mode-attr-indent-offset 2)
 
   (add-hook 'web-mode-hook
             (lambda ()
-              (flycheck-mode 1)
               (yas-activate-extra-mode 'js2-mode)
-              (when (and (or (locate-dominating-file default-directory ".prettier.rc")
-                             (locate-dominating-file default-directory ".prettierrc.json")
-                             (locate-dominating-file default-directory ".prettierrc")))
-                ;; (string= (file-name-extension buffer-file-name) "ts")
-
-                ;; (add-hook 'before-save-hook 'tide-format-before-save)
-
-                )
               (prettier-js-mode 1)
               (add-hook 'before-save-hook 'prettier-js nil t)
               (when (locate-dominating-file default-directory ".eslintrc.js")
-                (flycheck-add-mode 'javascript-eslint 'web-mode))
+                ;; (flycheck-add-mode 'javascript-eslint 'web-mode)
+                )
               (electric-indent-mode nil)
               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
               (when (string-equal "tsx" (file-name-extension buffer-file-name))
                 (setup-tide-mode)
-                (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
+                ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
                 )
               (when (string-equal "ts" (file-name-extension buffer-file-name))
                 (setup-tide-mode)
-                ;; (flycheck-add-next-checker 'javascript-eslint 'tsx-tide)
+                ;; (flycheck-add-next-checker 'typescript-tide 'javascript-eslint)
+                )
+
+              (when (equal web-mode-content-type "html")
+                (flycheck-add-mode 'html-tidy 'web-mode)
                 )
               (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
@@ -955,9 +976,9 @@
   :config
   (setq tide-always-show-documentation t
         tide-completion-detailed t)
-  (defun setup-tide-mode ()
+  (defun setnup-tide-mode ()
     (tide-setup)
-    (flycheck-add-mode 'typescript-tide 'web-mode)
+    ;; (flycheck-add-mode 'typescript-tide 'web-mode)
     (tide-hl-identifier-mode +1)
     ))
 
@@ -1281,6 +1302,8 @@
   ; pip3 install git+https://github.com/tomv564/pyls-mypy.git
   ;; (lsp-register-custom-settings '(("pyls.plugins.pyls_mypy.enabled" t t)))
   ;; (lsp-register-custom-settings '(("pyls.plugins.pyls_isort.enabled" t t)))
+
+  (setq lsp-lens-enable nil)
   )
 
 
@@ -1296,7 +1319,7 @@
   (setq lsp-ui-doc-include-signature t)
   (setq lsp-ui-doc-enhanced-markdown t)
   (setq lsp-ui-sideline-show-code-actions t)
-  (setq lsp-ui-sideline-show-hover t)
+  (setq lsp-ui-sideline-show-hover nil)
   )
 
 (use-package lsp-java
@@ -1466,6 +1489,7 @@
 
 (use-package yasnippet-snippets
   :ensure t
+  :disabled
   :after yasnippet
   :init
   (yas-load-directory yasnippet-snippets-dir))

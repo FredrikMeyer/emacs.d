@@ -22,6 +22,7 @@
          (clojure-mode . smartparens-strict-mode)
          (clojure-mode . cider-mode)
          ;; (clojure-mode . paredit-mode)
+         (clojure-mode . lsp)
          )
   :config
   (require 'flycheck-clj-kondo)
@@ -86,13 +87,14 @@
 
 (use-package clj-refactor
   :ensure t
-  :config
-  (defun my-clojure-mode-hook ()
-                  (clj-refactor-mode 1)
-              (yas-minor-mode 1)
-              (cljr-add-keybindings-with-prefix "C-c C-m")
-    )
-  (add-hook 'clj-refactor-mode #'my-clojure-mode-hook))
+  ;; :config
+  ;; (defun my-clojure-mode-hook ()
+  ;;                 (clj-refactor-mode 1)
+  ;;             (yas-minor-mode 1)
+  ;;             (cljr-add-keybindings-with-prefix "C-c C-m")
+  ;;   )
+  ;; (add-hook 'clj-refactor-mode #'my-clojure-mode-hook)
+  )
 
 (provide 'fm-clojure)
 ;;; fm-clojure.el ends here
