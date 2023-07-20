@@ -13,8 +13,6 @@
 
 ;; Define package repositories
 
-;; (custom-set-variables
-;;  '(gnutls-algorithm-priority "normal:-vers-tls1.3"))
 
 (setq gc-cons-threshold 100000000)
 (add-hook 'after-init-hook
@@ -257,6 +255,8 @@
         org-plantuml-jar-path "/usr/local/bin/plantuml"
         org-babel-clojure-backend 'cider)
 
+  (add-to-list 'org-export-backends 'md)
+
   (add-hook 'org-mode-hook
             (lambda ()
               (add-hook 'after-save-hook 'org-preview-latex-fragment nil 'make-it-local)))
@@ -374,6 +374,7 @@
           ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
            "** TODO %?\n%U" :empty-lines 1)))
   (require 'org-tempo)
+  (require 'ox-md)
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit t)
   (add-to-list 'org-modules 'org-habit t)
@@ -436,7 +437,6 @@
 
 (use-package flycheck
   :ensure t
-  :after (tide)
   :init
   (setq flycheck-display-errors-delay 0.2)
   (setq eldoc-idle-delay 0.1)
@@ -445,8 +445,6 @@
 
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
-  ;; (flycheck-add-mode 'javascript-eslint 'tide-mode)
-  (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
 
   (setq flycheck-eslint-args "--cache \*\*/\_.tsx?")
   ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
@@ -976,7 +974,10 @@
   :config
   (setq tide-always-show-documentation t
         tide-completion-detailed t)
-  (defun setnup-tide-mode ()
+  (flycheck-add-next-checker 'tsx-tide 'javascript-eslint 'append)
+  (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
+  (flycheck-add-mode 'javascript-tide 'web-mode)
+  (defun setup-tide-mode ()
     (tide-setup)
     ;; (flycheck-add-mode 'typescript-tide 'web-mode)
     (tide-hl-identifier-mode +1)
@@ -1689,6 +1690,7 @@
 (use-package fm-swiper)
 (use-package cfn-lint)
 (use-package fm-clojure)
+(use-package flycheck-ruff)
 
 (define-minor-mode sticky-buffer-mode
   "Make the current window always display this buffer."
