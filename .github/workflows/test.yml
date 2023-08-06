@@ -9,13 +9,14 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         emacs_version:
           - 29.1
         experimental: [false]
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     steps:
     - uses: purcell/setup-emacs@master
       with:
