@@ -58,7 +58,9 @@
 ;; https://github.com/tumashu/ivy-posframe
 (use-package ivy-posframe
   :ensure t
-  :hook (ivy-mode . ivy-posframe-mode))
+  :hook (ivy-mode . ivy-posframe-mode)
+  :config
+  (setq ivy-truncate-lines nil))
 
 (use-package ivy-prescient
   :ensure t

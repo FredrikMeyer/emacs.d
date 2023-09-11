@@ -36,6 +36,9 @@
   (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/")
   )
 
+(use-package python-insert-docstring
+  :ensure t
+  :bind (("C-c TAB" . python-insert-docstring-with-google-style-at-point)))
 
 (use-package python-pytest
   :defer 2
@@ -60,7 +63,9 @@
 (use-package python-black
   :ensure t
   :bind ((("C-c C-b" . python-black-buffer)))
-  :after python)
+  :after python
+  :config
+  (setq python-black-extra-args '("-l 120")))
 
 (use-package py-autopep8
   :ensure t

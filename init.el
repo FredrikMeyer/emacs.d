@@ -180,7 +180,7 @@
   (setenv "SHELL" "/usr/bin/zsh")
   (setq exec-path-from-shell-arguments '("-l" "-i"))
   (setq exec-path-from-shell-shell-name "/usr/bin/zsh")
-  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH"))
+  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH" "TS_DATA_SERVICE_PORT"))
   (setenv "WORKON_HOME" "~/miniconda/envs")
   (exec-path-from-shell-initialize))
 
@@ -384,6 +384,7 @@
          ("<S-up>" . 'windmove-up)
          ("<S-down>" . 'windmove-down)))
 
+(add-to-list 'load-path "~/code/emacs-libvterm")
 (use-package vterm
   :ensure t
   :config
@@ -493,7 +494,6 @@
 ;; https://github.com/TeMPOraL/nyan-mode
 (use-package nyan-mode
   :ensure t
-  :disabled
   :config
   (setq nyan-wavy-trail 1)
   (nyan-mode))
