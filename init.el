@@ -465,6 +465,7 @@
   (setq neo-theme 'icons)
   (setq neo-window-fixed-size nil)
   (setq neo-show-hidden-files t)
+  (setq neo-window-width 50)
   ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
   (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
 
@@ -1043,7 +1044,7 @@
 
 (use-package dockerfile-mode
   :ensure t
-  :mode "^Dockerfile\\'")
+  :mode "Dockerfile\\'")
 
 (use-package minimap
   :disabled
