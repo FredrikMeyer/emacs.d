@@ -27,13 +27,14 @@
 
 (use-package lsp-pyright
   :ensure t
+  ;; :disabled
   :defer t
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp)))
   :config
   (setq lsp-pyright-typechecking-mode "basic")
-  (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/")
+  ;; (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/")
   )
 
 (use-package python-insert-docstring

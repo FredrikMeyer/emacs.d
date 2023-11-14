@@ -25,7 +25,7 @@
              '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
 
 
-(toggle-debug-on-error)
+(toggle-debug-on-error -1)
 (require 'package)
 (assq-delete-all 'org package--builtins)
 (assq-delete-all 'org package--builtin-versions)
@@ -73,7 +73,7 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;; (unbind-key "C-z") ;; unbind the very annoying suspend-frame
+(unbind-key "C-z") ;; unbind the very annoying suspend-frame
 ;; (unbind-key "<mouse-2>")
 
 (tool-bar-mode -1)
@@ -246,6 +246,11 @@
   (global-set-key [remap kill-ring-save] #'easy-kill)
   (global-set-key [remap mark-sexp] #'easy-mark))
 
+;; https://github.com/codesuki/add-node-modules-path
+(use-package add-node-modules-path
+  :ensure t
+  )
+
 (use-package flycheck
   :ensure t
   :defer 1
@@ -267,8 +272,33 @@
   (setq flycheck-checker-error-threshold 2000)
 
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
-  (setq flycheck-protoc-import-path (list "/opt/src/predictive_maintenance/hydro/statkraft/predictive_maintenance/hydro/grpc/proto"))
+  (setq flycheck-protoc-import-path (list "/opt/src/proview/grpc/proto"))
   )
+
+;; From https://github.com/flycheck/flycheck/issues/1974#issuecomment-1343495202
+(flycheck-define-checker python-ruff
+  "A Python syntax and style checker using the ruff utility.
+To override the path to the ruff executable, set
+`flycheck-python-ruff-executable'.
+See URL `http://pypi.python.org/pypi/ruff'."
+  :command ("ruff"
+            "--output-format=text"
+            (eval (when buffer-file-name
+                    (concat "--stdin-filename=" buffer-file-name)))
+            "-")
+  :standard-input t
+  :error-filter (lambda (errors)
+                  (let ((errors (flycheck-sanitize-errors errors)))
+                    (seq-map #'flycheck-flake8-fix-error-level errors)))
+  :error-patterns
+  ((warning line-start
+            (file-name) ":" line ":" (optional column ":") " "
+            (id (one-or-more (any alpha)) (one-or-more digit)) " "
+            (message (one-or-more not-newline))
+            line-end))
+  :modes python-mode)
+
+(add-to-list 'flycheck-checkers 'python-ruff)
 
 
 (defconst my-protobuf-style
@@ -335,7 +365,7 @@
   :config
   (setq guru-warn-only t)
 
-  (guru-global-mode +1))
+  (guru-global-mode -1))
 
 (use-package paredit-everywhere
   :disabled
@@ -826,6 +856,8 @@
   :bind ("C-c f" . prettier-js)
   :ensure t)
 
+
+
 (use-package web-mode
   :ensure t
   :after (add-node-modules-path)
@@ -863,6 +895,9 @@
               (when (string-equal "ts" (file-name-extension buffer-file-name))
                 (setup-tide-mode)
                 ;; (flycheck-add-next-checker 'javascript-eslint 'tsx-tide)
+                )
+              (when (string-equal "js" (file-name-extension buffer-file-name))
+                (setup-tide-mode)
                 )
               (electric-pair-local-mode t)))
   (setq web-mode-enable-auto-quoting nil))
@@ -972,12 +1007,6 @@
   :mode "\\.\\(sml\\|sig\\)\\'"
   :ensure t)
 
-;; https://github.com/codesuki/add-node-modules-path
-(use-package add-node-modules-path
-  :defer 1
-  :ensure t
-  )
-
 (use-package glsl-mode
   :ensure t
   :mode "\\.glsl\\'")
@@ -1080,6 +1109,7 @@
                         (file-name-sans-extension file)
                         file))))
   (setq markdown-header-scaling 1)
+  (setq markdown-enable-highlighting-syntax t)
   (setq markdown-command
       (concat
        "/usr/local/bin/pandoc"
@@ -1125,6 +1155,15 @@
                          (require 'lsp-python-ms)
                          (lsp))))
 
+;; (use-package lsp-sonarlint
+;;   :ensure t
+;;   :config
+;;   (require 'lsp-sonarlint-python)
+;;   (require 'lsp-sonarlint-javascript)
+;;   (require 'lsp-sonarlint-typescript)
+;;   (setq lsp-sonarlint-python-enabled t)
+;;   )
+
 (use-package lsp-mode
   :defer 2
   :ensure t
@@ -1154,6 +1193,7 @@
   (setq lsp-tcp-connection-timeout 5)
 
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]docs\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]/home/u52582/code/adam-src/proview/rest_api/build\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]site\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]cdk.out\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.aws-sam\\'")
@@ -1171,7 +1211,10 @@
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   ;; (add-hook 'python-mode-hook #'lsp)
 
-  (require 'lsp-rust)
+  ;; (require 'lsp-rust)
+  ;; (require 'lsp-pylsp)
+  ;; (setq lsp-python)
+  ;; (add-hook 'python-mode-hook #'lsp)
   ;; (require 'lsp-csharp)
   ;; (require 'lsp-pyright)
   ;; (require 'lsp-python-ms)
@@ -1257,11 +1300,13 @@
   :ensure t
   :after lsp-mode
   :hook ((lsp-mode . dap-mode)
-         (lsp-mode . dap-ui-mode))
+         (lsp-mode . dap-ui-mode)
+         (python-mode . dap-ui-mode))
   :config
   (require 'dap-python)
+  (setq dap-python-debugger 'debugpy)
   ;; Maybe solves it...
-  (dap-tooltip-mode -1)
+  ;; (dap-tooltip-mode -1)
   ;; (require 'dap-python)
   ; should fix it also
 ;  (dap-enable-mouse-support nil)
@@ -1721,29 +1766,3 @@ See URL `http://stylelint.io/'."
   :standard-input t
   :error-parser flycheck-parse-stylelint
   :modes (scss-mode))
-
-
-;; From https://github.com/flycheck/flycheck/issues/1974#issuecomment-1343495202
-(flycheck-define-checker python-ruff
-  "A Python syntax and style checker using the ruff utility.
-To override the path to the ruff executable, set
-`flycheck-python-ruff-executable'.
-See URL `http://pypi.python.org/pypi/ruff'."
-  :command ("ruff"
-            "--format=text"
-            (eval (when buffer-file-name
-                    (concat "--stdin-filename=" buffer-file-name)))
-            "-")
-  :standard-input t
-  :error-filter (lambda (errors)
-                  (let ((errors (flycheck-sanitize-errors errors)))
-                    (seq-map #'flycheck-flake8-fix-error-level errors)))
-  :error-patterns
-  ((warning line-start
-            (file-name) ":" line ":" (optional column ":") " "
-            (id (one-or-more (any alpha)) (one-or-more digit)) " "
-            (message (one-or-more not-newline))
-            line-end))
-  :modes python-mode)
-
-(add-to-list 'flycheck-checkers 'python-ruff)
