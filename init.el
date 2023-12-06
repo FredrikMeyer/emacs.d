@@ -8,7 +8,7 @@
 
 ;;; Code:
 
-;; (byte-recompile-directory (expand-file-name "~/.emacs.d/") 0)
+;;(byte-recompile-directory (expand-file-name "~/.emacs.d/") 0)
 ;; (profiler-start 'cpu+mem)
 
 ;; Define package repositories
@@ -180,7 +180,9 @@
   (setenv "SHELL" "/usr/bin/zsh")
   (setq exec-path-from-shell-arguments '("-l" "-i"))
   (setq exec-path-from-shell-shell-name "/usr/bin/zsh")
-  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH" "TS_DATA_SERVICE_PORT"))
+  (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH" "TS_DATA_SERVICE_PORT"
+                                         "MONGODB_SERVICE_PORT" "OPA_SERVICE_PORT" "UDM_MANAGER_SERVICE_PORT"
+                                         "UDM_WORKER_SERVICE_PORT" "ENV_VARS_SERVICE_PORT"))
   (setenv "WORKON_HOME" "~/miniconda/envs")
   (exec-path-from-shell-initialize))
 
@@ -308,6 +310,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 (use-package protobuf-mode
   :ensure t
+  :mode "\\.proto$"
   :config
   (add-hook 'protobuf-mode-hook
             (lambda () (c-add-style "my-style" my-protobuf-style t))))
@@ -327,6 +330,13 @@ See URL `http://pypi.python.org/pypi/ruff'."
           (concat "yarn run eslint" " " "--fix " (buffer-file-name))
           nil "*Shell Command Output*" t))
         (t (message "No lock file.")))
+  (revert-buffer t t))
+
+(defun ruff-fix-file ()
+  "Run ruff --fix on current file."
+  (interactive)
+  (call-process-shell-command (concat "ruff --fix " (buffer-file-name))
+                              nil "*Shell Command Output*" t)
   (revert-buffer t t))
 
 (defun eslint-fix-file-and-revert ()
@@ -844,6 +854,7 @@ See URL `http://pypi.python.org/pypi/ruff'."
 
 ;; https://github.com/sebastiencs/company-box
 (use-package company-box
+  :disabled
   :ensure t
   :hook (company-mode . company-box-mode))
 
@@ -1155,14 +1166,15 @@ See URL `http://pypi.python.org/pypi/ruff'."
                          (require 'lsp-python-ms)
                          (lsp))))
 
-;; (use-package lsp-sonarlint
-;;   :ensure t
-;;   :config
-;;   (require 'lsp-sonarlint-python)
-;;   (require 'lsp-sonarlint-javascript)
-;;   (require 'lsp-sonarlint-typescript)
-;;   (setq lsp-sonarlint-python-enabled t)
-;;   )
+(use-package lsp-sonarlint
+  :ensure t
+  :config
+  (require 'lsp-sonarlint-python)
+  (require 'lsp-sonarlint-javascript)
+  (require 'lsp-sonarlint-typescript)
+  (setq lsp-sonarlint-typescript-enabled t)
+  (setq lsp-sonarlint-python-enabled t)
+  )
 
 (use-package lsp-mode
   :defer 2
