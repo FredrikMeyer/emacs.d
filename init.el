@@ -181,7 +181,7 @@
   (setq exec-path-from-shell-arguments '("-l" "-i"))
   (setq exec-path-from-shell-shell-name "/usr/bin/zsh")
   (setq exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME" "PYTHONPATH" "TS_DATA_SERVICE_PORT"
-                                         "MONGODB_SERVICE_PORT" "OPA_SERVICE_PORT" "UDM_MANAGER_SERVICE_PORT"
+                                         "MONGODB_SERVICE_PORT" "OPA_SERVICE_PORT" "UDM_MANAGER_SERVICE_PORT" "REPORTING_SERVICE_PORT"
                                          "UDM_WORKER_SERVICE_PORT" "ENV_VARS_SERVICE_PORT"))
   (setenv "WORKON_HOME" "~/miniconda/envs")
   (exec-path-from-shell-initialize))
@@ -1310,6 +1310,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (use-package dap-mode
   ;; :disabled
   :ensure t
+  :bind ("C-x D r" ("DAP Repl" . 'dap-ui-repl)
+         "C-x D t" ("dap switch thread" . 'dap-switch-thread))
   :after lsp-mode
   :hook ((lsp-mode . dap-mode)
          (lsp-mode . dap-ui-mode)
