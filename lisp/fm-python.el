@@ -14,6 +14,7 @@
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
 (use-package lsp-pyright
+  :disabled
   :ensure t
   :defer t
   :hook (python-mode . (lambda ()
@@ -28,6 +29,7 @@
 
 (use-package python-pytest
   :ensure t
+  :bind (("C-c t" . 'python-pytest-dispatch))
   ;; :hook (python-mode . python-pytest-mode)
   :config
   (setq python-pytest-executable "python -m pytest -o log_cli=true")
@@ -88,6 +90,7 @@
   :init
   (setq python-shell-interpreter "python3")
   :config
+  (add-hook 'python-mode 'eglot-ensure)
   ;; (flycheck-add-next-checker 'lsp 'python-flake8)
   (setq python-indent-offset 4))
 

@@ -39,12 +39,10 @@
   (package-install 'use-package))
 
 
-(setq use-package-verbose t)
+(setq use-package-verbose nil)
 
 (setq user-full-name "Fredrik Meyer"
       user-mail-address "hrmeyer@gmail.com")
-
-
 
 ;; Full path in title bar
 (setq-default frame-title-format "Emacs %b (%f)")
@@ -58,20 +56,18 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
 
 ;; No need for ~ files when editing
 (setq create-lockfiles nil
       auto-save-default nil
       default-directory (concat (getenv "HOME") "/")
-      custom-file (expand-file-name "custom.el" user-emacs-directory)
-      )
+      custom-file (expand-file-name "custom.el" user-emacs-directory))
 
-(when (file-exists-p custom-file)
-  (load custom-file))
+;; try not using custom-file
+;; (when (file-exists-p custom-file)
+;;   (load custom-file))
 
 (unbind-key "C-z") ;; unbind the very annoying suspend-frame
-;; (unbind-key "<mouse-2>")
 
 (defun my-package-recompile()
   "Recompile all packages"
@@ -92,9 +88,12 @@
 
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
+(setq-default cursor-type 'bar)
+
+;; Don't use hard tabs
+(setq-default indent-tabs-mode nil)
 
 
-;; (setq auth-source-debug 'trivia)
 
 ;; EDITING
 
@@ -127,8 +126,6 @@
   :config
   (column-number-mode 1))
 
-(setq-default cursor-type 'bar)
-
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
                         (other . "stroustrup")))
@@ -138,8 +135,6 @@
 (setq tab-always-indent t
       tab-first-completion nil)
 
-;; Don't use hard tabs
-(setq-default indent-tabs-mode nil)
 
 ;; Don't show whitespaces in minibuffer
 (add-hook 'minibuffer-setup-hook
@@ -184,9 +179,11 @@
 
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
+  :disabled
   :ensure t)
 
 (use-package use-package-ensure-system-package
+  :disabled
   :ensure t)
 
 (use-package package-utils
@@ -211,6 +208,7 @@
 
 
 (use-package add-log
+  :disabled ;; I don't use
   :config
   (setq change-log-default-name "CHANGELOG")
   (add-hook 'change-log-mode-hook
@@ -275,8 +273,10 @@
                                (gnuplot . t)))
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
-  (setq org-refile-targets '((nil :maxlevel . 3) (org-agenda-files :maxlevel . 9)))
+  (setq org-refile-targets '((nil :maxlevel . 3)
+                             (org-agenda-files :maxlevel . 9)))
   (setq org-refile-use-outline-path t)
+
   (setq org-outline-path-complete-in-steps nil)
 
   (setq org-agenda-files (list "~/Dropbox/org/audio_xal.org"
@@ -377,9 +377,22 @@
   (require 'ox-md)
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit t)
-  (add-to-list 'org-modules 'org-habit t)
   (setq org-agenda-include-diary t)
   )
+
+(use-package org-ai
+  :ensure t
+  :commands (org-ai-mode
+             org-ai-global-mode)
+  :init
+  (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
+  (org-ai-global-mode) ; installs global keybindings on C-c M-a
+  :config
+  (setq org-ai-default-chat-model "gpt-3.5-turbo-0301") ; if you are on the gpt-4 beta:
+  (org-ai-install-yasnippets)
+  (setq org-ai-use-auth-source t)
+  ) ; if you are using yasnippet and want `ai` snippets
+
 
 ;; https://github.com/quelpa/quelpa-use-package
 ;; (use-package quelpa-use-package
@@ -400,6 +413,8 @@
   :commands (esup))
 
 ;; https://github.com/emacsorphanage/popwin
+;; popwin is a popup window manager for Emacs which makes you free from the hell of
+;; annoying buffers such like *Help*, *Completions*, *compilation*, and etc.
 (use-package popwin
   :ensure t
   :config
@@ -414,8 +429,7 @@
   :config
   (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
 
-  (setq xref-show-definitions-function #'xref-show-definitions-completing-read)
-  )
+  (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
 
 (use-package which-key
   :ensure t
@@ -447,12 +461,7 @@
   (flycheck-add-mode 'javascript-eslint 'web-mode)
 
   (setq flycheck-eslint-args "--cache \*\*/\_.tsx?")
-  ;; (flycheck-add-mode 'javascript-eslint 'vue-mode) ;; I don't use vue anymore
-  ;; (flycheck-add-mode 'javascript-eslint 'flow-minor-mode)
-  ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
-
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
-
   (setq flycheck-checker-error-threshold 2000)
   )
 
@@ -595,6 +604,7 @@
   :config
   (global-anzu-mode 1))
 
+;; https://docs.projectile.mx/projectile/index.html
 (use-package projectile
   :ensure t
   :ensure-system-package fd
@@ -743,7 +753,6 @@
   :after org
   :config
   (org-super-agenda-mode t))
-
 
 (use-package ox-md
   :ensure nil
@@ -952,7 +961,7 @@
                 )
 
               (when (equal web-mode-content-type "html")
-                (flycheck-add-mode 'html-tidy 'web-mode)
+                ;; (flycheck-add-mode 'html-tidy 'web-mode)
                 )
               (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
@@ -1189,6 +1198,7 @@
   (setq-default fill-column 120)
   (add-hook 'markdown-mode-hook 'auto-fill-mode nil t)
   (add-hook 'markdown-mode-hook 'visual-line-mode)
+  (setq markdown-fontify-code-blocks-natively t)
   (add-hook 'markdown-mode-hook
             (lambda ()
               (let ((file (file-name-nondirectory buffer-file-name)))
@@ -1325,9 +1335,8 @@
 
 (use-package lsp-java
   :ensure t
-  :after lsp
-  :config
-  (add-hook 'java-mode-hook 'lsp))
+  :hook (java-mode . lsp)
+  :config)
 
 (use-package lsp-yaml
   :after lsp
@@ -1478,7 +1487,9 @@
 ;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
   :ensure t
-  :hook (prog-mode . yas-minor-mode))
+  :hook (prog-mode . yas-minor-mode)
+  :hook (org-mode . yas-minor-mode)
+  )
 
 (use-package ivy-yasnippet
   :ensure t
@@ -1490,10 +1501,11 @@
 
 (use-package yasnippet-snippets
   :ensure t
-  :disabled
+  ;; :disabled
   :after yasnippet
   :init
-  (yas-load-directory yasnippet-snippets-dir))
+  ;; (yas-load-directory yasnippet-snippets-dir)
+  )
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors

@@ -29,7 +29,19 @@
   ;; Enable paredit for Clojure
   ;; (add-hook 'clojure-mode-hook 'enable-paredit-mode)
   (add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojurescript-mode))
-  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode)))
+  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode))
+
+  (defun clerk-show ()
+    (interactive)
+    (when-let
+        ((filename
+          (buffer-file-name)))
+      (save-buffer)
+      (cider-interactive-eval
+       (concat "(nextjournal.clerk/show! \"" filename "\")"))))
+
+  (define-key clojure-mode-map (kbd "<M-return>") 'clerk-show)
+  )
 
 
 ;; extra syntax highlighting for clojure
@@ -55,6 +67,8 @@
 
   ;; Wrap when navigating history.
   (setq cider-repl-wrap-history t)
+
+  (setq cider-enrich-classpath t)
 
   ;; Where to store the cider history.
   (setq cider-repl-history-file "~/.emacs.d/cider-history")
@@ -87,6 +101,7 @@
 
 (use-package clj-refactor
   :ensure t
+  :after yasnippet
   ;; :config
   ;; (defun my-clojure-mode-hook ()
   ;;                 (clj-refactor-mode 1)

@@ -10,8 +10,8 @@ Current Emacs version:
 #+end_src
 
 #+RESULTS:
-: GNU Emacs 29.0.60 (build 1, x86_64-apple-darwin22.1.0, NS appkit-2299.00 Version 13.0.1 (Build 22A400))
-:  of 2022-12-28
+: GNU Emacs 30.0.50 (build 1, x86_64-apple-darwin22.5.0, NS appkit-2299.60 Version 13.4.1 (Build 22F82))
+:  of 2023-07-25
 
 ** Dependencies
 
@@ -19,7 +19,6 @@ Current Emacs version:
 ** Things that should be done
 
  - Write a list of all necessary external binaries (such as Python language server, `ag`, and so on)
- - Test the configuratin elsewhere
  - Remove unused packages
  - Improve startup time (right now it is quite slow...)
 ** Inspiration
@@ -27,3 +26,61 @@ Current Emacs version:
 [[https://github.com/daviwil/emacs-from-scratch][https://github.com/daviwil/emacs-from-scratch]]
 
 
+
+
+#+begin_ai
+hei
+
+[AI]: hei! Hvordan kan jeg hjelpe deg i dag? :)
+
+[ME]: tester bare  openapi plugin
+
+[AI]: ÅpneAPI-plugin kan være et nyttig verktøy for å teste og dokumentere APIer. Hvis du har spesifikke spørsmål eller problemer du står overfor når du bruker pluginen, kan jeg hjelpe deg med å løse dem. Bare gi meg beskjed hva jeg kan gjøre for å hjelpe deg.
+
+[ME]: Sometimes it is a bit slow 
+
+[AI]: If you're experiencing slowness with the OpenAPI plugin, there can be a few possible causes for this. Here are a few troubleshooting steps you can try:
+
+1. Make sure you're using the latest version of the plugin. Older versions may have some performance issues that have been fixed in newer releases.
+2. Check the size and complexity of your API specification. Large and complex specifications may take longer to load and analyze, which could slow down the plugin.
+3. Try disabling some of the optional features of the plugin, such as validation or linting. These features require additional processing time and may slow down the overall performance of the plugin.
+4. Check your computer's resources and make sure that there are no other applications running in the background that are consuming a lot of CPU or memory.
+
+If none of these steps improve the performance of the OpenAPI plugin, you may want to consider using an alternative tool or contacting the plugin's support team for further assistance.
+
+[ME]: 
+#+end_ai
+
+
+#+begin_ai :image :size 256x256
+Hyper realistic sci-fi rendering of super complicated technical machine.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_2.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_1.png]]
+
+
+* Test AI
+
+
+#+begin_ai :image :size 256x256
+A Python programmer sitting in the forest thinking about infinity, Escher style.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_6.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_5.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_4.png]]
+
+
+#+begin_ai :image :size 512x512
+Kronos devouring his child, but in a modern setting, preferably in a depressing city. Make it hyper-realistic.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image_2.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image_1.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image.png]]
+
+
+
+
+#+begin_ai :image :size 512x512
+Kronos devouring his child but in Escher style.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image_3.png]]

@@ -10,6 +10,7 @@
   :hook (emacs-startup . ivy-mode)
   :diminish (ivy-mode)
   :bind (("C-c C-r" . ivy-resume)
+         ("M-g o" . 'counsel-outline)
          ("C-x b" . ivy-switch-buffer))
   :init
   (setq ivy-use-virtual-buffers t)
