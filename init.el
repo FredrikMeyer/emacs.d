@@ -179,7 +179,7 @@
 
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
-  :disabled
+
   :ensure t)
 
 (use-package use-package-ensure-system-package
@@ -365,6 +365,7 @@
   (setq org-capture-templates
         '(
           ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
+          ("C" "Tanke" entry (file+headline "~/Dropbox/org/notater.org" "Tanker") "* %U\n%?")
           ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
           ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
            "* TODO %?\n%U")
@@ -1015,19 +1016,6 @@
 (use-package ansible
   :ensure t)
 
-(use-package rust-mode
-  :ensure t
-  :mode "\\.rs\\'"
-  :config
-  (add-hook 'rust-mode-hook #'lsp)
-  (add-hook 'rust-mode-hook
-            (lambda () (add-hook 'before-save-hook 'lsp-format-buffer nil t))))
-
-;; https://github.com/kwrooijen/cargo.el
-(use-package cargo
-  :ensure t
-  :hook ((rust-mode . cargo-minor-mode)))
-
 (use-package vue-mode
   :disabled
   :ensure t
@@ -1172,6 +1160,9 @@
   :ensure t
   :mode "^Dockerfile\\'")
 
+(use-package kubernetes
+  :ensure t)
+
 (use-package minimap
   :disabled
   :ensure t
@@ -1284,37 +1275,20 @@
 
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]docs\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]site\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]cdk.out\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.aws-sam\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.pytest_cache\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]__pycache__\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]/Users/fredrikmeyer/code/work/audio_analytics_internal/preliminary_study/\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.mypy_cache\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\]\_build")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]build/lib\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]cloud_infrastructure/dashboard\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]cloud_infrastructure/cdk-cleanup\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]data_exploration\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
   ;; (add-hook 'python-mode-hook #'lsp)
 
   (require 'lsp-rust)
-  ;; (require 'lsp-csharp)
-  ;; (require 'lsp-pyright)
-  ;; (require 'lsp-python-ms)
-
   (setq lsp-rust-server 'rust-analyzer)
 
-  ;; To enable mypy
-  ;; https://github.com/tomv564/pyls-mypy
-  ;; Also had to install this from source:
-  ; pip3 install git+https://github.com/tomv564/pyls-mypy.git
-  ;; (lsp-register-custom-settings '(("pyls.plugins.pyls_mypy.enabled" t t)))
-  ;; (lsp-register-custom-settings '(("pyls.plugins.pyls_isort.enabled" t t)))
-
-  (setq lsp-lens-enable nil)
+  (setq lsp-lens-enable 't)
   )
 
 
@@ -1702,6 +1676,7 @@
 (use-package fm-swiper)
 (use-package cfn-lint)
 (use-package fm-clojure)
+(use-package fm-rust)
 (use-package flycheck-ruff)
 
 (define-minor-mode sticky-buffer-mode

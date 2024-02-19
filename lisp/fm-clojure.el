@@ -96,6 +96,12 @@
   (define-key clojure-mode-map (kbd "C-c u") 'cider-user-ns)
   (define-key cider-mode-map (kbd "C-c u") 'cider-user-ns)
 
+  (defun run-sketch ()
+    (interactive)
+    (cider-interactive-eval "(sketch)"))
+
+  (keymap-set cider-mode-map "C-c C-å" 'run-sketch)
+
   (add-hook 'before-save-hook 'cider-format-buffer t t)
   )
 
