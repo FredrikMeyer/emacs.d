@@ -13,7 +13,6 @@
 
 ;; Define package repositories
 
-
 (setq gc-cons-threshold 100000000)
 (add-hook 'after-init-hook
           (lambda () (setq gc-cons-threshold 134217728)))
@@ -163,10 +162,10 @@
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns x))
   :ensure t
-  :init
-  (setq
-   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
-   exec-path-from-shell-arguments nil)
+;;  :init
+;;  (setq
+;;   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
+;;   exec-path-from-shell-arguments nil)
   :config
   (exec-path-from-shell-initialize))
 
@@ -179,8 +178,10 @@
 
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
-
-  :ensure t)
+  :ensure t
+  :config
+  (setq system-packages-use-sudo 'nil)
+  (setq system-packages-package-manager 'brew))
 
 (use-package use-package-ensure-system-package
   :disabled
@@ -535,6 +536,8 @@
   :ensure t
   :mode "\\.pl$")
 
+
+
 (use-package restclient
   :ensure t
   :mode ("\\.http\\'" . restclient-mode))
@@ -618,7 +621,6 @@
         projectile-enable-caching nil)
   )
 
-
 (use-package projectile-ripgrep
   :after projectile
   :defer t
@@ -632,6 +634,8 @@
   :config
   (rg-enable-default-bindings)
   (setq rg-executable "/usr/local/bin/rg"))
+
+
 
 (use-package neotree
   :disabled
@@ -801,6 +805,7 @@
   ;; (require 'org-roam-protocol)
   )
 
+
 ;; https://github.com/org-roam/org-roam-ui
 (use-package org-roam-ui
   :ensure t
@@ -902,6 +907,7 @@
   (setq company-show-quick-access t)
   (setq company-minimum-prefix-length 1)
   )
+
 
 (use-package pos-tip
   :ensure t)
@@ -1163,6 +1169,11 @@
 (use-package kubernetes
   :ensure t)
 
+;; https://github.com/TxGVNN/emacs-k8s-mode
+(use-package k8s-mode
+  :ensure t
+  :hook (k8s-mode . yas-minor-mode))
+
 (use-package minimap
   :disabled
   :ensure t
@@ -1184,7 +1195,7 @@
 (use-package markdown-mode
   :ensure t
   :mode ("\\.md[x]?$")
-  :ensure-system-package pandoc
+;;  :ensure-system-package pandoc
   :config
   (setq-default fill-column 120)
   (add-hook 'markdown-mode-hook 'auto-fill-mode nil t)
@@ -1311,26 +1322,6 @@
   :ensure t
   :hook (java-mode . lsp)
   :config)
-
-(use-package lsp-yaml
-  :after lsp
-  :config
-  (setq lsp-yaml-custom-tags ["!And"
-                              "!If"
-                              "!Not"
-                               "!Equals"
-                               "!Or"
-                               "!FindInMap"
-                               "!Base64"
-                               "!Cidr"
-                               "!Ref"
-                               "!Sub"
-                               "!GetAtt"
-                               "!GetAZs"
-                               "!ImportValue"
-                               "!Select"
-                               "!Split"
-                               "!Join"]))
 
 (use-package lsp-metals
   :disabled
@@ -1523,6 +1514,8 @@
 (use-package yaml-mode
   :ensure t
   :mode "\\.y*ml"
+  :hook (yaml-mode . yas-minor-mode)
+  :hook (yaml-mode . lsp)
   :config
   (add-hook 'yaml-mode-hook
             (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent)))
