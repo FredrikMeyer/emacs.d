@@ -43,7 +43,8 @@
 (use-package python-black
   :ensure t
   :commands (python-black-buffer)
-  :bind ("C-c C-b" . python-black-buffer)
+  ;; https://emacs.stackexchange.com/a/59270/20796
+  :bind ((:map python-mode-map ("C-c C-b" . python-black-buffer)))
   :after python)
 
 (use-package py-autopep8

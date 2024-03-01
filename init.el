@@ -160,14 +160,17 @@
 ;; Sets up exec-path-from shell
 ;; https://github.com/purcell/exec-path-from-shell
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns x))
   :ensure t
+  :if (memq window-system '(mac ns x))
 ;;  :init
 ;;  (setq
 ;;   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
-;;   exec-path-from-shell-arguments nil)
+  ;;   exec-path-from-shell-arguments nil)
   :config
-  (exec-path-from-shell-initialize))
+  (dolist (var '("GOPATH"))
+    (add-to-list 'exec-path-from-shell-variables var))
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "PATH"))
 
 ;; From the docs: Set it to nil, if you use Control* or Proxy* options in
 ;;your ssh configuration. (I do)
@@ -537,7 +540,6 @@
   :mode "\\.pl$")
 
 
-
 (use-package restclient
   :ensure t
   :mode ("\\.http\\'" . restclient-mode))
@@ -548,25 +550,25 @@
   :config
   (add-to-list 'company-backends 'company-restclient))
 
-;; https://github.com/wasamasa/eyebrowse
-(use-package eyebrowse
+(defun switch-tab (n)
+  "Switch to tab number N."
+  (tab-select n))
+
+(use-package tab-bar
   :ensure t
-  :bind (:map eyebrowse-mode-map
-              ("M-1" . 'eyebrowse-switch-to-window-config-1)
-              ("M-2" . 'eyebrowse-switch-to-window-config-2)
-              ("M-3" . 'eyebrowse-switch-to-window-config-3)
-              ("M-4" . 'eyebrowse-switch-to-window-config-4)
+  :bind (
+         ("M-0" . 'tab-bar-switch-to-tab)
+         ("M-1" . (lambda () (interactive ) (switch-tab 1)))
+         ("M-2" . (lambda () (interactive ) (switch-tab 2)))
+         ("M-3" . (lambda () (interactive ) (switch-tab 3)))
+         ("M-4" . (lambda () (interactive ) (switch-tab 4)))
               )
   :init
-  (dotimes (n 10)
+  (dotimes (n 4)
     (global-unset-key (kbd (format "C-%d" n)))
     (global-unset-key (kbd (format "M-%d" n))))
-
-  (setq eyebrowse-post-window-switch-hook 'neo-global--attach)
-  (setq eyebrowse-new-workspace t)
-  (setq eyebrowse-keymap-prefix (kbd "C-C M-e"))
   :config
-  (eyebrowse-mode t))
+  (tab-bar-mode t))
 
 ;; https://www.emacswiki.org/emacs/WindMove
 (use-package windmove
@@ -926,6 +928,7 @@
 
 (use-package json-mode
   :mode "\\.json\\'"
+  :bind (("C-c C-b" . 'json-pretty-print-buffer))
   :ensure t)
 
 (use-package prettier-js
@@ -972,6 +975,18 @@
                 )
               (electric-pair-mode t)))
   (setq web-mode-enable-auto-quoting nil))
+
+(use-package bicep-ts-mode
+  :ensure t
+  :mode ("\\.bicep$")
+  :vc (
+       :url "https://github.com/josteink/bicep-ts-mode"
+            :branch master))
+
+;; https://depp.brause.cc/nov.el/
+(use-package nov
+  :mode ("\\.epub$" . nov-mode)
+  :ensure t)
 
 (use-package jest
   :disabled
@@ -1140,19 +1155,19 @@
                            company-backends)))))
 
 ;; Go
+;; https://github.com/dominikh/go-mode.el
 (use-package go-mode
-  :disabled
   :ensure t
   :mode "\\.go\\'"
+  :bind (("C-c C-b" . 'gofmt))
   :config
-  (add-hook 'before-save-hook 'gofmt-before-save)
   (if (not (string-match "go" compile-command))
       (set (make-local-variable 'compile-command)
            "go build -v && go test -v && go vet"))
-  (add-hook 'go-mode-hook 'electric-pair-mode)
-  (add-hook 'go-mode-hook 'electric-indent-mode)
+  (add-hook 'go-mode-hook #'lsp-deferred)
   (add-hook 'go-mode-hook (lambda ()
-            (setq tab-width 4))))
+                            (setq tab-width 4)))
+  )
 
 ;; https://www.racket-mode.com
 (use-package racket-mode
@@ -1300,6 +1315,10 @@
   (setq lsp-rust-server 'rust-analyzer)
 
   (setq lsp-lens-enable 't)
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection "bicep-langserver")
+                    :activation-fn (lsp-activate-on "python")
+                  :server-id 'pyls))
   )
 
 
@@ -1551,6 +1570,7 @@
                  ("org" (or (mode . org-mode)
                             (mode . org-agenda-mode)
                             ))
+                 ("go" (mode . go-mode))
                  ("web" (mode . web-mode))
                  ("emacs" (or
                            (name . "^\\*scratch\\*$")
