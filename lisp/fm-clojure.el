@@ -76,6 +76,8 @@
   ;; Don't prompt and don't save
   (setq cider-save-file-on-load nil)
 
+  (setq cider-injected-nrepl-version "1.1.1")
+
   (defun cider-start-http-server ()
     (interactive)
     (cider-load-current-buffer)
@@ -108,13 +110,13 @@
 (use-package clj-refactor
   :ensure t
   :after yasnippet
-  ;; :config
-  ;; (defun my-clojure-mode-hook ()
-  ;;                 (clj-refactor-mode 1)
-  ;;             (yas-minor-mode 1)
-  ;;             (cljr-add-keybindings-with-prefix "C-c C-m")
-  ;;   )
-  ;; (add-hook 'clj-refactor-mode #'my-clojure-mode-hook)
+  :config
+  (defun my-clojure-mode-hook ()
+    (clj-refactor-mode 1)
+    (yas-minor-mode 1)
+    (cljr-add-keybindings-with-prefix "C-c C-r")
+    )
+  (add-hook 'clojure-mode #'my-clojure-mode-hook)
   )
 
 (provide 'fm-clojure)

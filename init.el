@@ -55,6 +55,8 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
+;; 50 mb threshold
+(setq large-file-warning-threshold (* 50 1024 1024))
 
 ;; No need for ~ files when editing
 (setq create-lockfiles nil
@@ -66,9 +68,10 @@
 ;; (when (file-exists-p custom-file)
 ;;   (load custom-file))
 
-(unbind-key "C-z") ;; unbind the very annoying suspend-frame
+(unbind-key "C-x C-z") ;; unbind the very annoying suspend-frame
+(unbind-key "C-z")
 
-(defun my-package-recompile()
+(defun my-package-recompile ()
   "Recompile all packages"
   (interactive)
   (byte-recompile-directory "~/.emacs.d/elpa" 0 t))
@@ -95,7 +98,7 @@
 
 
 ;; EDITING
-
+ 
 ;; Highlights matching parenthesis
 (use-package paren
   :ensure nil
@@ -116,8 +119,8 @@
 ;; Show line numbers
 (use-package display-line-numbers
   :ensure nil
-  :config
-  (global-display-line-numbers-mode 1)
+  :hook (prog-mode . display-line-numbers-mode)
+;;  (global-display-line-numbers-mode 1)
   )
 
 (use-package simple
@@ -210,7 +213,6 @@
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol)))
 
-
 (use-package add-log
   :disabled ;; I don't use
   :config
@@ -225,6 +227,32 @@
   (add-log-full-name "Fredrik Meyer")
   )
 
+;; For some reason failed to install with use-package
+;; Had to do M-x package-install pinentry
+;; https://elpa.gnu.org/packages/pinentry.html
+(use-package pinentry
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'pinentry-start))
+
+(use-package ob-plantuml)
+(use-package ob-clojure)
+(use-package org-refile)
+(use-package org-goto)
+
+;; https://github.com/alphapapa/org-super-agenda/#installation
+(use-package org-super-agenda
+  :ensure t
+  :after org
+  :config
+  (org-super-agenda-mode t))
+
+(defun org-time-stamp-inactive-insert ()
+  "Insert inactive timestamp at point."
+  (interactive)
+  (org-time-stamp-inactive '(16))
+  )
+
 (use-package org
   :defer t
   ;; :ensure org-plus-contrib
@@ -232,6 +260,7 @@
   :bind (("C-c l" . org-store-link)
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
+         ("C-c C-." . org-time-stamp-inactive-insert)
          ("C-c ." . org-save-all-org-buffers)
          ("C-c b" . org-switchb))
   :config
@@ -244,7 +273,7 @@
 
   (setq org-src-fontify-natively t
         org-src-tab-acts-natively nil
-        org-hide-emphasis-markers t
+        org-hide-emphasis-markers nil
         org-log-done 'time
         org-confirm-babel-evaluate nil
         org-edit-src-content-indentation 0
@@ -254,8 +283,11 @@
         org-directory "~/Dropbox/org"
         org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
         org-plantuml-exec-mode 'plantuml
+        org-preview-latex-default-process 'dvipng
+        org-ellipsis " ↕"
         org-plantuml-jar-path "/usr/local/bin/plantuml"
-        org-babel-clojure-backend 'cider)
+        org-babel-clojure-backend 'cider
+        org-agenda-sticky nil)
 
   (add-to-list 'org-export-backends 'md)
 
@@ -294,6 +326,8 @@
                              (?C . (:foreground "OliveDrab"))))
   (setq org-agenda-start-on-weekday nil)
   (setq org-log-into-drawer t)
+  (setq org-deadline-warning-days 8)
+  (setq org-goto-interface 'outline-path-completion)
 
   ;; https://whhone.com/posts/org-mode-task-management/ insp
   ;; https://orgmode.org/worg/org-tutorials/org-custom-agenda-commands.html
@@ -305,13 +339,15 @@
           ("p" "Private view"
            (
             (agenda "" ((org-super-agenda-groups
-                       '(
-                         (:name "Top prio"
-                                :priority "A")
-                         (:name "Next prio"
-                                :priority<= "B")
-                         (:auto-outline-path t)
-                         ))
+                         '(
+                           (:name "Agenda"
+                                  :time-grid t)
+                           (:name "Top prio"
+                                  :priority "A")
+                           (:name "Next prio"
+                                  :priority<= "B")
+                           ;; (:auto-outline-path t)
+                           ))
                         ))
             (alltodo ""
                      ((org-super-agenda-groups
@@ -319,16 +355,29 @@
                          (:name "Top prio todo"
                                 :priority "A"
                                 :order 0)
+                         (:todo "DOING")
+                         (:tag ("emacs"))
+                         (:auto-tags)
+                         (:todo "TODO")
+                         (:todo "SOMEDAY")
                          (:auto-outline-path t)
                          ))
                       (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
-                      (org-agenda-overriding-header "ALL normal priority tasks:")
+                      (org-agenda-overriding-header "All normal priority tasks:")
                       )
                   ))
            ((org-agenda-files '("~/Dropbox/org/notater.org" "~/Dropbox/org/tasks.org"))
-            (org-agenda-span 'day)
+            (org-agenda-span 'week)
             (org-agenda-show-log t)
             ))
+          ("l" "Long view"
+           ((agenda "" ((org-super-agenda-groups
+                         '((:time-grid t))))
+                    ))
+           ((org-agenda-files '("~/Dropbox/org/notater.org" "~/Dropbox/org/tasks.org"))
+            (org-agenda-span 'month)
+            (org-agenda-show-log t))
+           )
           ("w" "Work view"
            (
             (agenda "" ((org-agenda-overriding-header "XXXXX")
@@ -368,22 +417,41 @@
   ;; org capture
   (setq org-capture-templates
         '(
-          ("n" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
-          ("C" "Tanke" entry (file+headline "~/Dropbox/org/notater.org" "Tanker") "* %U\n%?")
+          ("n" "Note" entry
+           (file+headline "~/Dropbox/org/notater.org" "Notes")
+           "* %?")
+          ("d" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
+          ("C" "Tanke" entry (file+headline "~/Dropbox/org/notater.org" "Tanker") "* %?\n%U" :empty-lines-after 1)
           ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
+          ("g" "Ting å gjøre" entry (file+headline "~/Dropbox/org/notater.org" "Ting å jobbe på")
+           "* TODO [#B] %?" :empty-lines-after 1)
           ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
            "* TODO %?\n%U")
           ("a" "Audio project" entry
            (file+headline "~/Dropbox/org/audio_xal.org" "Usorterte todos")
            "* TODO [#C] %?\n")
+          ("r" "Log ritalin" table-line
+           (file+headline "~/Dropbox/org/notater.org" "Ritalin")
+           "| # | %u |  %U | %?"
+           )
           ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
            "** TODO %?\n%U" :empty-lines 1)))
+
+
   (require 'org-tempo)
   (require 'ox-md)
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit t)
   (setq org-agenda-include-diary t)
+  (setq diary-file "~/.emacs.d/diary.google")
   )
+
+(setq holiday-bahai-holidays nil)
+(setq holiday-islamic-holidays nil)
+
+;; https://github.com/tbanel/orgaggregate#dates
+(use-package orgtbl-aggregate
+  :ensure t)
 
 (use-package org-ai
   :ensure t
@@ -393,7 +461,7 @@
   (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
   (org-ai-global-mode) ; installs global keybindings on C-c M-a
   :config
-  (setq org-ai-default-chat-model "gpt-3.5-turbo-0301") ; if you are on the gpt-4 beta:
+  (setq org-ai-default-chat-model "gpt-4") ; if you are on the gpt-4 beta:
   (org-ai-install-yasnippets)
   (setq org-ai-use-auth-source t)
   ) ; if you are using yasnippet and want `ai` snippets
@@ -409,13 +477,6 @@
   :config
   ;; To disable collection of benchmark data after init is done.
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
-
-(use-package esup
-  :disabled
-  :ensure t
-  ;; To use MELPA Stable use ":pin mepla-stable",
-  ;;  :pin melpa-stable
-  :commands (esup))
 
 ;; https://github.com/emacsorphanage/popwin
 ;; popwin is a popup window manager for Emacs which makes you free from the hell of
@@ -550,9 +611,12 @@
   :config
   (add-to-list 'company-backends 'company-restclient))
 
+
 (defun switch-tab (n)
-  "Switch to tab number N."
-  (tab-select n))
+  "Switch to tab number N, or create a new one if it does not exist."
+  (if (nth (- n 1) (tab-bar-tabs))
+      (tab-select n)
+    (tab-bar-new-tab-to n)))
 
 (use-package tab-bar
   :ensure t
@@ -562,6 +626,7 @@
          ("M-2" . (lambda () (interactive ) (switch-tab 2)))
          ("M-3" . (lambda () (interactive ) (switch-tab 3)))
          ("M-4" . (lambda () (interactive ) (switch-tab 4)))
+         ("s-!" . 'tab-bar-rename-tab)
               )
   :init
   (dotimes (n 4)
@@ -699,7 +764,10 @@
   :init
   (global-undo-tree-mode)
   :config
-  (undo-tree))
+  ;; Try reset original map
+  (define-key undo-tree-map (kbd "C-x u") nil)
+  )
+
 
 (use-package magit
   :ensure t
@@ -753,13 +821,6 @@
 ;; org mode source block http
 (use-package ob-http
   :ensure t)
-
-;; https://github.com/alphapapa/org-super-agenda/#installation
-(use-package org-super-agenda
-  :ensure t
-  :after org
-  :config
-  (org-super-agenda-mode t))
 
 (use-package ox-md
   :ensure nil
@@ -856,7 +917,7 @@
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
 
-;; (global-set-key (kbd "C-c n")[[id:37FA1736-B192-4204-9849-E090AB050C8E][Vaske Vinduer]]
+;; (global-set-key (kbd "C-c n")
 ;;                 (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
 
 (global-set-key (kbd "C-c ø")
@@ -973,7 +1034,8 @@
               (when (equal web-mode-content-type "html")
                 ;; (flycheck-add-mode 'html-tidy 'web-mode)
                 )
-              (electric-pair-mode t)))
+              ;;(electric-pair-mode t)
+              ))
   (setq web-mode-enable-auto-quoting nil))
 
 (use-package bicep-ts-mode
@@ -1045,8 +1107,6 @@
   (setq mmm-typescript-mode-submode-hook #'setup-vue-with-ts)
   (set-face-background 'mmm-default-submode-face nil))
 
-(setq css-indent-offset 2)
-
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
 (use-package dashboard
@@ -1061,7 +1121,6 @@
   :config
   (dashboard-setup-startup-hook))
 
-
 (use-package smartparens
   :ensure t
   :hook ((prog-mode . smartparens-mode)
@@ -1073,7 +1132,10 @@
               ("C-M-a" . 'sp-backward-down-sexp)
               ("C-S-d" . 'sp-beginning-of-sexp)
               ("C-S-a" . 'sp-end-of-sexp)
+              ("C-M-t" . 'sp-transpose-sexp)
               ("C-M-k" . 'sp-kill-sexp)
+              ("M-D" . 'sp-splice-sexp)
+              ("C-M-w" . 'sp-copy-sexp)
               ;; ("S-M-<right>" . 'sp-forward-slurp-sexp)
               ;; ("S-M-<left>" . 'sp-forward-barf-sexp)
               ("C-<right>" . 'sp-forward-slurp-sexp)
@@ -1094,7 +1156,9 @@
 
 ;; https://github.com/codesuki/add-node-modules-path
 (use-package add-node-modules-path
-  :ensure t)
+  :ensure t
+  :config
+  (setq add-node-modules-path-command '("echo \"$(npm root)/.bin\"")))
 
 (use-package glsl-mode
   :disabled
@@ -1238,27 +1302,30 @@
   :ensure t
   :hook (markdown-mode . textfrag-mode))
 
+;; https://github.com/vedang/pdf-tools?tab=readme-ov-file#features
 (use-package pdf-tools
-  ;; :load-path "pdf-tools"
-  :disabled ;; takes a lot of startup time
-  :pin manual
+  :ensure t
+  :mode "\\.pdf\\'"
   :config
-  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
-  (setq pdf-view-display-size 'fit-page)
   (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
-  (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
-  (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
-  (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
-  (setq pdf-view-use-unicode-ligther nil)
+  (setq pdf-view-display-size 'fit-page)
+  ;; (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+  ;; (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
+  ;; (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
+  ;; (define-key pdf-view-mode-map (kbd "D") 'pdf-annot-delete)
+  ;; (setq pdf-view-use-unicode-ligther nil)
   ;; (pdf-tools-install)
   (pdf-loader-install)
   )
 
+;; https://github.com/org-noter/org-noter?tab=readme-ov-file
+(use-package org-noter
+  :ensure t)
+
 ;; Automatically refreshes PDF
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
+;; (add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
 ;; Requires `brew install ghostscript`
-
 
 (use-package lsp-python-ms
   :disabled
@@ -1327,6 +1394,7 @@
   :ensure t
   :init
   (setq lsp-ui-doc-enable t)
+  (setq lsp-ui-sideline-show-code-actions nil)
   (setq lsp-ui-sideline-delay 0.1)
   (setq lsp-ui-doc-use-webkit nil)
   (setq lsp-ui-doc-webkit-max-width-px 1000)
@@ -1340,7 +1408,9 @@
 (use-package lsp-java
   :ensure t
   :hook (java-mode . lsp)
-  :config)
+  :config
+  (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true"
+ "-Xmx4G" "-Xms100m")))
 
 (use-package lsp-metals
   :disabled
@@ -1416,11 +1486,12 @@
   :ensure t
   :bind (("M-o" . ace-window)))
 
-(use-package spacemacs-common
-  :ensure spacemacs-theme
-  :disabled
+(use-package spacemacs-theme
+  :ensure t
+;  :disabled
   :config
-  (load-theme 'spacemacs-dark t))
+                                        ;(load-theme 'spacemacs-dark t)
+  )
 
 (use-package leuven-theme
   :ensure t
@@ -1428,14 +1499,17 @@
   :config
   (load-theme 'leuven t))
 
+(use-package material-theme
+  :ensure t)
+
 (use-package modus-themes
   :ensure t
   :config
+  (setq modus-themes-headings '((1 . (rainbow variable-pitch 1.1))
+                                (2 . (rainbow semibold 1))
+                                (t . (rainbow))
+                                ))
   (load-theme 'modus-operandi t)
-  (setq modus-operandi-theme-rainbow-headings t)
-  (setq modus-operandi-theme-scale-headings t)
-  (setq modus-themes-syntax nil)
-  (setq modus-themes-completions 'super-opinionated)
   )
 
 
@@ -1496,8 +1570,12 @@
   :bind (("C-S-c C-S-c" . 'mc/edit-lines)
          ("C->" . 'mc/mark-next-like-this)
          ("C-<" . 'mc/mark-previous-like-this)
+         ;; from here https://pragmaticemacs.wordpress.com/2017/03/06/add-multiple-cursors-with-mouse-clicks/
+         ("C-S-<mouse-1>". 'mc/add-cursor-on-click)
          ("C-c C-<" . 'mc/mark-all-like-this))
   :ensure t)
+
+
 
 ;; https://github.com/gonewest818/dimmer.el
 (use-package dimmer
@@ -1588,7 +1666,14 @@
                 (name 16 -1)
                 " " filename))))
 
-(setq dired-listing-switches "-alh")
+(use-package dired
+  :config
+  (setq
+   ;; Found here https://emacs.stackexchange.com/a/29101/20796
+   insert-directory-program "gls"
+   dired-use-ls-dired "t"
+   dired-listing-switches "-alh"))
+
 
 (use-package peep-dired
   :ensure t)
@@ -1719,6 +1804,13 @@
   (interactive)
   (switch-to-buffer (make-temp-name "scratch-")))
 
+(defun rerun-last-async-shell ()
+  "Rerun last run shell command async."
+  (interactive)
+  (let ((last-command (car shell-command-history)))
+    (async-shell-command last-command)))
+
+(global-set-key (kbd "C-M-§") 'rerun-last-async-shell)
 
 (defun die-tabs ()
   "Replace all tabs in buffer with spaces."
@@ -1742,6 +1834,7 @@
   (interactive)
   (save-excursion
     (indent-region (point-min) (point-max) nil)))
+
 (global-set-key [f12] 'indent-buffer)
 
 (defun format-and-save-project ()
@@ -1782,6 +1875,16 @@
 (global-set-key [(meta up)]  'move-line-up)
 (global-set-key [(meta down)]  'move-line-down)
 
+
+(defun switch-theme (theme)
+  ;; This interactive call is taken from `load-theme'
+  (interactive
+   (list
+    (intern (completing-read "Load custom theme: "
+                             (mapcar 'symbol-name
+                                     (custom-available-themes))))))
+  (mapcar #'disable-theme custom-enabled-themes)
+  (load-theme theme t))
 
 ;;; init.el ends here
 

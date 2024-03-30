@@ -11,11 +11,12 @@
                dockerfile-mode doom-modeline dumb-jump easy-kill exec-path-from-shell expand-region fireplace
                flycheck-clj-kondo flycheck-color-mode-line flycheck-plantuml flycheck-posframe forge git-gutter
                git-messenger gnuplot go-mode helpful hl-todo image+ ivy-posframe ivy-prescient ivy-yasnippet json-mode
-               k8s-mode kubernetes lsp-java lsp-ui minions modus-themes nov nyan-mode ob-http org-ai org-bullets
-               org-download org-roam-ui org-super-agenda package-utils pandoc-mode peep-dired pkg-info popwin
-               prettier-js projectile-ripgrep py-autopep8 py-isort python-black python-pytest pyvenv racket-mode
-               rainbow-delimiters rg rust-mode slime-company smart-hungry-delete smartparens system-packages tide
-               toc-org treemacs-projectile try typescript-mode web-mode which-key yasnippet-snippets)))
+               k8s-mode kubernetes lsp-java lsp-ui material-theme minions modus-themes nov nyan-mode ob-http org-ai
+               org-bullets org-download org-noter org-roam-ui org-super-agenda orgtbl-aggregate package-utils
+               pandoc-mode pdf-tools peep-dired pinentry pkg-info popwin prettier-js projectile-ripgrep py-autopep8
+               py-isort python-black python-pytest pyvenv racket-mode rainbow-delimiters rg rust-mode slime-company
+               smart-hungry-delete smartparens spacemacs-theme system-packages tide toc-org treemacs-projectile try
+               typescript-mode undo-tree web-mode which-key yasnippet-snippets)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

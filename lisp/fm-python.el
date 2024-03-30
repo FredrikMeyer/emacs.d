@@ -29,7 +29,8 @@
 
 (use-package python-pytest
   :ensure t
-  :bind (("C-c t" . 'python-pytest-dispatch))
+  :bind (:map python-mode-map
+              ("C-c t" . 'python-pytest-dispatch))
   ;; :hook (python-mode . python-pytest-mode)
   :config
   (setq python-pytest-executable "python -m pytest -o log_cli=true")
@@ -99,9 +100,6 @@
   (interactive)
   (flycheck-add-next-checker 'lsp 'python-flake8)
   )
-
-
-;; (setq flycheck-flake8-maximum-line-length 120)
 
 (provide 'fm-python)
 ;;; fm-python.el ends here
