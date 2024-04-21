@@ -17,7 +17,6 @@
 (add-hook 'after-init-hook
           (lambda () (setq gc-cons-threshold 134217728)))
 
-;; (toggle-debug-on-error 1)
 
 (add-to-list 'load-path "~/src/org-mode/lisp")
 
@@ -55,12 +54,14 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
+
 ;; 50 mb threshold
 (setq large-file-warning-threshold (* 50 1024 1024))
 
 ;; No need for ~ files when editing
 (setq create-lockfiles nil
       auto-save-default nil
+      ;; Startup?
       default-directory (concat (getenv "HOME") "/")
       custom-file (expand-file-name "custom.el" user-emacs-directory))
 
@@ -72,7 +73,7 @@
 (unbind-key "C-z")
 
 (defun my-package-recompile ()
-  "Recompile all packages"
+  "Recompile all packages."
   (interactive)
   (byte-recompile-directory "~/.emacs.d/elpa" 0 t))
 
@@ -84,7 +85,8 @@
       initial-scratch-message nil
       use-dialog-box nil
       split-width-threshold 160
-      split-height-threshold 80)
+      split-height-threshold 80
+      sentence-end-double-space nil)
 
 (custom-set-variables '(calendar-week-start-day 1))
 
@@ -95,10 +97,8 @@
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
 
-
-
 ;; EDITING
- 
+
 ;; Highlights matching parenthesis
 (use-package paren
   :ensure nil
@@ -143,7 +143,6 @@
           (lambda () (setq-local show-trailing-whitespace nil)))
 
 (setq-default indicate-empty-lines 't)
-
 (setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
 
 (defun add-auto-mode (mode &rest patterns)
@@ -188,10 +187,6 @@
   :config
   (setq system-packages-use-sudo 'nil)
   (setq system-packages-package-manager 'brew))
-
-(use-package use-package-ensure-system-package
-  :disabled
-  :ensure t)
 
 (use-package package-utils
   :ensure t)
@@ -247,11 +242,21 @@
   :config
   (org-super-agenda-mode t))
 
-(defun org-time-stamp-inactive-insert ()
-  "Insert inactive timestamp at point."
-  (interactive)
-  (org-time-stamp-inactive '(16))
+;; https://emacs.stackexchange.com/a/42158/20796
+(use-package pixel-scroll
+  :config
+  (pixel-scroll-precision-mode t)
   )
+
+(use-package org-clock)
+
+(use-package org-contrib
+  :ensure t)
+
+(defun org-time-stamp-inactive-insert ()
+    "Insert inactive timestamp at point."
+    (interactive)
+    (org-time-stamp-inactive '(16)))
 
 (use-package org
   :defer t
@@ -262,10 +267,11 @@
          ("C-c a" . org-agenda)
          ("C-c C-." . org-time-stamp-inactive-insert)
          ("C-c ." . org-save-all-org-buffers)
+         ("C-M-<return>" . org-insert-subheading)
          ("C-c b" . org-switchb))
   :config
-  ;; (org-clock-persistence-insinuate)
   (setq org-clock-persist t)
+  (org-clock-persistence-insinuate)
   (add-hook 'org-mode-hook (lambda ()
                              (visual-line-mode t)
                              (auto-save-mode t)
@@ -298,6 +304,7 @@
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
                                (calc . t)
+                               (dot . t)
                                (clojure . t)
                                (shell . t)
                                (latex . t)
@@ -346,7 +353,7 @@
                                   :priority "A")
                            (:name "Next prio"
                                   :priority<= "B")
-                           ;; (:auto-outline-path t)
+                           (:auto-outline-path t)
                            ))
                         ))
             (alltodo ""
@@ -362,7 +369,7 @@
                          (:todo "SOMEDAY")
                          (:auto-outline-path t)
                          ))
-                      (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
+                      ;;(org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
                       (org-agenda-overriding-header "All normal priority tasks:")
                       )
                   ))
@@ -431,8 +438,8 @@
            (file+headline "~/Dropbox/org/audio_xal.org" "Usorterte todos")
            "* TODO [#C] %?\n")
           ("r" "Log ritalin" table-line
-           (file+headline "~/Dropbox/org/notater.org" "Ritalin")
-           "| # | %u |  %U | %?"
+           (file+headline "~/Dropbox/org/notater.org" "Ritalin 💊")
+           "| # | %<%Y-%m-%d> |  %<%Y-%m-%d %R> | %?"
            )
           ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
            "** TODO %?\n%U" :empty-lines 1)))
@@ -440,14 +447,17 @@
 
   (require 'org-tempo)
   (require 'ox-md)
+  (require 'ox-extra)
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit t)
   (setq org-agenda-include-diary t)
   (setq diary-file "~/.emacs.d/diary.google")
   )
 
-(setq holiday-bahai-holidays nil)
-(setq holiday-islamic-holidays nil)
+(use-package holidays
+  :config
+  (setq holiday-bahai-holidays nil)
+  (setq holiday-islamic-holidays nil))
 
 ;; https://github.com/tbanel/orgaggregate#dates
 (use-package orgtbl-aggregate
@@ -461,22 +471,12 @@
   (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
   (org-ai-global-mode) ; installs global keybindings on C-c M-a
   :config
-  (setq org-ai-default-chat-model "gpt-4") ; if you are on the gpt-4 beta:
+  (setq org-ai-default-chat-model "gpt-4")
+   ; if you are using yasnippet and want `ai` snippets
   (org-ai-install-yasnippets)
   (setq org-ai-use-auth-source t)
-  ) ; if you are using yasnippet and want `ai` snippets
+  )
 
-
-;; https://github.com/quelpa/quelpa-use-package
-;; (use-package quelpa-use-package
-;;   :ensure t)
-
-(use-package benchmark-init
-  :disabled
-  :ensure t
-  :config
-  ;; To disable collection of benchmark data after init is done.
-  (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 ;; https://github.com/emacsorphanage/popwin
 ;; popwin is a popup window manager for Emacs which makes you free from the hell of
@@ -509,6 +509,8 @@
   :bind ("C-=" . 'er/expand-region))
 
 ;; https://github.com/leoliu/easy-kill
+;; Use M-w to mark a region and paste to kill ring. After mark, +-d?
+;; works to expand/contract region.
 (use-package easy-kill
   :ensure t
   :config
@@ -535,12 +537,6 @@
   :ensure t
   :hook (flycheck-mode . flycheck-posframe-mode))
 
-(use-package flycheck-aspell
-  :disabled
-  :ensure t
-  :config
-  (add-to-list 'flycheck-checkers 'markdown-aspell-dynamic))
-
 (use-package flycheck-color-mode-line
   :ensure t
   :hook (flycheck-mode . flycheck-color-mode-line-mode))
@@ -563,42 +559,6 @@
   (interactive)
   (eslint-fix-file)
   (revert-buffer t t))
-
-;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
-;; More at http://www.emacswiki.org/emacs/ParEdit
-(use-package paredit
-  :disabled
-  :defer t
-  :ensure t
-  :config
-  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-
-  (dolist (m '(emacs-lisp-mode-hook
-	       racket-mode-hook
-	       racket-repl-mode-hook))
-    (add-hook m #'paredit-mode))
-  (bind-keys :map paredit-mode-map
-	     ("{"   . paredit-open-curly)
-	     ("}"   . paredit-close-curly))
-  (unless terminal-frame
-    (bind-keys :map paredit-mode-map
-	       ("M-[" . paredit-wrap-square)
-	       ("M-{" . paredit-wrap-curly))))
-
-(use-package paredit-everywhere
-  :disabled
-  :defer t
-  :ensure t
-  :hook (prog-mode . paredit-everywhere-mode))
-
-(use-package prolog-mode
-  :disabled
-  :ensure t
-  :mode "\\.pl$")
 
 
 (use-package restclient
@@ -651,10 +611,6 @@
    ("C-c q l" . 'buf-move-left)
    ("C-c q r" . 'buf-move-right)))
 
-(use-package fennel-mode
-  :disabled
-  :mode "\\.fnl$'"
-  :ensure t)
 
 ;; http://www.emacswiki.org/emacs/SavePlace
 (setq-default save-place t)
@@ -688,7 +644,9 @@
         projectile-enable-caching nil)
   )
 
+;; Think this is included in projectile now
 (use-package projectile-ripgrep
+  :disabled
   :after projectile
   :defer t
   :ensure t)
@@ -702,20 +660,6 @@
   (rg-enable-default-bindings)
   (setq rg-executable "/usr/local/bin/rg"))
 
-
-
-(use-package neotree
-  :disabled
-  :ensure t
-  :bind ("C-x t" . neotree-toggle)
-  :config
-  (setq neo-smart-open t)
-  (setq neo-theme 'icons)
-  (setq neo-window-fixed-size nil)
-  (setq neo-show-hidden-files t)
-  ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
-  (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
-
 ;; https://github.com/domtronn/all-the-icons.el
 (use-package all-the-icons
   :defer 1
@@ -726,9 +670,6 @@
   :defer t
   :ensure t
   :hook (dired-mode . all-the-icons-dired-mode))
-
-(when (string= system-type "darwin")
-  (setq dired-use-ls-dired nil))
 
 ;; https://github.com/Fanael/rainbow-delimiters
 (use-package rainbow-delimiters
@@ -822,6 +763,13 @@
 (use-package ob-http
   :ensure t)
 
+;; https://emacsredux.com/blog/2023/04/11/looking-up-words-in-a-dictionary/
+;; https://www.manueluberti.eu/emacs/2021/07/31/dictionary/
+(use-package dictionary
+  :bind ("C-x C-l" . #'dictionary-lookup-definition)
+  :config
+  (setq dictionary-server "dict.org"))
+
 (use-package ox-md
   :ensure nil
   :defer t
@@ -874,8 +822,16 @@
   :ensure t
   :commands (org-roam-ui-open))
 
+;; https://github.com/abo-abo/org-download
 (use-package org-download
   :ensure t)
+
+;; https://github.com/unhammer/org-rich-yank
+(use-package org-rich-yank
+  :ensure t
+  :demand t
+  :bind (:map org-mode-map
+              ("C-M-y" . org-rich-yank))) ;; doesn't work??
 
 ;; https://github.com/IvanMalison/org-projectile
 (use-package org-projectile
@@ -1338,6 +1294,9 @@
   (setq lsp-python-ms-extra-paths '("~/.pyenv/versions/3.8.7/envs/audio_analytics/"))
   )
 
+(use-package lsp-ui
+  :ensure t)
+
 (use-package lsp-mode
   :ensure t
   :init (setq lsp-keymap-prefix "C-c l")
@@ -1357,8 +1316,26 @@
   (setq lsp-enable-file-watchers t)
 
   (setq lsp-signature-doc-lines 5)
-  (setq lsp-signature-render-documentation nil)
+  (setq lsp-signature-render-documentation t)
   (setq lsp-lens-enable t)
+
+  (setq lsp-ui-doc-enable t)
+  (setq lsp-ui-sideline-show-code-actions nil)
+  (setq lsp-ui-sideline-delay 0.1)
+  (setq lsp-ui-doc-use-webkit nil)
+  (setq lsp-ui-doc-webkit-max-width-px 1000)
+  (setq lsp-ui-doc-header t)
+  (setq lsp-lens-place-position 'above-line)
+  (setq lsp-ui-doc-include-signature t)
+  (setq lsp-ui-doc-enhanced-markdown t)
+
+  (setq lsp-ui-sideline-show-code-actions nil)
+  (setq lsp-ui-sideline-show-hover nil)
+  (setq lsp-ui-sideline-enable nil)
+  (setq lsp-ui-peek-enable t)
+
+  ;; Todo: only for Clojure mode later
+  (setq lsp-completion-enable nil)
 
   ;; try??
   (setq lsp-tcp-connection-timeout 5)
@@ -1386,23 +1363,6 @@
    (make-lsp-client :new-connection (lsp-stdio-connection "bicep-langserver")
                     :activation-fn (lsp-activate-on "python")
                   :server-id 'pyls))
-  )
-
-
-(use-package lsp-ui
-  :defer t
-  :ensure t
-  :init
-  (setq lsp-ui-doc-enable t)
-  (setq lsp-ui-sideline-show-code-actions nil)
-  (setq lsp-ui-sideline-delay 0.1)
-  (setq lsp-ui-doc-use-webkit nil)
-  (setq lsp-ui-doc-webkit-max-width-px 1000)
-  (setq lsp-ui-doc-header t)
-  (setq lsp-ui-doc-include-signature t)
-  (setq lsp-ui-doc-enhanced-markdown t)
-  (setq lsp-ui-sideline-show-code-actions t)
-  (setq lsp-ui-sideline-show-hover nil)
   )
 
 (use-package lsp-java
@@ -1509,8 +1469,12 @@
                                 (2 . (rainbow semibold 1))
                                 (t . (rainbow))
                                 ))
-  (load-theme 'modus-operandi t)
-  )
+  (load-theme 'modus-operandi t))
+
+(use-package org-modern
+  :ensure t
+  :config
+  (add-hook 'org-mode-hook #'org-modern-mode))
 
 
 (use-package solarized-theme
@@ -1575,7 +1539,9 @@
          ("C-c C-<" . 'mc/mark-all-like-this))
   :ensure t)
 
-
+;; https://github.com/zk-phi/phi-search
+(use-package phi-search
+  :ensure t)
 
 ;; https://github.com/gonewest818/dimmer.el
 (use-package dimmer
@@ -1672,17 +1638,12 @@
    ;; Found here https://emacs.stackexchange.com/a/29101/20796
    insert-directory-program "gls"
    dired-use-ls-dired "t"
-   dired-listing-switches "-alh"))
-
+   dired-listing-switches "-alh")
+  (when (string= system-type "darwin")
+    (setq dired-use-ls-dired nil)))
 
 (use-package peep-dired
   :ensure t)
-
-;; https://www.manueluberti.eu/emacs/2021/07/31/dictionary/
-;; (use-package dictionary
-;;   :bind ("C-c d" . #'dictionary-search)
-;;   :config
-;;   (setq dictionary-server "dict.org"))
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()
@@ -1872,6 +1833,17 @@
   (forward-line -1)
   (indent-according-to-mode))
 
+;; https://emacs.stackexchange.com/a/52424/20796
+(defun +org-toggle-inline-image-at-point ()
+  "Toggle inline image at point."
+  (interactive)
+  (if-let* ((bounds (and (not org-inline-image-overlays)
+                         (org-in-regexp org-link-any-re nil t)))
+            (beg (car bounds))
+            (end (cdr bounds)))
+      (org-display-inline-images nil nil beg end)
+    (org-toggle-inline-images)))
+
 (global-set-key [(meta up)]  'move-line-up)
 (global-set-key [(meta down)]  'move-line-down)
 
@@ -1904,6 +1876,71 @@ See URL `http://stylelint.io/'."
   :error-parser flycheck-parse-stylelint
   :modes (scss-mode))
 
+;; DISABLED PACKAGES
+
+(use-package use-package-ensure-system-package
+  :disabled
+  :ensure t)
+
+(use-package benchmark-init
+  :disabled
+  :ensure t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
+;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
+;; More at http://www.emacswiki.org/emacs/ParEdit
+(use-package paredit
+  :disabled
+  :defer t
+  :ensure t
+  :config
+  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
+  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
+  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
+  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
+  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
+
+  (dolist (m '(emacs-lisp-mode-hook
+	       racket-mode-hook
+	       racket-repl-mode-hook))
+    (add-hook m #'paredit-mode))
+  (bind-keys :map paredit-mode-map
+	     ("{"   . paredit-open-curly)
+	     ("}"   . paredit-close-curly))
+  (unless terminal-frame
+    (bind-keys :map paredit-mode-map
+	       ("M-[" . paredit-wrap-square)
+	       ("M-{" . paredit-wrap-curly))))
+
+(use-package paredit-everywhere
+  :disabled
+  :defer t
+  :ensure t
+  :hook (prog-mode . paredit-everywhere-mode))
+
+(use-package prolog-mode
+  :disabled
+  :ensure t
+  :mode "\\.pl$")
+
+(use-package fennel-mode
+  :disabled
+  :mode "\\.fnl$'"
+  :ensure t)
+
+(use-package neotree
+  :disabled
+  :ensure t
+  :bind ("C-x t" . neotree-toggle)
+  :config
+  (setq neo-smart-open t)
+  (setq neo-theme 'icons)
+  (setq neo-window-fixed-size nil)
+  (setq neo-show-hidden-files t)
+  ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
+  (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
 
 ;; Try Oz
 

@@ -18,10 +18,8 @@
   :mode "\\.clj$"
   :hook ((clojure-mode . subword-mode) ;; For Java class names
          (clojure-mode . electric-indent-mode)
-         ;; (clojure-mode . electric-pair-mode)
          (clojure-mode . smartparens-strict-mode)
          (clojure-mode . cider-mode)
-         ;; (clojure-mode . paredit-mode)
          (clojure-mode . lsp)
          )
   :config
@@ -40,8 +38,7 @@
       (cider-interactive-eval
        (concat "(nextjournal.clerk/show! \"" filename "\")"))))
 
-  (define-key clojure-mode-map (kbd "<M-return>") 'clerk-show)
-  )
+  (define-key clojure-mode-map (kbd "<M-return>") 'clerk-show))
 
 
 ;; extra syntax highlighting for clojure
@@ -59,7 +56,7 @@
          (cider-repl-mode . company-mode))
   :config
   ;; go right to the REPL buffer when it's finished connecting
-  (setq cider-repl-pop-to-buffer-on-connect t)
+  (setq cider-repl-pop-to-buffer-on-connect 'display-only)
 
   ;; When there's a cider error, show its buffer and switch to it
   (setq cider-show-error-buffer t)

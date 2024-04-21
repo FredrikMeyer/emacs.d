@@ -23,7 +23,6 @@
                          (flycheck-add-next-checker 'lsp 'python-mypy)))
   :init
   (setq lsp-pyright-typechecking-mode "basic")
-  ;; (setq lsp-pyright-venv-directory "~/.pyenv/versions/3.8.7/envs/")
   )
 
 
@@ -58,8 +57,16 @@
   :ensure t
   :after python)
 
+(use-package virtualenvwrapper
+  :ensure t
+  :config
+  (venv-initialize-interactive-shells) ;; if you want interactive shell support
+  (venv-initialize-eshell) ;; if you want eshell support
+  (setq venv-location "~/.pyenv/versions"))
+
 (use-package pyvenv
   :ensure t
+  :commands (pyvenv-activate pyvenv-deactivate pyvenv-workon)
   :init
   ;; Set correct Python interpreter
   ;; TODO: auto detect virtual env (f.ex via a dotfile)

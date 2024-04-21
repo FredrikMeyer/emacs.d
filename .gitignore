@@ -99,4 +99,10 @@ semanticdb/
 
 devdocs/
 
-var/
+nvar/
+
+;; Diary synced with home made google sync script
+diary.google
+cal-main.ics
+
+tree-sitter/
