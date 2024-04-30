@@ -86,7 +86,8 @@
       use-dialog-box nil
       split-width-threshold 160
       split-height-threshold 80
-      sentence-end-double-space nil)
+      sentence-end-double-space nil
+      line-move-visual nil)
 
 (custom-set-variables '(calendar-week-start-day 1))
 
@@ -295,6 +296,13 @@
         org-babel-clojure-backend 'cider
         org-agenda-sticky nil)
 
+  ;; https://emacs.stackexchange.com/a/80170/20796
+  ;; change latex commands to use absolute path instead of relative (%f -> %F)
+  (let ((png (cdr (assoc 'dvipng org-preview-latex-process-alist))))
+    (plist-put png :latex-compiler '("latex -interaction nonstopmode -output-directory %o %F"))
+    (plist-put png :image-converter '("dvipng -D %D -T tight -o %O %F"))
+    (plist-put png :transparent-image-converter '("dvipng -D %D -T tight -bg Transparent -o %O %F")))
+
   (add-to-list 'org-export-backends 'md)
 
   (add-hook 'org-mode-hook
@@ -312,6 +320,7 @@
                                (plantuml . t)
                                (http . t)
                                (js . t)
+                               (R .t)
                                (haskell . t)
                                (gnuplot . t)))
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
@@ -335,6 +344,11 @@
   (setq org-log-into-drawer t)
   (setq org-deadline-warning-days 8)
   (setq org-goto-interface 'outline-path-completion)
+  (setq org-goto-max-level 7)
+  ;; Fullscreen org-agenda view
+  (setq org-agenda-window-setup 'only-window)
+
+  (setq org-todo-keywords '((sequence "TODO" "DOING" "DONE")))
 
   ;; https://whhone.com/posts/org-mode-task-management/ insp
   ;; https://orgmode.org/worg/org-tutorials/org-custom-agenda-commands.html
@@ -347,6 +361,7 @@
            (
             (agenda "" ((org-super-agenda-groups
                          '(
+                           (:log t)
                            (:name "Agenda"
                                   :time-grid t)
                            (:name "Top prio"
@@ -360,22 +375,21 @@
                      ((org-super-agenda-groups
                        '(
                          (:name "Top prio todo"
-                                :priority "A"
-                                :order 0)
-                         (:todo "DOING")
-                         (:tag ("emacs"))
-                         (:auto-tags)
-                         (:todo "TODO")
-                         (:todo "SOMEDAY")
+                                :priority "A")
+                         (:todo "REPEAT" :order 8)
+                         (:todo "SOMEDAY" :order 8)
+                         (:todo ("DOING")
+                                :name "Doing")
                          (:auto-outline-path t)
                          ))
                       ;;(org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
-                      (org-agenda-overriding-header "All normal priority tasks:")
+                      (org-agenda-overriding-header "All tasks:")
                       )
                   ))
            ((org-agenda-files '("~/Dropbox/org/notater.org" "~/Dropbox/org/tasks.org"))
-            (org-agenda-span 'week)
+            (org-agenda-span 'day)
             (org-agenda-show-log t)
+            ;; (org-agenda-compact-blocks t)
             ))
           ("l" "Long view"
            ((agenda "" ((org-super-agenda-groups
@@ -385,38 +399,6 @@
             (org-agenda-span 'month)
             (org-agenda-show-log t))
            )
-          ("w" "Work view"
-           (
-            (agenda "" ((org-agenda-overriding-header "XXXXX")
-                        (org-agenda-span 'day)
-                        ;; (org-agenda-use-time-grid nil)
-                        (org-super-agenda-groups
-                         '(
-                           (:name "Top prio"
-                                  :priority "A")
-                           (:time-grid t)
-                           (:auto-outline-path t)
-                           ))
-                        ))
-            (alltodo "" ((org-super-agenda-groups
-                          '(
-                            (:name "Doing"
-                                   :todo "DOING")
-                            (:name "Top prio"
-                                   :priority "A")
-                            (:auto-group t)
-                         ))
-                         (org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
-                         (org-agenda-overriding-header "ALL NONSCHEDULED TASKS")
-                      )))
-           ((org-agenda-files '("~/Dropbox/org/audio_xal.org"))
-            (org-agenda-span 'day)
-            (org-agenda-compact-blocks t))
-           )
-          ("I" "Import diary from iCal" agenda ""
-         ((org-agenda-mode-hook
-           (lambda ()
-             (org-mac-iCal)))))
           ))
 
   (setq org-default-notes-file "~/Dropbox/org/daglige_notater.org")
@@ -434,13 +416,9 @@
            "* TODO [#B] %?" :empty-lines-after 1)
           ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
            "* TODO %?\n%U")
-          ("a" "Audio project" entry
-           (file+headline "~/Dropbox/org/audio_xal.org" "Usorterte todos")
-           "* TODO [#C] %?\n")
           ("r" "Log ritalin" table-line
            (file+headline "~/Dropbox/org/notater.org" "Ritalin 💊")
-           "| # | %<%Y-%m-%d> |  %<%Y-%m-%d %R> | %?"
-           )
+           "| # | %<%Y-%m-%d> |  %<%Y-%m-%d %R> | %?")
           ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
            "** TODO %?\n%U" :empty-lines 1)))
 
@@ -457,7 +435,23 @@
 (use-package holidays
   :config
   (setq holiday-bahai-holidays nil)
-  (setq holiday-islamic-holidays nil))
+  (setq holiday-islamic-holidays nil)
+  (setq holiday-hebrew-holidays nil)
+  (setq holiday-oriental-holidays nil)
+  (setq holiday-christian-holidays nil))
+
+(use-package sqlite-mode
+  :config
+  ;; from here https://christiantietze.de/posts/2024/01/emacs-sqlite-mode-open-sqlite-files-automatically/
+  (defun ct/sqlite-view-file-magically ()
+    "Runs `sqlite-mode-open-file' on the file name visited by the
+current buffer, killing it."
+    (require 'sqlite-mode)
+    (let ((file-name buffer-file-name))
+      (kill-current-buffer)
+      (let ((default-directory (file-name-directory file-name)))
+        (sqlite-mode-open-file file-name))))
+  (add-to-list 'magic-mode-alist '("SQLite format 3\x00" . ct/sqlite-view-file-magically)))
 
 ;; https://github.com/tbanel/orgaggregate#dates
 (use-package orgtbl-aggregate
@@ -516,6 +510,9 @@
   :config
   (global-set-key [remap kill-ring-save] #'easy-kill)
   (global-set-key [remap mark-sexp] #'easy-mark))
+
+(use-package ess
+  :ensure t)
 
 (use-package flycheck
   :ensure t
@@ -780,13 +777,13 @@
   :ensure t
   :hook (org-mode . toc-org-mode))
 
-(use-package org-bullets
-  :ensure t
-  :hook (org-mode . org-bullets-mode))
-
-;; (use-package org-superstar
+;; (use-package org-bullets
 ;;   :ensure t
-;;   :hook (org-mode . org-superstar-mode))
+;;   :hook (org-mode . org-bullets-mode))
+
+(use-package org-superstar
+  :ensure t
+  :hook (org-mode . org-superstar-mode))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
@@ -1469,12 +1466,14 @@
                                 (2 . (rainbow semibold 1))
                                 (t . (rainbow))
                                 ))
+
   (load-theme 'modus-operandi t))
 
-(use-package org-modern
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook #'org-modern-mode))
+;; (use-package org-modern
+;;   :ensure t
+;;   :config
+;;   (global-org-modern-mode)
+;;   (add-hook 'org-mode-hook #'org-modern-mode))
 
 
 (use-package solarized-theme
@@ -1833,6 +1832,9 @@
   (forward-line -1)
   (indent-according-to-mode))
 
+(global-set-key [(meta up)]   'move-line-up)
+(global-set-key [(meta down)] 'move-line-down)
+
 ;; https://emacs.stackexchange.com/a/52424/20796
 (defun +org-toggle-inline-image-at-point ()
   "Toggle inline image at point."
@@ -1844,8 +1846,12 @@
       (org-display-inline-images nil nil beg end)
     (org-toggle-inline-images)))
 
-(global-set-key [(meta up)]  'move-line-up)
-(global-set-key [(meta down)]  'move-line-down)
+(defun +org-refresh-image-at-point ()
+  "Refresh image at point. If point is not on an image,
+refresh all images in buffer."
+  (interactive)
+  (+org-toggle-inline-image-at-point)
+  (+org-toggle-inline-image-at-point))
 
 
 (defun switch-theme (theme)

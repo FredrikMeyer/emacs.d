@@ -106,3 +106,5 @@ diary.google
 cal-main.ics
 
 tree-sitter/
+org-persist/
+image-dired/
