@@ -66,10 +66,12 @@
 
 (use-package pyvenv
   :ensure t
+  :hook (python-mode . pyvenv-mode)
   :commands (pyvenv-activate pyvenv-deactivate pyvenv-workon)
   :init
   ;; Set correct Python interpreter
   ;; TODO: auto detect virtual env (f.ex via a dotfile)
+  (setenv "WORKON_HOME" "~/.pyenv/versions")
   (setq pyvenv-post-activate-hooks
         (list (lambda ()
                 (let

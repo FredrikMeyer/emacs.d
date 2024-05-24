@@ -104,17 +104,20 @@
   (add-hook 'before-save-hook 'cider-format-buffer t t)
   )
 
+(defun my-clojure-mode-hook ()
+  (clj-refactor-mode 1)
+  (yas-minor-mode 1)
+  (cljr-add-keybindings-with-prefix "C-c C-r"))
+
 (use-package clj-refactor
   :ensure t
   :after yasnippet
   :config
-  (defun my-clojure-mode-hook ()
-    (clj-refactor-mode 1)
-    (yas-minor-mode 1)
-    (cljr-add-keybindings-with-prefix "C-c C-r")
-    )
   (add-hook 'clojure-mode #'my-clojure-mode-hook)
   )
+
+(use-package clojure-snippets
+  :ensure t)
 
 (provide 'fm-clojure)
 ;;; fm-clojure.el ends here

@@ -296,6 +296,8 @@
         org-babel-clojure-backend 'cider
         org-agenda-sticky nil)
 
+  (setq org-special-ctrl-a/e t)
+
   ;; https://emacs.stackexchange.com/a/80170/20796
   ;; change latex commands to use absolute path instead of relative (%f -> %F)
   (let ((png (cdr (assoc 'dvipng org-preview-latex-process-alist))))
@@ -451,6 +453,7 @@ current buffer, killing it."
       (kill-current-buffer)
       (let ((default-directory (file-name-directory file-name)))
         (sqlite-mode-open-file file-name))))
+
   (add-to-list 'magic-mode-alist '("SQLite format 3\x00" . ct/sqlite-view-file-magically)))
 
 ;; https://github.com/tbanel/orgaggregate#dates
@@ -575,6 +578,7 @@ current buffer, killing it."
       (tab-select n)
     (tab-bar-new-tab-to n)))
 
+
 (use-package tab-bar
   :ensure t
   :bind (
@@ -583,6 +587,8 @@ current buffer, killing it."
          ("M-2" . (lambda () (interactive ) (switch-tab 2)))
          ("M-3" . (lambda () (interactive ) (switch-tab 3)))
          ("M-4" . (lambda () (interactive ) (switch-tab 4)))
+         ("C-'" . 'tab-next)
+         ("C-§" . 'tab-previous)
          ("s-!" . 'tab-bar-rename-tab)
               )
   :init
@@ -591,6 +597,7 @@ current buffer, killing it."
     (global-unset-key (kbd (format "M-%d" n))))
   :config
   (tab-bar-mode t))
+
 
 ;; https://www.emacswiki.org/emacs/WindMove
 (use-package windmove
@@ -691,7 +698,6 @@ current buffer, killing it."
 ;; https://github.com/TeMPOraL/nyan-mode
 (use-package nyan-mode
   :ensure t
-  ;; :disabled
   :config
   (setq nyan-wavy-trail 1)
   (nyan-mode))
@@ -703,8 +709,20 @@ current buffer, killing it."
   (global-undo-tree-mode)
   :config
   ;; Try reset original map
-  (define-key undo-tree-map (kbd "C-x u") nil)
-  )
+  (define-key undo-tree-map (kbd "C-x u") nil))
+
+;; https://github.com/misohena/el-easydraw
+;; [​[edraw:file=./example.edraw.svg]​]
+;; [​[edraw:data=<base64data>​]]
+;; [​[*Example][edraw:file=./example.edraw.svg]​]
+;; [​[*Example][edraw:data=<base64data>]​]
+(use-package edraw-org
+  :ensure t
+  :after org
+  :vc (:url "https://github.com/misohena/el-easydraw"
+            :branch master)
+  :config
+  (edraw-org-setup-default))
 
 
 (use-package magit
@@ -746,6 +764,10 @@ current buffer, killing it."
   :ensure t
   :config
   (global-git-gutter-mode 1))
+
+;; https://github.com/jdtsmith/speedrect
+(use-package speedrect
+  :load-path "~/.emacs.d/speedrect")
 
 (use-package ob-ipython
   :disabled
@@ -892,25 +914,6 @@ current buffer, killing it."
   :config
   (global-hl-todo-mode t))
 
-;; https://github.com/mickeynp/ligature.el
-(use-package ligature
-  :disabled
-  :load-path "~/.emacs.d/ligature.el"
-  :config
-    (ligature-set-ligatures 'prog-mode '("-|" "-~" "---" "-<<" "-<" "--" "->" "->>" "-->" "///" "/=" "/=="
-                                      "/>" "//" "/*" "*>" "***" "*/" "<-" "<<-" "<=>" "<=" "<|" "<||"
-                                      "<|||" "<|>" "<:" "<>" "<-<" "<<<" "<==" "<<=" "<=<" "<==>" "<-|"
-                                      "<<" "<~>" "<=|" "<~~" "<~" "<$>" "<$" "<+>" "<+" "</>" "</" "<*"
-                                      "<*>" "<->" "<!--" ":>" ":<" ":::" "::" ":?" ":?>" ":=" "::=" "=>>"
-                                      "==>" "=/=" "=!=" "=>" "===" "=:=" "==" "!==" "!!" "!=" ">]" ">:"
-                                      ">>-" ">>=" ">=>" ">>>" ">-" ">=" "&&&" "&&" "|||>" "||>" "|>" "|]"
-                                      "|}" "|=>" "|->" "|=" "||-" "|-" "||=" "||" ".." ".?" ".=" ".-" "..<"
-                                      "..." "+++" "+>" "++" "[||]" "[<" "[|" "{|" "??" "?." "?=" "?:" "##"
-                                      "###" "####" "#[" "#{" "#=" "#!" "#:" "#_(" "#_" "#?" "#(" ";;" "_|_"
-                                      "__" "~~" "~~>" "~>" "~-" "~@" "$>" "^=" "]#"))
-    (global-ligature-mode 1))
-
-
 (use-package company
   :ensure t
   :hook (after-init . global-company-mode)
@@ -921,10 +924,9 @@ current buffer, killing it."
   ;; Don't set this to 0 if you want yasnippet to work well.
   (setq company-idle-delay 0.1)
   (setq company-show-quick-access t)
-  (setq company-minimum-prefix-length 1)
-  )
+  (setq company-minimum-prefix-length 1))
 
-
+;; Not sure if I need this??
 (use-package pos-tip
   :ensure t)
 
@@ -1218,7 +1220,9 @@ current buffer, killing it."
 (use-package helpful
   :ensure t
   :bind (("C-h k" . 'helpful-key)
-         ("C-c C-d" . 'helpful-at-point))
+         ("C-c C-d" . 'helpful-at-point)
+         ("C-h x" . 'helpful-command)
+         )
   :after counsel
   :init
   (setq counsel-describe-function-function #'helpful-callable
@@ -1597,6 +1601,11 @@ current buffer, killing it."
               ("<tab>" . dired-subtree-toggle))
   :config
   (setq dired-subtree-use-backgrounds nil))
+
+(use-package casual-dired
+  :ensure t
+  :bind (:map dired-mode-map
+              ("C-x c" . 'casual-dired-tmenu)))
 
 ;; Se på https://github.com/purcell/ibuffer-projectile?
 (use-package ibuffer
