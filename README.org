@@ -10,8 +10,8 @@ Current Emacs version:
 #+end_src
 
 #+RESULTS:
-: GNU Emacs 30.0.50 (build 1, x86_64-apple-darwin22.5.0, NS appkit-2299.60 Version 13.4.1 (Build 22F82))
-:  of 2023-07-25
+: GNU Emacs 30.0.50 (build 1, aarch64-apple-darwin23.3.0, NS appkit-2487.40 Version 14.3.1 (Build 23D60))
+:  of 2024-03-13
 
 ** Dependencies
 

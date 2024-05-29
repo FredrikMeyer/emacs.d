@@ -247,6 +247,8 @@
 (use-package pixel-scroll
   :config
   (pixel-scroll-precision-mode t)
+  ;; to not hijack arrow-up
+  (setq auto-window-vscroll nil)
   )
 
 (use-package org-clock)
@@ -421,6 +423,8 @@
           ("r" "Log ritalin" table-line
            (file+headline "~/Dropbox/org/notater.org" "Ritalin 💊")
            "| # | %<%Y-%m-%d> |  %<%Y-%m-%d %R> | %?")
+          ("l" "Å lese" entry (file+olp "~/Dropbox/org/notater.org" "Leseliste")
+           "* %?")
           ("t" "Todo" entry (file "~/Dropbox/org/tasks.org")
            "** TODO %?\n%U" :empty-lines 1)))
 
@@ -764,6 +768,18 @@ current buffer, killing it."
   :ensure t
   :config
   (global-git-gutter-mode 1))
+
+;; https://github.com/sshaw/git-link?tab=readme-ov-file
+(use-package git-link
+  :ensure t
+  :bind (("C-c g l" . 'git-link)
+         ("C-c g c" . 'git-link-commit)
+         ("C-c g h" . 'git-link-homepage)))
+
+;; https://codeberg.org/pidu/git-timemachine
+(use-package git-timemachine
+  :ensure t)
+
 
 ;; https://github.com/jdtsmith/speedrect
 (use-package speedrect
