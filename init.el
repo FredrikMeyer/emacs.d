@@ -683,16 +683,16 @@ current buffer, killing it."
 (use-package rainbow-delimiters
   :ensure t)
 
-(defun show-trailing-whitespace-local ()
-  (setq-local show-trailing-whitespace t))
-
 (use-package prog-mode
   :ensure nil
+  :init
+  (defun show-trailing-whitespace-local ()
+    (setq-local show-trailing-whitespace t))
   :hook ((prog-mode . rainbow-delimiters-mode)
          (prog-mode . show-trailing-whitespace-local)))
 
 (use-package geiser
-  :commands (run-geiser)
+  :commands (geiser)
   :ensure t)
 
 (use-package ac-geiser
@@ -706,6 +706,7 @@ current buffer, killing it."
   (setq nyan-wavy-trail 1)
   (nyan-mode))
 
+;; Veldig vanskelig å bruke?
 (use-package undo-tree
   :disabled
   :ensure t
@@ -907,9 +908,6 @@ current buffer, killing it."
 
 (global-set-key (kbd "C-c o")
                 (lambda () (interactive) (find-file "~/Dropbox/org/notater.org")))
-
-;; (global-set-key (kbd "C-c n")
-;;                 (lambda () (interactive) (find-file "~/Dropbox/org/daglige_notater.org")))
 
 (global-set-key (kbd "C-c ø")
                 (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
@@ -1139,10 +1137,7 @@ current buffer, killing it."
 ;; Ruby
 (use-package ruby-mode
   :mode "\\.rb\\'"
-  :ensure t
-  :config
-  ;; (add-hook 'ruby-mode-hook 'seeing-is-believing)
-  )
+  :ensure t)
 
 (use-package ruby-electric
   :ensure t

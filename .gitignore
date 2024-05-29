@@ -108,3 +108,9 @@ cal-main.ics
 tree-sitter/
 org-persist/
 image-dired/
+
+forge-database-*
+
+nov-places
+
+org-roam.db
