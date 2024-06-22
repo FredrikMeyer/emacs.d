@@ -24,11 +24,11 @@
          )
   :config
   (require 'flycheck-clj-kondo)
+
   ;; Enable paredit for Clojure
   ;; (add-hook 'clojure-mode-hook 'enable-paredit-mode)
   (add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojurescript-mode))
   (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode))
-
   (defun clerk-show ()
     (interactive)
     (when-let

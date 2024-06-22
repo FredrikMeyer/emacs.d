@@ -99,6 +99,12 @@
   :ensure t
   :hook (ivy-mode . counsel-projectile-mode))
 
+(use-package avy
+  :ensure t
+  :bind (("C-:" . 'avy-goto-char)
+          ("M-g f" . 'avy-goto-line))
+  )
+
 
 (provide 'fm-swiper)
 

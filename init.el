@@ -298,6 +298,9 @@
         org-babel-clojure-backend 'cider
         org-agenda-sticky nil)
 
+  ;; The default value was buggy.
+  (setq org-fold-core-style 'overlays)
+
   (setq org-special-ctrl-a/e t)
 
   ;; https://emacs.stackexchange.com/a/80170/20796
@@ -409,17 +412,15 @@
 
   ;; org capture
   (setq org-capture-templates
-        '(
-          ("n" "Note" entry
+        '(("n" "Note" entry
            (file+headline "~/Dropbox/org/notater.org" "Notes")
            "* %?")
-          ("d" "Note" entry (file "~/Dropbox/org/daglige_notater.org") "* %U\n%?")
           ("C" "Tanke" entry (file+headline "~/Dropbox/org/notater.org" "Tanker") "* %?\n%U" :empty-lines-after 1)
-          ("d" "Dagbok" entry (file "~/Dropbox/org/dagbok.org")  "** %t\n%?")
+          ("d" "Dagbok" entry (file+headline "~/Dropbox/org/dagbok.org" "2024")  "** %<%Y-%m-%d>\n%?" :prepend t)
           ("g" "Ting å gjøre" entry (file+headline "~/Dropbox/org/notater.org" "Ting å jobbe på")
            "* TODO [#B] %?" :empty-lines-after 1)
           ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
-           "* TODO %?\n%U")
+           "* TODO %^{Title}\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n%?")
           ("r" "Log ritalin" table-line
            (file+headline "~/Dropbox/org/notater.org" "Ritalin 💊")
            "| # | %<%Y-%m-%d> |  %<%Y-%m-%d %R> | %?")
@@ -693,6 +694,10 @@ current buffer, killing it."
 
 (use-package geiser
   :commands (geiser)
+  :ensure t)
+
+(use-package geiser-racket
+  :after geiser
   :ensure t)
 
 (use-package ac-geiser
@@ -1205,7 +1210,7 @@ current buffer, killing it."
   :mode "\\.rkt\\'"
   :hook racket-xp-mode
   :config
-  (setq racket-program "/usr/local/bin/racket"))
+  (setq racket-program "/opt/homebrew/bin/racket"))
 
 (use-package dockerfile-mode
   :ensure t
