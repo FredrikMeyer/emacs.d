@@ -338,7 +338,7 @@
 
   (setq org-outline-path-complete-in-steps nil)
 
-  (setq org-agenda-files (list "~/Dropbox/org/audio_xal.org"
+  (setq org-agenda-files (list "~/Dropbox/org/nav.org"
                                "~/Dropbox/org/tasks.org"
                                "~/Dropbox/org/notater.org"))
 
@@ -398,6 +398,20 @@
             (org-agenda-show-log t)
             ;; (org-agenda-compact-blocks t)
             ))
+          ("w" "Jobb - NAV"
+           ((agenda "x"
+                    ((org-super-agenda-groups
+                         '(
+                           (:log t)
+                           (:name "Agenda"
+                                  :time-grid t)
+                           (:auto-outline-path t)
+                           ))
+                     ))
+            (alltodo "xx"
+                     ((org-super-agenda-groups '((:auto-outline-path t))))))
+           ((org-agenda-files '("~/Dropbox/org/nav.org"))
+            (org-agenda-show-log t)))
           ("l" "Long view"
            ((agenda "" ((org-super-agenda-groups
                          '((:time-grid t))))
@@ -421,6 +435,8 @@
            "* TODO [#B] %?" :empty-lines-after 1)
           ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
            "* TODO %^{Title}\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n%?")
+          ("w" "Jobb - NAV" entry (file+headline "~/Dropbox/org/nav.org" "Planlegging")
+           "* TODO %?\n%U")
           ("r" "Log ritalin" table-line
            (file+headline "~/Dropbox/org/notater.org" "Ritalin 💊")
            "| # | %<%Y-%m-%d> |  %<%Y-%m-%d %R> | %?")
@@ -918,7 +934,7 @@ current buffer, killing it."
                 (lambda () (interactive) (find-file "~/Dropbox/org/okonomi.org")))
 
 (global-set-key (kbd "C-c æ")
-                (lambda () (interactive) (find-file "~/Dropbox/org/audio_xal.org")))
+                (lambda () (interactive) (find-file "~/Dropbox/org/nav.org")))
 
 (global-set-key (kbd "C-c i")
                 (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
@@ -1300,19 +1316,10 @@ current buffer, killing it."
 ;; (add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
 ;; Requires `brew install ghostscript`
 
-(use-package lsp-python-ms
-  :disabled
-  :ensure t
-  :init (setq lsp-python-ms-auto-install-server t)
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-python-ms)
-                         (lsp)))
-  :config
-  (setq lsp-python-ms-extra-paths '("~/.pyenv/versions/3.8.7/envs/audio_analytics/"))
-  )
-
 (use-package lsp-ui
   :ensure t)
+
+(add-to-list 'exec-path "/Users/fredrikmeyer/code/kotlin-language-server/server/build/distributions/server")
 
 (use-package lsp-mode
   :ensure t
@@ -1530,6 +1537,9 @@ current buffer, killing it."
   :ensure t
   :hook (prog-mode . yas-minor-mode)
   :hook (org-mode . yas-minor-mode)
+  :init
+  (add-to-list 'yas-snippet-dirs  "~/.emacs.d/snippets")
+  :config
   )
 
 (use-package ivy-yasnippet
