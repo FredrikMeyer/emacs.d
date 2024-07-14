@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Git co-author
+# key: gca
+# --
+
+Co-authored-by: $1 <$2@nav.no>
