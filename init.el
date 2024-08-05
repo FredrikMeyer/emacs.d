@@ -766,8 +766,12 @@ current buffer, killing it."
 (use-package forge
   :ensure t
   :after magit
-  :init
+  :config
   (setq forge-topic-list-order '(updated . string>))
+  (push '("ghe.nav.no" "ghe.nav.no/api/v3"
+        "ghe.nav.no" forge-github-repository)
+        forge-alist)
+
   )
 
 ;; https://github.com/alphapapa/magit-todos#installation
