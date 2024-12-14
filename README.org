@@ -84,3 +84,33 @@ Kronos devouring his child, but in a modern setting, preferably in a depressing 
 Kronos devouring his child but in Escher style.
 #+end_ai
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image_3.png]]
+
+
+#+begin_ai :image
+Kronos devouring his child, but in a modern setting, preferably in a depressing city. Make it hyper-realistic.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240524_1024x1024_image.png]]
+
+#+begin_ai :image
+Kronos devouring his metaphorical child, but in a modern setting, preferably in a depressing city. Make it hyper-realistic.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240524_1024x1024_image_1.png]]
+
+#+begin_ai :image :size 1024x1024 :quality hd :style vivid
+A forest troll walking in Norwegian nature, photorealistic.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240622_1024x1024_image.png]]
+
+#+begin_ai :image :size 1024x1024 :quality hd :style vivid
+A forest troll walking in Norwegian nature, photorealistic.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240622_1024x1024_image_3.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240622_1024x1024_image_2.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240622_1024x1024_image_1.png]]
+
+
+#+begin_ai :image :size 1024x1024 :quality hd :style vivid
+A Python programmer sitting in the forest thinking about infinity, Escher style.
+#+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240710_1024x1024_image.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20240622_1024x1024_image_4.png]]

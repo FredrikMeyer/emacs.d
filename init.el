@@ -399,19 +399,24 @@
             ;; (org-agenda-compact-blocks t)
             ))
           ("w" "Jobb - NAV"
-           ((agenda "x"
+           (
+            (agenda "x"
                     ((org-super-agenda-groups
                          '(
                            (:log t)
-                           (:name "Agenda"
-                                  :time-grid t)
+                           ;(:name "Agenda"
+                            ;      :time-grid t)
                            (:auto-outline-path t)
                            ))
                      ))
             (alltodo "xx"
-                     ((org-super-agenda-groups '((:auto-outline-path t))))))
+                     ((org-super-agenda-groups '(
+                                                 (:name "Top prio todo"
+                                                        :priority "A")
+                                                 (:auto-outline-path t))))))
            ((org-agenda-files '("~/Dropbox/org/nav.org"))
-            (org-agenda-show-log t)))
+            ;; (org-agenda-show-log t)
+            ))
           ("l" "Long view"
            ((agenda "" ((org-super-agenda-groups
                          '((:time-grid t))))
@@ -1365,6 +1370,10 @@ current buffer, killing it."
   ;; Todo: only for Clojure mode later
   (setq lsp-completion-enable nil)
 
+  ;; Kotlin
+  (setq  lsp-kotlin-compiler-jvm-target "21")
+
+
   ;; try??
   (setq lsp-tcp-connection-timeout 5)
   :config
@@ -1632,6 +1641,12 @@ current buffer, killing it."
   :config
   (setq dired-subtree-use-backgrounds nil))
 
+;; (use-package dired-preview
+;;   :ensure t
+;;   :config
+;;   (dired-preview-global-mode 1)
+;;   )
+
 (use-package casual-dired
   :ensure t
   :bind (:map dired-mode-map
@@ -1886,15 +1901,14 @@ current buffer, killing it."
     (org-toggle-inline-images)))
 
 (defun +org-refresh-image-at-point ()
-  "Refresh image at point. If point is not on an image,
-refresh all images in buffer."
+  "Refresh image at point. If point is not on an image, refresh all images in buffer."
   (interactive)
   (+org-toggle-inline-image-at-point)
   (+org-toggle-inline-image-at-point))
 
 
 (defun switch-theme (theme)
-  ;; This interactive call is taken from `load-theme'
+  "This interactive call is taken from `load-theme'."
   (interactive
    (list
     (intern (completing-read "Load custom theme: "
@@ -1902,6 +1916,28 @@ refresh all images in buffer."
                                      (custom-available-themes))))))
   (mapcar #'disable-theme custom-enabled-themes)
   (load-theme theme t))
+
+(defun email-to-name (email)
+  "Split name from EMAIL to naïvely try to generate full name."
+  (let* ((f (string-split email "@"))
+         (n (string-split (car f) "\\.")))
+    (s-join " " (mapcar 's-capitalize n))))
+
+
+(email-to-name "fredrik.meyer@nav.no")
+
+
+(defun co-author ()
+  "Insert co-author."
+  (interactive)
+  (let* ((email (read-string "Email: "))
+         (name (email-to-name email)) )
+    (insert (format "Co-authored-by: %s <%s>\n"
+                    name email))))
+
+
+
+
 
 ;;; init.el ends here
 

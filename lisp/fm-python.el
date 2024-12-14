@@ -14,7 +14,6 @@
     (add-hook 'flycheck-mode-hook #'flycheck-pycheckers-setup)))
 
 (use-package lsp-pyright
-  :disabled
   :ensure t
   :defer t
   :hook (python-mode . (lambda ()
@@ -101,8 +100,10 @@
   :init
   (setq python-shell-interpreter "python3")
   :config
-  (add-hook 'python-mode 'eglot-ensure)
-  ;; (flycheck-add-next-checker 'lsp 'python-flake8)
+  ;; (add-hook 'python-mode 'eglot-ensure)
+  (require 'lsp-diagnostics)
+  (lsp-diagnostics-flycheck-enable)
+  (flycheck-add-next-checker 'lsp 'python-flake8)
   (setq python-indent-offset 4))
 
 (defun activate-flake8 ()
