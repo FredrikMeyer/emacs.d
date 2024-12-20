@@ -23,11 +23,11 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
 ;; https://github.com/d12frosted/homebrew-emacs-plus/issues/323#issuecomment-1382265470
-;; (setenv "LIBRARY_PATH"
-;;         (mapconcat 'identity '("/opt/homebrew/Cellar/gcc/14.1.0"
-;;                                "/opt/homebrew/Cellar/libgccjit/13.2.0/lib/gcc/current"
-;;                                "/opt/homebrew/Cellar/gcc/14.1.0/lib/gcc/current/gcc/aarch64-apple-darwin23/14")
-                   ;; ":"))
+(setenv "LIBRARY_PATH"
+         (mapconcat 'identity '("/opt/homebrew/Cellar/gcc/14.2.0_1"
+                                "/opt/homebrew/Cellar/libgccjit/14.2.0_1/lib/gcc/current"
+                                "/opt/homebrew/Cellar/gcc/14.2.0_1/lib/gcc/current/gcc/aarch64-apple-darwin24/14")
+                   ":"))
 
 ;; (setq initial-frame-alist '((top . 0) (left . 0) (width . 177) (height . 53)))
 

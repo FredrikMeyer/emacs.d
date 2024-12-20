@@ -294,9 +294,10 @@
         org-plantuml-exec-mode 'plantuml
         org-preview-latex-default-process 'dvipng
         org-ellipsis " ↕"
-        org-plantuml-jar-path "/usr/local/bin/plantuml"
+        org-plantuml-jar-path "/opt/homebrew/bin/plantuml"
         org-babel-clojure-backend 'cider
         org-agenda-sticky nil)
+
 
   ;; The default value was buggy.
   (setq org-fold-core-style 'overlays)
@@ -315,6 +316,7 @@
   (add-hook 'org-mode-hook
             (lambda ()
               (add-hook 'after-save-hook 'org-preview-latex-fragment nil 'make-it-local)))
+  (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 
   (org-babel-do-load-languages
    'org-babel-load-languages '((python . t)
@@ -1083,7 +1085,7 @@ current buffer, killing it."
   :ensure t
   :mode "\\.plantuml\\'"
   :config
-  (setq plantuml-executable-path "/usr/local/bin/plantuml")
+  (setq plantuml-executable-path "/opt/homebrew/bin/plantuml")
   (setq plantuml-output-type "png")
   (setq plantuml-default-exec-mode 'executable))
 
@@ -1319,6 +1321,8 @@ current buffer, killing it."
 ;; https://github.com/org-noter/org-noter?tab=readme-ov-file
 (use-package org-noter
   :ensure t)
+
+(use-package djvu :ensure t)
 
 ;; Automatically refreshes PDF
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -1922,9 +1926,6 @@ current buffer, killing it."
   (let* ((f (string-split email "@"))
          (n (string-split (car f) "\\.")))
     (s-join " " (mapcar 's-capitalize n))))
-
-
-(email-to-name "fredrik.meyer@nav.no")
 
 
 (defun co-author ()
