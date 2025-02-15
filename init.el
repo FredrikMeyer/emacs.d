@@ -11,7 +11,6 @@
 ;; (byte-recompile-directory (expand-file-name "~/.emacs.d/") 0)
 ;; (profiler-start 'cpu+mem)
 
-;; Define package repositories
 
 (setq gc-cons-threshold 100000000)
 (add-hook 'after-init-hook
@@ -24,7 +23,7 @@
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa-stable" . "https://stable.melpa.org/packages/")
+                         ;; ("melpa-stable" . "https://stable.melpa.org/packages/")
                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                          ;; ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "https://elpa.gnu.org/packages/")))
@@ -36,6 +35,9 @@
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
+
+(eval-when-compile
+  (require 'use-package))
 
 (setq use-package-verbose nil)
 
@@ -89,7 +91,9 @@
       sentence-end-double-space nil
       line-move-visual nil)
 
-(custom-set-variables '(calendar-week-start-day 1))
+(custom-set-variables '(calendar-week-start-day 0))
+(require 'calendar)
+(setq calendar-date-style 'iso)
 
 ;; Changes all yes/no questions to y/n type
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -152,10 +156,7 @@
     (add-to-list 'auto-mode-alist (cons pattern mode))))
 
 
-(add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
-
-(eval-when-compile
-  (require 'use-package))
+;; (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
 ;; (use-package crux
 ;;   :ensure t)
@@ -208,20 +209,6 @@
         try-expand-line
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol)))
-
-(use-package add-log
-  :disabled ;; I don't use
-  :config
-  (setq change-log-default-name "CHANGELOG")
-  (add-hook 'change-log-mode-hook
-	  (lambda ()
-	    (make-local-variable 'tab-width)
-	    (make-local-variable 'left-margin)
-	    (setq tab-width   2
-		  left-margin 2)))
-  :custom
-  (add-log-full-name "Fredrik Meyer")
-  )
 
 ;; For some reason failed to install with use-package
 ;; Had to do M-x package-install pinentry
@@ -406,8 +393,8 @@
                     ((org-super-agenda-groups
                          '(
                            (:log t)
-                           ;(:name "Agenda"
-                            ;      :time-grid t)
+                           (:name "Agenda"
+                                 :time-grid t)
                            (:auto-outline-path t)
                            ))
                      ))
@@ -673,8 +660,7 @@ current buffer, killing it."
   :config
   (setq projectile-project-compilation-cmd ""
         projectile-completion-system 'ivy
-        projectile-enable-caching nil)
-  )
+        projectile-enable-caching nil))
 
 ;; Think this is included in projectile now
 (use-package projectile-ripgrep
@@ -1039,13 +1025,6 @@ current buffer, killing it."
               ))
   (setq web-mode-enable-auto-quoting nil))
 
-(use-package bicep-ts-mode
-  :ensure t
-  :mode ("\\.bicep$")
-  :vc (
-       :url "https://github.com/josteink/bicep-ts-mode"
-            :branch master))
-
 ;; https://depp.brause.cc/nov.el/
 (use-package nov
   :mode ("\\.epub$" . nov-mode)
@@ -1162,7 +1141,6 @@ current buffer, killing it."
   (setq add-node-modules-path-command '("echo \"$(npm root)/.bin\"")))
 
 (use-package glsl-mode
-  :disabled
   :ensure t
   :mode "\\.glsl\\'")
 
@@ -1332,13 +1310,12 @@ current buffer, killing it."
 (use-package lsp-ui
   :ensure t)
 
-(add-to-list 'exec-path "/Users/fredrikmeyer/code/kotlin-language-server/server/build/distributions/server")
-
 (use-package lsp-mode
   :ensure t
   :init (setq lsp-keymap-prefix "C-c l")
   :hook ((lsp-mode . lsp-enable-which-key-integration)
          (sh-mode . lsp)
+         (lsp-mode . lsp-completion-mode)
          )
   :init
   (setq lsp-modeline-code-actions-segments '(count icon name))
@@ -1935,12 +1912,6 @@ current buffer, killing it."
          (name (email-to-name email)) )
     (insert (format "Co-authored-by: %s <%s>\n"
                     name email))))
-
-
-
-
-
-;;; init.el ends here
 
 
 

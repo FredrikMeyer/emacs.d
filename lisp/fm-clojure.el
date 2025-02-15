@@ -73,7 +73,7 @@
   ;; Don't prompt and don't save
   (setq cider-save-file-on-load nil)
 
-  (setq cider-injected-nrepl-version "1.1.1")
+  (setq cider-injected-nrepl-version "1.3.1")
 
   (defun cider-start-http-server ()
     (interactive)
