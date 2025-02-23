@@ -676,7 +676,7 @@ current buffer, killing it."
   :ensure-system-package (rg . ripgrep)
   :config
   (rg-enable-default-bindings)
-  (setq rg-executable "/usr/local/bin/rg"))
+  (setq rg-executable "/opt/homebrew/bin/rg"))
 
 ;; https://github.com/domtronn/all-the-icons.el
 (use-package all-the-icons
@@ -1349,7 +1349,7 @@ current buffer, killing it."
   (setq lsp-ui-peek-enable t)
 
   ;; Todo: only for Clojure mode later
-  (setq lsp-completion-enable nil)
+  ;; (setq lsp-completion-enable nil)
 
   ;; Kotlin
   (setq  lsp-kotlin-compiler-jvm-target "21")
@@ -1388,7 +1388,8 @@ current buffer, killing it."
   :hook (java-mode . lsp)
   :config
   (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true"
- "-Xmx4G" "-Xms100m")))
+                          "-Xmx4G" "-Xms100m"))
+  (setq lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.44.0/jdt-language-server-1.44.0-202501221502.tar.gz"))
 
 (use-package lsp-metals
   :disabled
