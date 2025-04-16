@@ -52,9 +52,15 @@ If none of these steps improve the performance of the OpenAPI plugin, you may wa
 #+end_ai
 
 
-#+begin_ai :image :size 256x256
+#+begin_ai :image :size 1024x1024
 Hyper realistic sci-fi rendering of super complicated technical machine.
 #+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image_5.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image_4.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image_3.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image_2.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image_1.png]]
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_2.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_1.png]]
 
@@ -62,17 +68,19 @@ Hyper realistic sci-fi rendering of super complicated technical machine.
 * Test AI
 
 
-#+begin_ai :image :size 256x256
+#+begin_ai :image :size 1024x1024
 A Python programmer sitting in the forest thinking about infinity, Escher style.
 #+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image_6.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_6.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_5.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_256x256_image_4.png]]
 
 
-#+begin_ai :image :size 512x512
+#+begin_ai :image :size 1024x1024
 Kronos devouring his child, but in a modern setting, preferably in a depressing city. Make it hyper-realistic.
 #+end_ai
+[[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20250223_1024x1024_image_7.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image_2.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image_1.png]]
 [[file:/Users/fredrikmeyer/Dropbox/org/org-ai-images/20230806_512x512_image.png]]

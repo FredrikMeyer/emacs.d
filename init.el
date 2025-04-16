@@ -91,7 +91,7 @@
       sentence-end-double-space nil
       line-move-visual nil)
 
-(custom-set-variables '(calendar-week-start-day 0))
+(custom-set-variables '(calendar-week-start-day 1))
 (require 'calendar)
 (setq calendar-date-style 'iso)
 
@@ -171,10 +171,11 @@
 ;;   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
   ;;   exec-path-from-shell-arguments nil)
   :config
-  (dolist (var '("GOPATH"))
+  (dolist (var '("GOPATH" "OPENAI_API_KEY"))
     (add-to-list 'exec-path-from-shell-variables var))
   (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-env "PATH"))
+  (exec-path-from-shell-copy-env "PATH")
+  (exec-path-from-shell-copy-env "OPENAI_API_KEY"))
 
 ;; From the docs: Set it to nil, if you use Control* or Proxy* options in
 ;;your ssh configuration. (I do)
@@ -230,6 +231,8 @@
   :config
   (org-super-agenda-mode t))
 
+(use-package htmlize :ensure t)
+
 ;; https://emacs.stackexchange.com/a/42158/20796
 (use-package pixel-scroll
   :config
@@ -240,13 +243,20 @@
 
 (use-package org-clock)
 
-(use-package org-contrib
-  :ensure t)
+;; https://kitchingroup.cheme.cmu.edu/blog/2017/04/09/A-better-return-in-org-mode/
+;; https://emacs.stackexchange.com/questions/80218/how-to-move-past-a-drawer-when-point-is-on-an-org-mode-headline
+(defun org-skip-metadata ()
+  (interactive)
+  (org-fold-show-entry)
 
-(defun org-time-stamp-inactive-insert ()
-    "Insert inactive timestamp at point."
-    (interactive)
-    (org-time-stamp-inactive '(16)))
+
+  ;; (save-excursion)
+  ;; (next-line)
+  ;; (end-of-line)
+  ;; (org-cycle)
+  ;; (newline)
+  (org-end-of-meta-data t)
+  )
 
 (use-package org
   :defer t
@@ -255,11 +265,44 @@
   :bind (("C-c l" . org-store-link)
          ("C-c c" . org-capture)
          ("C-c a" . org-agenda)
+         ("C-c M-n" . 'org-skip-metadata)
          ("C-c C-." . org-time-stamp-inactive-insert)
          ("C-c ." . org-save-all-org-buffers)
          ("C-M-<return>" . org-insert-subheading)
          ("C-c b" . org-switchb))
   :config
+  (defun set-creation-date-heading-property ()
+    (save-excursion
+      (org-back-to-heading)
+      (org-set-property "CREATED" (format-time-string "%Y-%m-%d %T"))))
+
+(defun my-org-mode-date-heading-on ()
+  "Turn on heading creation date property."
+  (interactive)
+  (add-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
+
+(defun my-org-mode-date-heading-off ()
+  "Turn off heading creation date property."
+  (interactive)
+  (remove-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
+
+(defun org-time-stamp-inactive-insert ()
+    "Insert inactive timestamp at point."
+    (interactive)
+    (org-time-stamp-inactive '(16)))
+
+    (defun my-org-mode-date-heading-toggle ()
+      "Toggle on/off heading creation date property"
+      (interactive)
+      (if (memq #'set-creation-date-heading-property org-insert-heading-hook)
+          (progn
+           (my-org-mode-date-heading-off)
+           (message "off - heading creation date"))
+        (progn
+          (my-org-mode-date-heading-on)
+          (message "on - heading creation date"))))
+
+    (my-org-mode-date-heading-on)
   (setq org-clock-persist t)
   (org-clock-persistence-insinuate)
   (add-hook 'org-mode-hook (lambda ()
@@ -267,8 +310,10 @@
                              (auto-save-mode t)
                              (electric-pair-mode 0)))
 
-  (setq org-src-fontify-natively t
-        org-src-tab-acts-natively nil
+  (setopt org-src-fontify-natively t
+          org-src-tab-acts-natively nil
+          org-hide-emphasis-markers t)
+  (setq
         org-hide-emphasis-markers nil
         org-log-done 'time
         org-confirm-babel-evaluate nil
@@ -283,6 +328,7 @@
         org-ellipsis " ↕"
         org-plantuml-jar-path "/opt/homebrew/bin/plantuml"
         org-babel-clojure-backend 'cider
+        org-use-speed-commands t
         org-agenda-sticky nil)
 
 
@@ -400,6 +446,8 @@
                      ))
             (alltodo "xx"
                      ((org-super-agenda-groups '(
+                                                 (:todo ("DOING")
+                                                        :name "Doing")
                                                  (:name "Top prio todo"
                                                         :priority "A")
                                                  (:auto-outline-path t))))))
@@ -489,6 +537,28 @@ current buffer, killing it."
   (setq org-ai-use-auth-source t)
   )
 
+(use-package gptel
+  :ensure t
+  :vc (:url "https://github.com/karthink/gptel"
+            :branch master)
+  )
+
+(use-package whisper-api
+  :ensure t
+  :vc (:branch main :url "https://github.com/ileixe/whisper-api")
+  :config
+  (setq whisper-api-openai-token (exec-path-from-shell-copy-env "OPENAI_API_KEY"))
+  ;; :general
+  ;; Global bindings for normal, visual and insert states
+  ;; (:states '(normal visual insert)
+  ;;          "C-c w" 'whisper-api-record-dwim
+  ;;          "C-c c" 'whisper-api-cancel)
+  ;; Bindings for the minibuffer-keymaps so that they also work inside the minibuffer.
+  ;; (:keymaps '(minibuffer-local-map minibuffer-local-ns-map)
+  ;;          "C-c w" 'whisper-api-record-dwim
+  ;;          "C-c c" 'whisper-api-cancel)
+  )
+
 
 ;; https://github.com/emacsorphanage/popwin
 ;; popwin is a popup window manager for Emacs which makes you free from the hell of
@@ -529,6 +599,7 @@ current buffer, killing it."
   (global-set-key [remap kill-ring-save] #'easy-kill)
   (global-set-key [remap mark-sexp] #'easy-mark))
 
+;; R
 (use-package ess
   :ensure t)
 
@@ -548,9 +619,9 @@ current buffer, killing it."
   (setq flycheck-checker-error-threshold 2000)
   )
 
-(use-package flycheck-posframe
-  :ensure t
-  :hook (flycheck-mode . flycheck-posframe-mode))
+;; (use-package flycheck-posframe
+;;   :ensure t
+;;   :hook (flycheck-mode . flycheck-posframe-mode))
 
 (use-package flycheck-color-mode-line
   :ensure t
@@ -1035,6 +1106,11 @@ current buffer, killing it."
   :ensure t
   :defer t)
 
+(use-package justl
+  :ensure t
+  :custom
+  (justl-executable "/opt/homebrew/bin/just"))
+
 (use-package typescript-mode
   :ensure t)
 
@@ -1062,10 +1138,12 @@ current buffer, killing it."
 
 (use-package plantuml-mode
   :ensure t
-  :mode "\\.plantuml\\'"
+  :mode ("\\.plantuml\\'" "\\.puml\\'")
+  :bind (("C-c C-c" . plantuml-preview))
   :config
   (setq plantuml-executable-path "/opt/homebrew/bin/plantuml")
   (setq plantuml-output-type "png")
+  (setq plantuml-jar-path "/opt/homebrew/Cellar/plantuml/1.2025.2/libexec/plantuml.jar")
   (setq plantuml-default-exec-mode 'executable))
 
 ;; https://github.com/alexmurray/flycheck-plantuml
@@ -1221,8 +1299,17 @@ current buffer, killing it."
   :ensure t
   :mode "^Dockerfile\\'")
 
+(use-package docker
+  :ensure t
+  :commands docker)
+
 (use-package kubernetes
-  :ensure t)
+  :ensure t
+  :commands (kubernetes-overview)
+  :config
+  (setq kubernetes-poll-frequency 3600
+        kubernetes-redraw-frequency 3600))
+
 
 ;; https://github.com/TxGVNN/emacs-k8s-mode
 (use-package k8s-mode
@@ -1913,6 +2000,16 @@ current buffer, killing it."
          (name (email-to-name email)) )
     (insert (format "Co-authored-by: %s <%s>\n"
                     name email))))
+
+
+(defun run-shell-command (command)
+  "Run a shell COMMAND and display the output in a new buffer."
+  (interactive "sEnter shell command: ")
+  (let ((output-buffer (get-buffer-create "*Shell Command Output*")))
+    (with-current-buffer output-buffer
+      (erase-buffer)
+      (insert (shell-command-to-string (concat "llm" " " command))))
+    (display-buffer output-buffer)))
 
 
 
