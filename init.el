@@ -107,48 +107,42 @@
 ;; Highlights matching parenthesis
 (use-package paren
   :ensure nil
-  :config
-  (show-paren-mode 1))
+  :hook (after-init . show-paren-mode))
 
 (use-package hl-line
   :ensure nil
-  :config
-  (global-hl-line-mode 1))
+  :hook (after-init . global-hl-line-mode))
 
 (use-package delsel
   :ensure nil
-  :config
-  (delete-selection-mode 1))
+  :hook (after-init . delete-selection-mode))
 
 
 ;; Show line numbers
 (use-package display-line-numbers
   :ensure nil
-  :hook (prog-mode . display-line-numbers-mode)
-;;  (global-display-line-numbers-mode 1)
-  )
+  :hook (prog-mode . display-line-numbers-mode))
 
 (use-package simple
   :ensure nil
-  :config
-  (column-number-mode 1))
+  :hook (after-init . column-number-mode))
 
-(setq c-default-style '((java-mode . "java")
-                        (awk-mode . "awk")
-                        (other . "stroustrup")))
+(setopt c-default-style '((java-mode . "java")
+                          (awk-mode . "awk")
+                          (other . "stroustrup")))
 
 ;; First try to indent the current line, and if the line
 ;; was already indented, then try `completion-at-point'
-(setq tab-always-indent t
-      tab-first-completion nil)
+(setopt tab-always-indent t
+        tab-first-completion nil)
 
 
 ;; Don't show whitespaces in minibuffer
 (add-hook 'minibuffer-setup-hook
           (lambda () (setq-local show-trailing-whitespace nil)))
 
-(setq-default indicate-empty-lines 't)
-(setq auth-sources '("/Users/fredrikmeyer/.authinfo"))
+(setopt indicate-empty-lines 't)
+(setopt auth-sources '(concat (getenv "HOME") "/.authinfo"))
 
 (defun add-auto-mode (mode &rest patterns)
   "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
@@ -199,25 +193,23 @@
 (use-package hippie-exp
   :ensure nil
   :bind ("M-n" . hippie-expand)
-  :init
-  (setq hippie-expand-try-functions-list
-      '(yas-hippie-try-expand
-        try-expand-dabbrev
-        try-expand-dabbrev-from-kill
-        try-expand-dabbrev-all-buffers
-        try-expand-whole-kill
-        try-complete-file-name
-        try-expand-line
-        try-complete-lisp-symbol-partially
-        try-complete-lisp-symbol)))
+  :custom (hippie-expand-try-functions-list
+           '(yas-hippie-try-expand
+             try-expand-dabbrev
+             try-expand-dabbrev-from-kill
+             try-expand-dabbrev-all-buffers
+             try-expand-whole-kill
+             try-complete-file-name
+             try-expand-line
+             try-complete-lisp-symbol-partially
+             try-complete-lisp-symbol)))
 
 ;; For some reason failed to install with use-package
 ;; Had to do M-x package-install pinentry
 ;; https://elpa.gnu.org/packages/pinentry.html
 (use-package pinentry
   :ensure t
-  :config
-  (add-hook 'after-init-hook 'pinentry-start))
+  :hook (after-init . pinentry-start))
 
 (use-package ob-plantuml)
 (use-package ob-clojure)
@@ -228,8 +220,7 @@
 (use-package org-super-agenda
   :ensure t
   :after org
-  :config
-  (org-super-agenda-mode t))
+  :hook (after-init . org-super-agenda-mode))
 
 (use-package htmlize :ensure t)
 
@@ -1215,8 +1206,8 @@ current buffer, killing it."
 ;; https://github.com/codesuki/add-node-modules-path
 (use-package add-node-modules-path
   :ensure t
-  :config
-  (setq add-node-modules-path-command '("echo \"$(npm root)/.bin\"")))
+  :custom
+  (add-node-modules-path-command '("echo \"$(npm root)/.bin\"")))
 
 (use-package glsl-mode
   :ensure t
@@ -1291,9 +1282,7 @@ current buffer, killing it."
 (use-package racket-mode
   :ensure t
   :mode "\\.rkt\\'"
-  :hook racket-xp-mode
-  :config
-  (setq racket-program "/opt/homebrew/bin/racket"))
+  :hook racket-xp-mode)
 
 (use-package dockerfile-mode
   :ensure t
@@ -1306,23 +1295,15 @@ current buffer, killing it."
 (use-package kubernetes
   :ensure t
   :commands (kubernetes-overview)
-  :config
-  (setq kubernetes-poll-frequency 3600
-        kubernetes-redraw-frequency 3600))
+  :custom
+  (kubernetes-poll-frequency 3600)
+  (kubernetes-redraw-frequency 3600))
 
 
 ;; https://github.com/TxGVNN/emacs-k8s-mode
 (use-package k8s-mode
   :ensure t
   :hook (k8s-mode . yas-minor-mode))
-
-(use-package minimap
-  :disabled
-  :ensure t
-  :bind ("C-x w" . minimap-mode)
-  :config
-  (setq minimap-window-location 'right)
-  (setq minimap-automatically-delete-window nil))
 
 ;; https://github.com/Wilfred/helpful
 (use-package helpful
@@ -1332,9 +1313,9 @@ current buffer, killing it."
          ("C-h x" . 'helpful-command)
          )
   :after counsel
-  :init
-  (setq counsel-describe-function-function #'helpful-callable
-	counsel-describe-variable-function #'helpful-variable))
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable))
 
 (use-package markdown-mode
   :ensure t
@@ -1478,16 +1459,6 @@ current buffer, killing it."
                           "-Xmx4G" "-Xms100m"))
   (setq lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.44.0/jdt-language-server-1.44.0-202501221502.tar.gz"))
 
-(use-package lsp-metals
-  :disabled
-  :ensure t
-  :custom
-  ;; Metals claims to support range formatting by default but it supports range
-  ;; formatting of multiline strings only. You might want to disable it so that
-  ;; emacs can use indentation provided by scala-mode.
-  (lsp-metals-server-args '("-J-Dmetals.allow-multiline-string-formatting=off"))
-  :hook (scala-mode . lsp))
-
 (use-package lsp-json
   :after lsp
   :config
@@ -1555,8 +1526,6 @@ current buffer, killing it."
 (use-package spacemacs-theme
   :ensure t
 ;  :disabled
-  :config
-                                        ;(load-theme 'spacemacs-dark t)
   )
 
 (use-package leuven-theme
@@ -1602,9 +1571,9 @@ current buffer, killing it."
 (use-package whitespace
   :ensure t
   :hook (python-mode . whitespace-mode)
-  :config
-  (setq whitespace-line-column 120)
-  (setq whitespace-style '(face lines-tail)))
+  :custom
+  (whitespace-line-column 120)
+  (whitespace-style '(face lines-tail)))
 
 ;; This package implements a menu that lists enabled minor-modes, as well as
 ;; commonly but not currently enabled minor-modes.
@@ -1612,7 +1581,7 @@ current buffer, killing it."
 (use-package minions
   :defer t
   :ensure t
-  :config (minions-mode 1))
+  :hook (after-init . minions-mode))
 
 ;; https://github.com/joaotavora/yasnippet
 (use-package yasnippet
@@ -1621,7 +1590,6 @@ current buffer, killing it."
   :hook (org-mode . yas-minor-mode)
   :init
   (add-to-list 'yas-snippet-dirs  "~/.emacs.d/snippets")
-  :config
   )
 
 (use-package ivy-yasnippet
@@ -1654,26 +1622,6 @@ current buffer, killing it."
 (use-package phi-search
   :ensure t)
 
-;; https://github.com/gonewest818/dimmer.el
-(use-package dimmer
-  :disabled
-  :defer 1
-  :ensure t
-  :config
-  (dimmer-configure-which-key)
-  (setq dimmer-prevent-dimming-predicates '(window-minibuffer-p))
-  (setq dimmer-buffer-exclusion-regexps '("magit-diff"
-                                          "*LV*"
-                                          "\\*\\(LV\\|transient\\)\\*"
-                                          "^*Messages*"
-                                          "^\\*Minibuf-[0-9]+\\*"
-                                          "transient"
-                                          ".*Minib.*"
-                                          "^.\\*Echo.*\\*"
-                                          "Help"))
-  (setq dimmer-fraction 0.3) ;; Originally 0.2
-  (dimmer-mode t))
-
 ;; https://www.emacswiki.org/emacs/WinnerMode
 ;; Winner Mode is a global minor mode. When activated, it allows you to “undo” (and “redo”) changes in the window configuration with the key commands ‘C-c left’ and ‘C-c right’
 (winner-mode t)
@@ -1695,11 +1643,6 @@ current buffer, killing it."
             (lambda () (define-key yaml-mode-map (kbd "<C-return>") 'newline-and-indent)))
   (setq yaml-indent-offset 2))
 
-(use-package julia-mode
-  :disabled
-  :mode "\\.jl'"
-  :ensure t)
-
 (use-package dired-subtree
   :ensure t
   :after dired
@@ -1709,12 +1652,6 @@ current buffer, killing it."
               ("<tab>" . dired-subtree-toggle))
   :config
   (setq dired-subtree-use-backgrounds nil))
-
-;; (use-package dired-preview
-;;   :ensure t
-;;   :config
-;;   (dired-preview-global-mode 1)
-;;   )
 
 (use-package casual-dired
   :ensure t
@@ -1755,12 +1692,12 @@ current buffer, killing it."
                 " " filename))))
 
 (use-package dired
+  :custom
+  ;; Found here https://emacs.stackexchange.com/a/29101/20796
+  (insert-directory-program "gls")
+  (dired-use-ls-dired "t")
+  (dired-listing-switches "-alh")
   :config
-  (setq
-   ;; Found here https://emacs.stackexchange.com/a/29101/20796
-   insert-directory-program "gls"
-   dired-use-ls-dired "t"
-   dired-listing-switches "-alh")
   (when (string= system-type "darwin")
     (setq dired-use-ls-dired nil)))
 
@@ -1786,22 +1723,18 @@ current buffer, killing it."
 ;; name at the beginning of the buffer name
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html
 (use-package uniquify
-  :defer t
-  :config
-  (setq uniquify-buffer-name-style 'forward))
+  :custom
+  (uniquify-buffer-name-style 'forward))
 
 ;; Turn on recent file mode so that you can more easily switch to
 ;; recently edited files when you first start emacs
 (use-package recentf
-  :defer t
   :ensure t
-  :config
-  (setq recentf-save-file (concat user-emacs-directory ".recentf"))
-  (recentf-mode 1)
-  (setq recentf-max-saved-items 50)
-  (setq recentf-max-menu-items 200))
-
-(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  :hook (after-init . recentf-mode)
+  :custom
+  (recentf-save-file (concat user-emacs-directory ".recentf"))
+  (recentf-max-saved-items 50)
+  (recentf-max-menu-items 200))
 
 
 ;; shell scripts

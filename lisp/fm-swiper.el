@@ -7,14 +7,16 @@
   :ensure t
   :demand t
   ;; :pin melpa
-  :hook (emacs-startup . ivy-mode)
+  :hook ((emacs-startup . ivy-mode)
+         (after-init . ivy-mode))
   :diminish (ivy-mode)
   :bind (("C-c C-r" . ivy-resume)
          ("M-g o" . 'counsel-outline)
          ("C-x b" . ivy-switch-buffer))
+  :custom
+  (ivy-use-virtual-buffers t)
+  (enable-recursive-minibuffers t)
   :init
-  (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers t)
   (setq ivy-count-format "%d/%d ")
   (setq ivy-display-style 'fancy)
   (setq ivy-wrap t)
@@ -25,13 +27,12 @@
           (swiper-isearch . ivy--regex-plus)
           (counsel-projectile-find-file . ivy--regex-plus)
           (counsel-M-x . ivy--regex-plus)
-          (t . ivy--regex-plus)))
-  :config
-  (ivy-mode 1))
+          (t . ivy--regex-plus))))
 
 (use-package counsel
   :after ivy
   :ensure t
+  :hook ((after-init . counsel-mode))
   :bind
   (("M-y" . counsel-yank-pop)
    :map ivy-minibuffer-map
@@ -44,7 +45,6 @@
    ("C-h o" . counsel-describe-symbol)
    ("<backspace>" . 'ivy-backward-delete-char))
   :config
-  (counsel-mode 1)
   (setq counsel-describe-function-function #'helpful-callable)
   (setq counsel-describe-variable-function #'helpful-variable)
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) "")
@@ -67,11 +67,10 @@
   :ensure t
   ;; :disabled
   :after ivy
-  :init
-  (ivy-prescient-mode t)
-  (prescient-persist-mode t)
-  :config
-  (setq prescient-history-length 50))
+  :hook ((after-init . ivy-prescient-mode)
+         (after-init . prescient-persist-mode))
+  :custom
+  (prescient-history-length 50))
 
 (use-package swiper
   :ensure t
