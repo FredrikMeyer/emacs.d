@@ -8,28 +8,7 @@
   :after (flycheck))
 
 
-;; key bindings and code colorization for Clojure
-;; https://github.com/clojure-emacs/clojure-mode
-(use-package clojure-mode
-  :ensure t
-  :ensure-system-package clojure
-  :mode "\\.edn$"
-  :mode "\\.boot$"
-  :mode "\\.clj$"
-  :hook ((clojure-mode . subword-mode) ;; For Java class names
-         (clojure-mode . electric-indent-mode)
-         (clojure-mode . smartparens-strict-mode)
-         (clojure-mode . cider-mode)
-         (clojure-mode . lsp)
-         )
-  :config
-  (require 'flycheck-clj-kondo)
-
-  ;; Enable paredit for Clojure
-  ;; (add-hook 'clojure-mode-hook 'enable-paredit-mode)
-  (add-to-list 'auto-mode-alist '("\\.cljs.*$" . clojurescript-mode))
-  (add-to-list 'auto-mode-alist '("lein-env" . enh-ruby-mode))
-  (defun clerk-show ()
+(defun clerk-show ()
     (interactive)
     (when-let
         ((filename
@@ -38,7 +17,29 @@
       (cider-interactive-eval
        (concat "(nextjournal.clerk/show! \"" filename "\")"))))
 
-  (define-key clojure-mode-map (kbd "<M-return>") 'clerk-show))
+;; key bindings and code colorization for Clojure
+;; https://github.com/clojure-emacs/clojure-mode
+(use-package clojure-mode
+  :ensure t
+  :ensure-system-package clojure
+  :mode "\\.edn$"
+  :mode "\\.boot$"
+  :mode ("\\.cljs.*$" . clojurescript-mode)
+  :mode "\\.clj$"
+  :hook ((clojure-mode . subword-mode) ;; For Java class names
+         (clojure-mode . electric-indent-mode)
+         (clojure-mode . smartparens-strict-mode)
+         (clojure-mode . cider-mode)
+         (clojure-mode . lsp)
+         )
+  :bind (:map clojure-mode-map
+              ("<M-return>" . 'clerk-show)))
+
+(use-package flycheck-clj-kondo
+  :after clojure-mode)
+
+  ;; Enable paredit for Clojure
+  ;; (add-hook 'clojure-mode-hook 'enable-paredit-mode))
 
 
 ;; extra syntax highlighting for clojure
@@ -73,7 +74,7 @@
   ;; Don't prompt and don't save
   (setq cider-save-file-on-load nil)
 
-  (setq cider-injected-nrepl-version "1.3.1")
+  (setq cider-injected-nrepl-version "1.4.0")
 
   (defun cider-start-http-server ()
     (interactive)

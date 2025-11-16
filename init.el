@@ -39,6 +39,8 @@
 (eval-when-compile
   (require 'use-package))
 
+(setq use-package-compute-statistics t)
+
 (setq use-package-verbose nil)
 
 (setq user-full-name "Fredrik Meyer"
@@ -152,6 +154,7 @@
 
 ;; (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 
+(setenv "TERMINFO" "/Applications/Ghostty.app/Contents/Resources/terminfo/")
 ;; (use-package crux
 ;;   :ensure t)
 
@@ -165,11 +168,13 @@
 ;;   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
   ;;   exec-path-from-shell-arguments nil)
   :config
+  (setopt exec-path-from-shell-arguments '("-l" "-i"))
   (dolist (var '("GOPATH" "OPENAI_API_KEY"))
     (add-to-list 'exec-path-from-shell-variables var))
   (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-env "PATH")
-  (exec-path-from-shell-copy-env "OPENAI_API_KEY"))
+  ;; (exec-path-from-shell-copy-env "PATH")
+  ;; (exec-path-from-shell-copy-env "OPENAI_API_KEY")
+  )
 
 ;; From the docs: Set it to nil, if you use Control* or Proxy* options in
 ;;your ssh configuration. (I do)
@@ -226,31 +231,63 @@
 
 ;; https://emacs.stackexchange.com/a/42158/20796
 (use-package pixel-scroll
+  :hook (after-init . pixel-scroll-precision-mode)
   :config
-  (pixel-scroll-precision-mode t)
   ;; to not hijack arrow-up
   (setq auto-window-vscroll nil)
   )
 
 (use-package org-clock)
 
-;; https://kitchingroup.cheme.cmu.edu/blog/2017/04/09/A-better-return-in-org-mode/
-;; https://emacs.stackexchange.com/questions/80218/how-to-move-past-a-drawer-when-point-is-on-an-org-mode-headline
-(defun org-skip-metadata ()
-  (interactive)
-  (org-fold-show-entry)
-
-
-  ;; (save-excursion)
-  ;; (next-line)
-  ;; (end-of-line)
-  ;; (org-cycle)
-  ;; (newline)
-  (org-end-of-meta-data t)
-  )
 
 (use-package org
   :defer t
+  :preface
+  ;; https://kitchingroup.cheme.cmu.edu/blog/2017/04/09/A-better-return-in-org-mode/
+  ;; https://emacs.stackexchange.com/questions/80218/how-to-move-past-a-drawer-when-point-is-on-an-org-mode-headline
+  (defun org-skip-metadata ()
+    (interactive)
+    (org-fold-show-entry)
+
+
+    ;; (save-excursion)
+    ;; (next-line)
+    ;; (end-of-line)
+    ;; (org-cycle)
+    ;; (newline)
+    (org-end-of-meta-data t)
+    )
+
+  (defun set-creation-date-heading-property ()
+      (save-excursion
+        (org-back-to-heading)
+        (org-set-property "CREATED" (format-time-string "%Y-%m-%d %T"))))
+
+  (defun my-org-mode-date-heading-on ()
+      "Turn on heading creation date property."
+      (interactive)
+      (add-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
+
+  (defun my-org-mode-date-heading-off ()
+    "Turn off heading creation date property."
+    (interactive)
+    (remove-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
+
+  (defun org-time-stamp-inactive-insert ()
+    "Insert inactive timestamp at point."
+    (interactive)
+    (org-time-stamp-inactive '(16)))
+
+  (defun my-org-mode-date-heading-toggle ()
+    "Toggle on/off heading creation date property"
+    (interactive)
+    (if (memq #'set-creation-date-heading-property org-insert-heading-hook)
+        (progn
+          (my-org-mode-date-heading-off)
+          (message "off - heading creation date"))
+      (progn
+        (my-org-mode-date-heading-on)
+        (message "on - heading creation date"))))
   ;; :ensure org-plus-contrib
   :pin gnu
   :bind (("C-c l" . org-store-link)
@@ -261,51 +298,24 @@
          ("C-c ." . org-save-all-org-buffers)
          ("C-M-<return>" . org-insert-subheading)
          ("C-c b" . org-switchb))
-  :config
-  (defun set-creation-date-heading-property ()
-    (save-excursion
-      (org-back-to-heading)
-      (org-set-property "CREATED" (format-time-string "%Y-%m-%d %T"))))
-
-(defun my-org-mode-date-heading-on ()
-  "Turn on heading creation date property."
-  (interactive)
-  (add-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
-
-(defun my-org-mode-date-heading-off ()
-  "Turn off heading creation date property."
-  (interactive)
-  (remove-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
-
-(defun org-time-stamp-inactive-insert ()
-    "Insert inactive timestamp at point."
-    (interactive)
-    (org-time-stamp-inactive '(16)))
-
-    (defun my-org-mode-date-heading-toggle ()
-      "Toggle on/off heading creation date property"
-      (interactive)
-      (if (memq #'set-creation-date-heading-property org-insert-heading-hook)
-          (progn
-           (my-org-mode-date-heading-off)
-           (message "off - heading creation date"))
-        (progn
-          (my-org-mode-date-heading-on)
-          (message "on - heading creation date"))))
-
-    (my-org-mode-date-heading-on)
-  (setq org-clock-persist t)
-  (org-clock-persistence-insinuate)
-  (add-hook 'org-mode-hook (lambda ()
+  :hook ((org-mode . (lambda ()
                              (visual-line-mode t)
                              (auto-save-mode t)
-                             (electric-pair-mode 0)))
+                             (electric-pair-mode 0))))
+  :custom
+  (org-clock-persist t)
+  :config
+
+  ;; (my-org-mode-date-heading-on)
+  (org-clock-persistence-insinuate)
 
   (setopt org-src-fontify-natively t
           org-src-tab-acts-natively nil
-          org-hide-emphasis-markers t)
+          org-hide-emphasis-markers t
+          org-hide-emphasis-markers nil
+          ;; The default value was buggy.
+          org-fold-core-style 'overlays)
   (setq
-        org-hide-emphasis-markers nil
         org-log-done 'time
         org-confirm-babel-evaluate nil
         org-edit-src-content-indentation 0
@@ -321,10 +331,6 @@
         org-babel-clojure-backend 'cider
         org-use-speed-commands t
         org-agenda-sticky nil)
-
-
-  ;; The default value was buggy.
-  (setq org-fold-core-style 'overlays)
 
   (setq org-special-ctrl-a/e t)
 
@@ -441,6 +447,9 @@
                                                         :name "Doing")
                                                  (:name "Top prio todo"
                                                         :priority "A")
+                                                 (:name "Statistikk"
+                                                        :tag "statistikk")
+
                                                  (:auto-outline-path t))))))
            ((org-agenda-files '("~/Dropbox/org/nav.org"))
             ;; (org-agenda-show-log t)
@@ -467,7 +476,7 @@
           ("g" "Ting å gjøre" entry (file+headline "~/Dropbox/org/notater.org" "Ting å jobbe på")
            "* TODO [#B] %?" :empty-lines-after 1)
           ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
-           "* TODO %^{Title}\n:PROPERTIES:\n:CAPTURED: %U\n:END:\n%?")
+           "* TODO %?\n%U")
           ("w" "Jobb - NAV" entry (file+headline "~/Dropbox/org/nav.org" "Planlegging")
            "* TODO %?\n%U")
           ("r" "Log ritalin" table-line
@@ -489,12 +498,12 @@
   )
 
 (use-package holidays
-  :config
-  (setq holiday-bahai-holidays nil)
-  (setq holiday-islamic-holidays nil)
-  (setq holiday-hebrew-holidays nil)
-  (setq holiday-oriental-holidays nil)
-  (setq holiday-christian-holidays nil))
+  :custom
+  (holiday-bahai-holidays nil)
+  (holiday-islamic-holidays nil)
+  (holiday-hebrew-holidays nil)
+  (holiday-oriental-holidays nil)
+  (holiday-christian-holidays nil))
 
 (use-package sqlite-mode
   :config
@@ -514,41 +523,64 @@ current buffer, killing it."
 (use-package orgtbl-aggregate
   :ensure t)
 
+(use-package shell-maker
+  :ensure t)
+
+(use-package acp
+  :vc (:url "https://github.com/xenodium/acp.el"))
+
+(use-package agent-shell
+  :vc (:url "https://github.com/xenodium/agent-shell"))
+
+
 (use-package org-ai
-  :ensure t
+  :ensure ;TODO:
   :commands (org-ai-mode
              org-ai-global-mode)
+  :custom
+  (org-ai-default-chat-model "gpt-4")
+  (org-ai-use-auth-source t)
   :init
   (add-hook 'org-mode-hook #'org-ai-mode) ; enable org-ai in org-mode
   (org-ai-global-mode) ; installs global keybindings on C-c M-a
   :config
-  (setq org-ai-default-chat-model "gpt-4")
-   ; if you are using yasnippet and want `ai` snippets
+  ;; If you are using yasnippet and want `ai` snippets
   (org-ai-install-yasnippets)
-  (setq org-ai-use-auth-source t)
+  (setopt org-ai-openai-api-token (getenv "OPENAI_API_KEY"))
+  )
+
+
+;; https://github.com/rejeep/prodigy.el
+(use-package prodigy
+  :ensure t
+  :config
+  (prodigy-define-service
+    :name "Jekyll serve"
+    :command "bundle"
+    :args '("exec" "jekyll" "serve" "-l")
+    :cwd "~/code/FredrikMeyer.github.io/"
+    :port 4000
+    )
+  )
+
+(use-package buffer-box
+  :ensure t
+  :vc (:url "https://github.com/rougier/buffer-box"
+            :branch "master")
   )
 
 (use-package gptel
   :ensure t
   :vc (:url "https://github.com/karthink/gptel"
             :branch master)
-  )
-
-(use-package whisper-api
-  :ensure t
-  :vc (:branch main :url "https://github.com/ileixe/whisper-api")
   :config
-  (setq whisper-api-openai-token (exec-path-from-shell-copy-env "OPENAI_API_KEY"))
-  ;; :general
-  ;; Global bindings for normal, visual and insert states
-  ;; (:states '(normal visual insert)
-  ;;          "C-c w" 'whisper-api-record-dwim
-  ;;          "C-c c" 'whisper-api-cancel)
-  ;; Bindings for the minibuffer-keymaps so that they also work inside the minibuffer.
-  ;; (:keymaps '(minibuffer-local-map minibuffer-local-ns-map)
-  ;;          "C-c w" 'whisper-api-record-dwim
-  ;;          "C-c c" 'whisper-api-cancel)
-  )
+  (setopt gptel-api-key '(lambda () (getenv "OPENAI_API_KEY"))))
+
+(use-package mcp
+  :ensure t
+  :after gptel
+  :config (require 'mcp-hub)
+  :hook (after-init . mcp-hub-start-all-server))
 
 
 ;; https://github.com/emacsorphanage/popwin
@@ -556,24 +588,23 @@ current buffer, killing it."
 ;; annoying buffers such like *Help*, *Completions*, *compilation*, and etc.
 (use-package popwin
   :ensure t
-  :config
-  (popwin-mode 1))
+  :hook (after-init . popwin-mode))
 
+;; https://github.com/larstvei/Try
 (use-package try
   :commands try
   :ensure t)
 
 (use-package dumb-jump
   :ensure t
-  :config
-  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
-
-  (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
+  :hook ('xref-backend-functions . #'dumb-jump-xref-activate)
+  :custom
+  (xref-show-definitions-function #'xref-show-definitions-completing-read))
 
 (use-package which-key
   :ensure t
+  :hook (after-init . which-key-mode)
   :config
-  (which-key-mode)
   (which-key-setup-side-window-bottom))
 
 ;; https://github.com/magnars/expand-region.le
@@ -592,7 +623,8 @@ current buffer, killing it."
 
 ;; R
 (use-package ess
-  :ensure t)
+  :ensure t
+  :mode ("\\.r\\'" . ess-mode))
 
 (use-package flycheck
   :ensure t
@@ -709,8 +741,7 @@ current buffer, killing it."
   :ensure t
   :bind (("C-1" . anzu-query-replace)
          ("C-!" . anzu-query-replace-regexp))
-  :config
-  (global-anzu-mode 1))
+  :hook (after-init . global-anzu-mode))
 
 ;; https://docs.projectile.mx/projectile/index.html
 (use-package projectile
@@ -723,13 +754,6 @@ current buffer, killing it."
   (setq projectile-project-compilation-cmd ""
         projectile-completion-system 'ivy
         projectile-enable-caching nil))
-
-;; Think this is included in projectile now
-(use-package projectile-ripgrep
-  :disabled
-  :after projectile
-  :defer t
-  :ensure t)
 
 ;; https://github.com/dajva/rg.el
 (use-package rg
@@ -747,7 +771,6 @@ current buffer, killing it."
 
 ;; https://github.com/jtbm37/all-the-icons-dired
 (use-package all-the-icons-dired
-  :defer t
   :ensure t
   :hook (dired-mode . all-the-icons-dired-mode))
 
@@ -781,6 +804,14 @@ current buffer, killing it."
   :config
   (setq nyan-wavy-trail 1)
   (nyan-mode))
+
+(use-package lean4-mode
+  :commands lean4-mode
+  :vc (:url "https://github.com/leanprover-community/lean4-mode.git"
+       :rev :last-release
+       ;; Or, if you prefer the bleeding edge version of Lean4-Mode:
+       ;; :rev :newest
+       ))
 
 ;; Veldig vanskelig å bruke?
 (use-package undo-tree
@@ -829,6 +860,23 @@ current buffer, killing it."
 
   )
 
+;; https://github.com/Artawower/blamer.el
+(use-package blamer
+  :ensure t
+  :bind (("s-j" . blamer-show-commit-info)
+         ("C-c j" . blamer-show-posframe-commit-info))
+  :defer 20
+  :custom
+  (blamer-idle-time 0.3)
+  (blamer-min-offset 70)
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+                    :background nil
+                    :height 120
+                    :italic t)))
+  :config
+  (global-blamer-mode 1))
+
 ;; https://github.com/alphapapa/magit-todos#installation
 ;; (use-package magit-todos
 ;;   :ensure t
@@ -866,14 +914,6 @@ current buffer, killing it."
 (use-package speedrect
   :load-path "~/.emacs.d/speedrect")
 
-(use-package ob-ipython
-  :disabled
-  :after company
-  :ensure t
-  :config
-  (add-hook 'ob-ipython-mode-hook
-            (lambda () (company-mode 1))))
-
 ;; https://github.com/zweifisch/ob-http
 ;; org mode source block http
 (use-package ob-http
@@ -885,6 +925,8 @@ current buffer, killing it."
   :bind ("C-x C-l" . #'dictionary-lookup-definition)
   :config
   (setq dictionary-server "dict.org"))
+
+
 
 (use-package ox-md
   :ensure nil
@@ -998,9 +1040,6 @@ current buffer, killing it."
 (global-set-key (kbd "C-c i")
                 (lambda () (interactive) (find-file "~/.emacs.d/init.el")))
 
-(global-set-key (kbd "C-c d")
-                (lambda () (interactive) (find-file "~/Dropbox/org/dagbok.org")))
-
 
 ;; https://github.com/tarsius/hl-todo
 (use-package hl-todo
@@ -1016,6 +1055,7 @@ current buffer, killing it."
   :config
   ;; (define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common)
   ;; Don't set this to 0 if you want yasnippet to work well.
+  ;; (add-to-list 'company-backends 'company-ispell)
   (setq company-idle-delay 0.1)
   (setq company-show-quick-access t)
   (setq company-minimum-prefix-length 1))
@@ -1044,6 +1084,7 @@ current buffer, killing it."
 (use-package prettier-js
   :defer t
   :ensure t)
+
 
 (use-package web-mode
   :ensure t
@@ -1384,9 +1425,13 @@ current buffer, killing it."
   :hook ((lsp-mode . lsp-enable-which-key-integration)
          (sh-mode . lsp)
          (lsp-mode . lsp-completion-mode)
+         (kotlin-mode . lsp)
          )
   :init
   (setq lsp-modeline-code-actions-segments '(count icon name))
+
+  (setenv "JAVA_HOME" "/Users/fredrikmeyer/.jenv/versions/21")
+  (setopt lsp-clients-kotlin-server-executable nil)
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
   (setq read-process-output-max (* 5 1024 1024)) ;; 5mb
@@ -1420,7 +1465,6 @@ current buffer, killing it."
   ;; (setq lsp-completion-enable nil)
 
   ;; Kotlin
-  (setq  lsp-kotlin-compiler-jvm-target "21")
 
 
   ;; try??
@@ -1445,10 +1489,6 @@ current buffer, killing it."
   (setq lsp-rust-server 'rust-analyzer)
 
   (setq lsp-lens-enable 't)
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-stdio-connection "bicep-langserver")
-                    :activation-fn (lsp-activate-on "python")
-                  :server-id 'pyls))
   )
 
 (use-package lsp-java
@@ -1467,6 +1507,24 @@ current buffer, killing it."
               (make-local-variable 'js-indent-level)
               (setq js-indent-level 2)))
   (add-hook 'json-mode-hook #'lsp))
+
+(defun kotlin-lsp-server-start-fun (port)
+  (list "kotlin-lsp" "--socket" (number-to-string port)))
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration
+	       '(kotlin-mode . "kotlin"))
+
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-tcp-connection 'kotlin-lsp-server-start-fun)
+    :activation-fn (lsp-activate-on "kotlin")
+    :major-modes '(kotlin-mode)
+    :priority -1
+    :server-id 'kotlin-jb-lsp
+    )
+   )
+  )
 
 (use-package dap-mode
   :disabled
@@ -1736,6 +1794,11 @@ current buffer, killing it."
   (recentf-max-saved-items 50)
   (recentf-max-menu-items 200))
 
+;; https://github.com/joaotavora/breadcrumb
+(use-package breadcrumb
+  :ensure t
+  :hook (after-init . breadcrumb-mode))
+
 
 ;; shell scripts
 (setq-default sh-basic-offset 2)
@@ -1788,7 +1851,7 @@ current buffer, killing it."
 (use-package fm-common-lisp)
 (use-package fm-python)
 (use-package fm-swiper)
-(use-package cfn-lint)
+;; (use-package cfn-lint)
 (use-package fm-clojure)
 (use-package fm-rust)
 (use-package flycheck-ruff)
@@ -1809,6 +1872,8 @@ current buffer, killing it."
   "Insert current date."
   (interactive)
   (insert (get-current-date)))
+
+(global-set-key (kbd "C-c d") 'insert-current-date)
 
 (defun insert-current-date-with-weekday ()
   "Insert current date with weekday."
@@ -1944,6 +2009,15 @@ current buffer, killing it."
       (insert (shell-command-to-string (concat "llm" " " command))))
     (display-buffer output-buffer)))
 
+(defun set-brightness ()
+  (interactive)
+  (let* ((answer (read-number "Prosent ")))
+    (do-applescript (format "
+tell application \"Shortcuts Events\"
+	run the shortcut named \"Set Brightness\" with input \"%s\"
+end tell
+" answer))))
+
 
 
 ;; Overwrite existing scss-stylelint checker to not use --syntax
@@ -2004,6 +2078,25 @@ See URL `http://stylelint.io/'."
   :ensure t
   :hook (prog-mode . paredit-everywhere-mode))
 
+(use-package vterm
+  :ensure t
+  :commands vterm
+  :custom
+  (vterm-always-compile-module t)
+  :hook
+  (vterm-mode . (lambda ()
+                  ;; https://emacsredux.com/blog/2020/11/21/disable-global-hl-line-mode-for-specific-modes/)
+                  (setq-local global-hl-line-mode nil)))
+  )
+
+
+(use-package claude-code-ide
+  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :branch "main")
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (setopt claude-code-ide-cli-path "/opt/homebrew/bin/claude")
+  (claude-code-ide-emacs-tools-setup))
+
 (use-package prolog-mode
   :disabled
   :ensure t
@@ -2052,3 +2145,86 @@ See URL `http://stylelint.io/'."
 ;;   '(progn
 ;;     (define-key oz-mode-map (kbd "C-x SPC") 'rectangle-mark-mode)
 ;; ))
+
+;; https://www.reddit.com/r/emacs/comments/1mdi8vu/a_transient_for_help/
+;;; A Help Transient on C-S-h
+(transient-define-prefix hrm-help-transient ()
+  "Help commands that I use. A subset of C-h with others thrown in."
+  ["Help Commands"
+   ["Mode & Bindings"
+    ("m" "Mode" describe-mode)
+    ;; ("M" "Minor Modes" consult-minor-mode-menu)
+    ("b" "Major Bindings" which-key-show-full-major-mode)
+    ("B" "Minor Bindings" which-key-show-full-minor-mode-keymap)
+    ("d" "Descbinds" describe-bindings) ; or embark-bindings
+    ("t" "Top Bindings  " which-key-show-top-level)
+    ]
+   ["Describe"
+    ("C" "Command" helpful-command)
+    ("f" "Function" helpful-callable)
+    ("v" "Variable " helpful-variable)
+    ("k" "Key" helpful-key)
+    ("s" "Symbol" helpful-symbol)
+    ("l" "Library" apropos-library)
+    ]
+   ["Info on"
+    ("C-c" "Command" Info-goto-emacs-command-node)
+    ("C-f" "Function" info-lookup-symbol)
+    ("C-v" "Variable" info-lookup-symbol) ; fails if transient-detect-key-conflicts
+    ("C-k" "Key" Info-goto-emacs-key-command-node)
+    ("C-s" "Symbol" info-lookup-symbol)
+    ]
+   ["Goto Source"
+    ""
+    ("F" "Function" find-function-other-frame)
+    ("V" "Variable" find-variable-other-frame)
+    ("K" "Key" find-function-on-key-other-frame)
+    ""
+    ("L" "Library" find-library-other-frame)
+    ]
+   ["Apropos"
+    ("ac" "Command" apropos-command)
+    ("af" "Function" apropos-function)
+    ("av" "Variable" apropos-variable)
+    ("aV" "Value" apropos-value)
+    ("aL" "Local Value" apropos-local-value)
+    ("ad" "Documentation" apropos-documentation)
+    ]
+   ]
+  [
+   ["Internals"
+    ("I" "Input Method" describe-input-method)
+    ("G" "Language Env" describe-language-environment)
+    ("S" "Syntax" describe-syntax)
+    ("T" "Categories" describe-categories)
+    ("O" "Coding System" describe-coding-system)
+    ("o" "Coding Briefly" describe-current-coding-system-briefly)
+    ("T" "Display Table" describe-current-display-table)
+    ("e" "Echo Messages" view-echo-area-messages)
+    ("H" "Lossage" view-lossage)
+    ]
+   ["Describe"
+    ("." "At Point" helpful-at-point)
+    ("c" "Key Short" describe-key-briefly)
+    ("p" "Key Map" describe-keymap)
+    ("A" "Face" describe-face)
+    ("i" "Icon" describe-icon)
+    ("w" "Where Is" where-is)
+    ("=" "Position" what-cursor-position)
+    ("g" "Shortdoc" shortdoc-display-group)
+    ]
+   ["Info Manuals"
+    ("C-i" "Info" info)
+    ("C-4" "Other Window" info-other-window)
+    ("C-e" "Emacs" info-emacs-manual)
+    ;; ("C-l" "Elisp" info-elisp-manual)
+    ("C-r" "Pick Manual" info-display-manual)
+    ]
+   ["External"
+    ;; ("N" "Man" consult-man)
+    ;; ("W" "Dictionary" lookup-word-at-point)
+    ;; ("D" "Dash" dash-at-point)
+    ]
+   ]
+  )
+(global-set-key (kbd "C-S-h") 'hrm-help-transient)

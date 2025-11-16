@@ -1,5 +1,5 @@
+;;  -*- lexical-binding: t; -*-
 ;; https://github.com/flycheck/flycheck/issues/1974#issuecomment-1343495202
-
 (require 'flycheck)
 
 
