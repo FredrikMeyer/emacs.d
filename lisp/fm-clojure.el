@@ -74,7 +74,7 @@
   ;; Don't prompt and don't save
   (setq cider-save-file-on-load nil)
 
-  (setq cider-injected-nrepl-version "1.4.0")
+  (setq cider-injected-nrepl-version "1.5.0")
 
   (defun cider-start-http-server ()
     (interactive)
@@ -98,7 +98,7 @@
 
   (defun run-sketch ()
     (interactive)
-    (cider-interactive-eval "(sketch)"))
+    (cider-interactive-eval "(require 'template.dynamic)(reset! template.dynamic/draw-width w)(reset! template.dynamic/draw-height h)(template.dynamic/sketch #'setup #'draw)"))
 
   (keymap-set cider-mode-map "C-c C-å" 'run-sketch)
 

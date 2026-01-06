@@ -354,6 +354,7 @@
                                (dot . t)
                                (clojure . t)
                                (shell . t)
+                               (sql . t)
                                (latex . t)
                                (java . t)
                                (plantuml . t)
@@ -573,8 +574,17 @@ current buffer, killing it."
   :ensure t
   :vc (:url "https://github.com/karthink/gptel"
             :branch master)
+  :bind (:map gptel-mode-map
+              (("C-x m" . 'gptel-menu)))
   :config
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
+  (setopt gptel-default-mode 'org-mode)
   (setopt gptel-api-key '(lambda () (getenv "OPENAI_API_KEY"))))
+
+(use-package gptel-magit
+  :ensure t
+  :hook (magit-mode . gptel-magit-install))
+
 
 (use-package mcp
   :ensure t
@@ -841,7 +851,10 @@ current buffer, killing it."
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x C-g" . magit-list-repositories)
-         ("C-x C-S-B" . magit-blame-addition))
+         ("C-x C-S-B" . magit-blame-addition)
+         ;; ("s-x l" . magit-log-buffer-file)
+
+         )
   :init
   (setq magit-repository-directories
         `(("~/code" . 1)
@@ -2088,6 +2101,12 @@ See URL `http://stylelint.io/'."
                   ;; https://emacsredux.com/blog/2020/11/21/disable-global-hl-line-mode-for-specific-modes/)
                   (setq-local global-hl-line-mode nil)))
   )
+
+;; https://github.com/jixiuf/vterm-toggle
+(use-package vterm-toggle
+  :ensure t
+  :bind (("<f2>" . 'vterm-toggle-insert-cd)
+         (:map vterm-mode-map ("<f2>" . 'vterm-toggle))))
 
 
 (use-package claude-code-ide
