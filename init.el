@@ -104,6 +104,9 @@
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
 
+;; https://emacsredux.com/blog/2026/03/15/isearch-lazy-count/
+(setopt isearch-lazy-count t)
+
 ;; EDITING
 
 ;; Highlights matching parenthesis
@@ -531,7 +534,9 @@ current buffer, killing it."
   :vc (:url "https://github.com/xenodium/acp.el"))
 
 (use-package agent-shell
-  :vc (:url "https://github.com/xenodium/agent-shell"))
+  :vc (:url "https://github.com/xenodium/agent-shell")
+  :hook (agent-shell . agent-shell-completion-mode)
+  )
 
 
 (use-package org-ai
@@ -549,7 +554,6 @@ current buffer, killing it."
   (org-ai-install-yasnippets)
   (setopt org-ai-openai-api-token (getenv "OPENAI_API_KEY"))
   )
-
 
 ;; https://github.com/rejeep/prodigy.el
 (use-package prodigy
@@ -855,11 +859,18 @@ current buffer, killing it."
          ;; ("s-x l" . magit-log-buffer-file)
 
          )
+  :custom
+  (magit-section-heading
+   ((t (:inherit modus-themes-bold :extend t :foreground "#193668" :weight ultra-heavy))))
   :init
   (setq magit-repository-directories
         `(("~/code" . 1)
           ("~/code/work" . 1)
           (,user-emacs-directory . 0)))
+
+   (setq magit-section-visibility-indicators
+         '((" ▶" . t) (" >" . t)))
+
   (setq magit-list-refs-sortby "-creatordate"))
 
 (use-package forge
@@ -878,10 +889,11 @@ current buffer, killing it."
   :ensure t
   :bind (("s-j" . blamer-show-commit-info)
          ("C-c j" . blamer-show-posframe-commit-info))
-  :defer 20
+
   :custom
   (blamer-idle-time 0.3)
   (blamer-min-offset 70)
+  (blamer-type 'posframe-popup)
   :custom-face
   (blamer-face ((t :foreground "#7a88cf"
                     :background nil
@@ -889,6 +901,7 @@ current buffer, killing it."
                     :italic t)))
   :config
   (global-blamer-mode 1))
+
 
 ;; https://github.com/alphapapa/magit-todos#installation
 ;; (use-package magit-todos
@@ -1188,7 +1201,7 @@ current buffer, killing it."
   :config
   (setq plantuml-executable-path "/opt/homebrew/bin/plantuml")
   (setq plantuml-output-type "png")
-  (setq plantuml-jar-path "/opt/homebrew/Cellar/plantuml/1.2025.2/libexec/plantuml.jar")
+  (setq plantuml-jar-path "/opt/homebrew/Cellar/plantuml/1.2026.1/libexec/plantuml.jar")
   (setq plantuml-default-exec-mode 'executable))
 
 ;; https://github.com/alexmurray/flycheck-plantuml
@@ -1232,6 +1245,7 @@ current buffer, killing it."
               ("C-M-f" . 'sp-forward-sexp)
               ("C-M-b" . 'sp-backward-sexp)
               ("C-M-d" . 'sp-down-sexp)
+              ("C-M-(" . 'sp-wrap-round)
               ("C-M-a" . 'sp-backward-down-sexp)
               ("C-S-d" . 'sp-beginning-of-sexp)
               ("C-S-a" . 'sp-end-of-sexp)
