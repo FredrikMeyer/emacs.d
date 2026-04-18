@@ -93,12 +93,18 @@
       sentence-end-double-space nil
       line-move-visual nil)
 
+;; https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
+(setq bidi-inhibit-bpa t)
+
 (custom-set-variables '(calendar-week-start-day 1))
 (require 'calendar)
 (setq calendar-date-style 'iso)
 
 ;; Changes all yes/no questions to y/n type
-(fset 'yes-or-no-p 'y-or-n-p)
+(setopt use-short-answers t)
+
 (setq-default cursor-type 'bar)
 
 ;; Don't use hard tabs
@@ -588,6 +594,12 @@ current buffer, killing it."
 (use-package gptel-magit
   :ensure t
   :hook (magit-mode . gptel-magit-install))
+
+(use-package magit-gh
+  :ensure t
+  :after magit
+  :init
+  (setq magit-gh-key ";"))
 
 
 (use-package mcp

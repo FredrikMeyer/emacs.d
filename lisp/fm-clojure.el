@@ -66,6 +66,7 @@
   ;; Wrap when navigating history.
   (setq cider-repl-wrap-history t)
 
+  ;; https://github.com/clojure-emacs/enrich-classpath
   (setq cider-enrich-classpath t)
 
   ;; Where to store the cider history.
