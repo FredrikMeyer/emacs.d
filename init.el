@@ -952,11 +952,6 @@ current buffer, killing it."
 (use-package speedrect
   :load-path "~/.emacs.d/speedrect")
 
-;; https://github.com/zweifisch/ob-http
-;; org mode source block http
-(use-package ob-http
-  :ensure t)
-
 ;; https://emacsredux.com/blog/2023/04/11/looking-up-words-in-a-dictionary/
 ;; https://www.manueluberti.eu/emacs/2021/07/31/dictionary/
 (use-package dictionary
@@ -1797,9 +1792,6 @@ current buffer, killing it."
   :config
   (when (string= system-type "darwin")
     (setq dired-use-ls-dired nil)))
-
-(use-package peep-dired
-  :ensure t)
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()

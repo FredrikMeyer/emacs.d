@@ -20,7 +20,8 @@
                pinentry pkg-info popwin prettier-js prodigy projectile-ripgrep py-autopep8 py-isort python-black
                python-pytest pyvenv racket-mode rainbow-delimiters rg rust-mode slime-company smart-hungry-delete
                smartparens spacemacs-theme system-packages tide toc-org treemacs-projectile try typescript-mode
-               undo-tree virtualenvwrapper vterm-toggle web-mode which-key whisper-api yasnippet-snippets)))
+               undo-tree virtualenvwrapper vterm-toggle web-mode which-key whisper-api yasnippet-snippets))
+ '(warning-suppress-log-types '((org-element org-element-parser))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

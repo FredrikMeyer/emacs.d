@@ -52,10 +52,6 @@
   :init
   (setq py-autopep8-options '("--max-line-length=120")))
 
-(use-package py-isort
-  :ensure t
-  :after python)
-
 (use-package virtualenvwrapper
   :ensure t
   :config
