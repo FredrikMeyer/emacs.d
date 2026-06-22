@@ -1,4 +1,4 @@
-;;; init.el --- My Emacs config -*- lexical-binding: t; -*-x
+;;; init.el --- My Emacs config -*- lexical-binding: t; -*-
 
 ;; Author: Fredrik Meyer
 
@@ -30,7 +30,8 @@
 
 (package-initialize)
 (unless package-archive-contents
-  (package-refresh-contents))
+  ;; (package-refresh-contents)
+  )
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
@@ -55,7 +56,6 @@
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
 
@@ -178,7 +178,7 @@
   ;;   exec-path-from-shell-arguments nil)
   :config
   (setopt exec-path-from-shell-arguments '("-l" "-i"))
-  (dolist (var '("GOPATH" "OPENAI_API_KEY"))
+  (dolist (var '("GOPATH" "OPENAI_API_KEY" "JIRA_API_TOKEN"))
     (add-to-list 'exec-path-from-shell-variables var))
   (exec-path-from-shell-initialize)
   ;; (exec-path-from-shell-copy-env "PATH")
@@ -201,6 +201,10 @@
 
 (use-package package-utils
   :ensure t)
+
+(use-package speedbar
+  :config
+  (setopt speedbar-show-unknown-files t))
 
 ;; HippieExpand: M-n for to complete
 ;; http://www.emacswiki.org/emacs/HippieExpand
@@ -546,7 +550,7 @@ current buffer, killing it."
 
 
 (use-package org-ai
-  :ensure ;TODO:
+  :ensure t
   :commands (org-ai-mode
              org-ai-global-mode)
   :custom
@@ -591,6 +595,7 @@ current buffer, killing it."
   (setopt gptel-default-mode 'org-mode)
   (setopt gptel-api-key '(lambda () (getenv "OPENAI_API_KEY"))))
 
+
 (use-package gptel-magit
   :ensure t
   :hook (magit-mode . gptel-magit-install))
@@ -599,7 +604,9 @@ current buffer, killing it."
   :ensure t
   :after magit
   :init
-  (setq magit-gh-key ";"))
+  (setq magit-gh-key ";")
+  :config
+  (load (expand-file-name "lisp/magit-gh-pr-create" user-emacs-directory)))
 
 
 (use-package mcp
@@ -779,7 +786,11 @@ current buffer, killing it."
   :config
   (setq projectile-project-compilation-cmd ""
         projectile-completion-system 'ivy
-        projectile-enable-caching nil))
+        projectile-enable-caching nil
+        projectile-create-missing-test-files t)
+  (add-to-list 'projectile-other-file-alist
+               '("scala" "scala"))
+  )
 
 ;; https://github.com/dajva/rg.el
 (use-package rg
@@ -908,7 +919,7 @@ current buffer, killing it."
   (blamer-type 'posframe-popup)
   :custom-face
   (blamer-face ((t :foreground "#7a88cf"
-                    :background nil
+                   :background "unspecified"
                     :height 120
                     :italic t)))
   :config
@@ -1035,6 +1046,21 @@ current buffer, killing it."
                 (org-projectile-project-todo-entry
                  :capture-character "l")))
 
+(use-package jira
+  :ensure t
+  :config
+  (setq jira-base-url "https://nav.atlassian.net/")
+  (setq jira-username "fredrik.meyer@nav.no") ;; Jira username (usually, an email)
+  ;; API token for Jira
+  ;; See https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
+  (setq jira-token   (getenv "JIRA_API_TOKEN"))
+  (setq jira-token-is-personal-access-token nil)
+  (setq jira-api-version 3) ;; Version 2 is also allowed
+  ;; (Optional) API token for JIRA TEMPO plugin
+  ;; See https://apidocs.tempo.io/
+  ;; (setq jira-tempo-token "foobar123123")
+  )
+
 (use-package treemacs
   :ensure t
   :bind
@@ -1105,9 +1131,9 @@ current buffer, killing it."
   (company-quickhelp-mode))
 
 ;; https://github.com/sebastiencs/company-box
-(use-package company-box
-  :ensure t
-  :hook (company-mode . company-box-mode))
+;; (use-package company-box
+;;   :ensure t
+;;   :hook (company-mode . company-box-mode))
 
 (use-package json-mode
   :mode "\\.json\\'"
@@ -1235,9 +1261,9 @@ current buffer, killing it."
 (use-package dashboard
   :ensure t
   :init
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-items '((recents  . 5)
+  (setopt dashboard-set-heading-icons t)
+  (setopt dashboard-set-file-icons t)
+  (setopt dashboard-items '((recents  . 5)
                           (projects . 10)
                           ;; (bookmarks . 0)
                           (agenda . 5)))
@@ -1465,7 +1491,7 @@ current buffer, killing it."
   (setq lsp-modeline-code-actions-segments '(count icon name))
 
   (setenv "JAVA_HOME" "/Users/fredrikmeyer/.jenv/versions/21")
-  (setopt lsp-clients-kotlin-server-executable nil)
+  ;; (setopt lsp-clients-kotlin-server-executable nil)
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
   (setq read-process-output-max (* 5 1024 1024)) ;; 5mb
@@ -1481,7 +1507,6 @@ current buffer, killing it."
   (setq lsp-lens-enable t)
 
   (setq lsp-ui-doc-enable t)
-  (setq lsp-ui-sideline-show-code-actions nil)
   (setq lsp-ui-sideline-delay 0.1)
   (setq lsp-ui-doc-use-webkit nil)
   (setq lsp-ui-doc-webkit-max-width-px 1000)
@@ -1489,6 +1514,7 @@ current buffer, killing it."
   (setq lsp-lens-place-position 'above-line)
   (setq lsp-ui-doc-include-signature t)
   (setq lsp-ui-doc-enhanced-markdown t)
+  (setq lsp-inlay-hint-enable t)
 
   (setq lsp-ui-sideline-show-code-actions nil)
   (setq lsp-ui-sideline-show-hover nil)
@@ -1541,6 +1567,48 @@ current buffer, killing it."
               (make-local-variable 'js-indent-level)
               (setq js-indent-level 2)))
   (add-hook 'json-mode-hook #'lsp))
+
+;; (use-package scala-mode
+;;   :ensure t
+;;   :mode "\\.s\\(cala\\|bt\\)$"
+;;   :hook (scala-mode . my/start-metals-lsp))
+
+(use-package scala-ts-mode
+  :ensure t
+  :mode "\\.s\\(cala\\|bt\\)$"
+  :hook (scala-ts-mode . my/start-metals-lsp)
+  :config
+  (setq treesit-font-lock-level 4)
+)
+
+(defun my/start-metals-lsp ()
+  "Start Metals through lsp-mode when the server is already installed."
+  (if (executable-find "metals")
+      (progn
+        (require 'lsp-metals)
+        (lsp-deferred))
+    (message "Metals executable not found; install it outside Emacs with: cs install metals")))
+
+(use-package lsp-metals
+  :ensure t
+  :defer t
+  :init
+  (setq lsp-metals-server-command "metals"
+        lsp-metals-java-home (getenv "JAVA_HOME")
+        lsp-metals-inlay-hints-enable-type-parameters nil))
+
+(use-package sbt-mode
+  :ensure t
+  :commands sbt-start sbt-command
+  :custom
+   (sbt:default-command "testQuick")
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map))
 
 (defun kotlin-lsp-server-start-fun (port)
   (list "kotlin-lsp" "--socket" (number-to-string port)))
@@ -1617,7 +1685,6 @@ current buffer, killing it."
 
 (use-package spacemacs-theme
   :ensure t
-;  :disabled
   )
 
 (use-package leuven-theme
@@ -1625,9 +1692,6 @@ current buffer, killing it."
   :disabled
   :config
   (load-theme 'leuven t))
-
-(use-package material-theme
-  :ensure t)
 
 (use-package modus-themes
   :ensure t
@@ -1638,13 +1702,6 @@ current buffer, killing it."
                                 ))
 
   (load-theme 'modus-operandi t))
-
-;; (use-package org-modern
-;;   :ensure t
-;;   :config
-;;   (global-org-modern-mode)
-;;   (add-hook 'org-mode-hook #'org-modern-mode))
-
 
 (use-package solarized-theme
   :ensure t
@@ -1872,8 +1929,6 @@ current buffer, killing it."
 (setq ring-bell-function 'ignore)
 (setq visible-bell t)
 
-
-(show-paren-mode 1)
 
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
@@ -2123,16 +2178,17 @@ See URL `http://stylelint.io/'."
 ;; https://github.com/jixiuf/vterm-toggle
 (use-package vterm-toggle
   :ensure t
+  :after vterm
   :bind (("<f2>" . 'vterm-toggle-insert-cd)
          (:map vterm-mode-map ("<f2>" . 'vterm-toggle))))
 
 
-(use-package claude-code-ide
-  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :branch "main")
-  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
-  :config
-  (setopt claude-code-ide-cli-path "/opt/homebrew/bin/claude")
-  (claude-code-ide-emacs-tools-setup))
+;;(use-package claude-code-ide
+;;  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :branch "main")
+;;  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+;;  :config
+;,  (setopt claude-code-ide-cli-path "/opt/homebrew/bin/claude")
+;;  (claude-code-ide-emacs-tools-setup))
 
 (use-package prolog-mode
   :disabled
