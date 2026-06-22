@@ -1,5 +1,4 @@
-;;; early-init.el --- early bird  -*- no-byte-compile: t -*-
-
+;;; early-init.el --- early bird  -*- no-byte-compile: t -*- lexical-binding: t
 
 ;;; Code:
 
@@ -30,6 +29,3 @@
                    ":"))
 
 ;; (setq initial-frame-alist '((top . 0) (left . 0) (width . 177) (height . 53)))
-
-;;(setq package-enable-at-startup t)
-;; (package-initialize)
