@@ -23,19 +23,10 @@
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("gnu" . "https://elpa.gnu.org/packages/")
-                         ;; ("melpa-stable" . "https://stable.melpa.org/packages/")
                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-                         ;; ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
-(unless package-archive-contents
-  ;; (package-refresh-contents)
-  )
-
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
 
 (eval-when-compile
   (require 'use-package))
@@ -44,8 +35,8 @@
 
 (setq use-package-verbose nil)
 
-(setq user-full-name "Fredrik Meyer"
-      user-mail-address "hrmeyer@gmail.com")
+(setopt user-full-name "Fredrik Meyer"
+        user-mail-address "hrmeyer@gmail.com")
 
 ;; Full path in title bar
 (setq-default frame-title-format "Emacs %b (%f)")
@@ -97,6 +88,10 @@
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
 (setq bidi-inhibit-bpa t)
+
+(use-package treesit
+  :config
+  (setopt treesit-auto-install-grammar 'always))
 
 (custom-set-variables '(calendar-week-start-day 1))
 (require 'calendar)
@@ -203,6 +198,7 @@
   :ensure t)
 
 (use-package speedbar
+  :bind (("C-x t s" . speedbar-window-mode))
   :config
   (setopt speedbar-show-unknown-files t))
 
@@ -272,14 +268,14 @@
     )
 
   (defun set-creation-date-heading-property ()
-      (save-excursion
-        (org-back-to-heading)
-        (org-set-property "CREATED" (format-time-string "%Y-%m-%d %T"))))
+    (save-excursion
+      (org-back-to-heading)
+      (org-set-property "CREATED" (format-time-string "%Y-%m-%d %T"))))
 
   (defun my-org-mode-date-heading-on ()
-      "Turn on heading creation date property."
-      (interactive)
-      (add-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
+    "Turn on heading creation date property."
+    (interactive)
+    (add-hook 'org-insert-heading-hook #'set-creation-date-heading-property))
 
   (defun my-org-mode-date-heading-off ()
     "Turn off heading creation date property."
@@ -312,9 +308,9 @@
          ("C-M-<return>" . org-insert-subheading)
          ("C-c b" . org-switchb))
   :hook ((org-mode . (lambda ()
-                             (visual-line-mode t)
-                             (auto-save-mode t)
-                             (electric-pair-mode 0))))
+                       (visual-line-mode t)
+                       (auto-save-mode t)
+                       (electric-pair-mode 0))))
   :custom
   (org-clock-persist t)
   :config
@@ -329,21 +325,21 @@
           ;; The default value was buggy.
           org-fold-core-style 'overlays)
   (setq
-        org-log-done 'time
-        org-confirm-babel-evaluate nil
-        org-edit-src-content-indentation 0
-        org-image-actual-width nil
-        org-startup-indented t
-        org-startup-with-inline-images t
-        org-directory "~/Dropbox/org"
-        org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
-        org-plantuml-exec-mode 'plantuml
-        org-preview-latex-default-process 'dvipng
-        org-ellipsis " ↕"
-        org-plantuml-jar-path "/opt/homebrew/bin/plantuml"
-        org-babel-clojure-backend 'cider
-        org-use-speed-commands t
-        org-agenda-sticky nil)
+   org-log-done 'time
+   org-confirm-babel-evaluate nil
+   org-edit-src-content-indentation 0
+   org-image-actual-width nil
+   org-startup-indented t
+   org-startup-with-inline-images t
+   org-directory "~/Dropbox/org"
+   org-format-latex-options (plist-put org-format-latex-options :scale 1.5)
+   org-plantuml-exec-mode 'plantuml
+   org-preview-latex-default-process 'dvipng
+   org-ellipsis " ↕"
+   org-plantuml-jar-path "/opt/homebrew/bin/plantuml"
+   org-babel-clojure-backend 'cider
+   org-use-speed-commands t
+   org-agenda-sticky nil)
 
   (setq org-special-ctrl-a/e t)
 
@@ -438,7 +434,7 @@
                       ;;(org-agenda-skip-function '(org-agenda-skip-if nil '(deadline)))
                       (org-agenda-overriding-header "All tasks:")
                       )
-                  ))
+                     ))
            ((org-agenda-files '("~/Dropbox/org/notater.org" "~/Dropbox/org/tasks.org"))
             (org-agenda-span 'day)
             (org-agenda-show-log t)
@@ -448,12 +444,12 @@
            (
             (agenda "x"
                     ((org-super-agenda-groups
-                         '(
-                           (:log t)
-                           (:name "Agenda"
-                                 :time-grid t)
-                           (:auto-outline-path t)
-                           ))
+                      '(
+                        (:log t)
+                        (:name "Agenda"
+                               :time-grid t)
+                        (:auto-outline-path t)
+                        ))
                      ))
             (alltodo "xx"
                      ((org-super-agenda-groups '(
@@ -732,7 +728,7 @@ current buffer, killing it."
          ("C-'" . 'tab-next)
          ("C-§" . 'tab-previous)
          ("s-!" . 'tab-bar-rename-tab)
-              )
+         )
   :init
   (dotimes (n 4)
     (global-unset-key (kbd (format "C-%d" n)))
@@ -845,10 +841,10 @@ current buffer, killing it."
 (use-package lean4-mode
   :commands lean4-mode
   :vc (:url "https://github.com/leanprover-community/lean4-mode.git"
-       :rev :last-release
-       ;; Or, if you prefer the bleeding edge version of Lean4-Mode:
-       ;; :rev :newest
-       ))
+            :rev :last-release
+            ;; Or, if you prefer the bleeding edge version of Lean4-Mode:
+            ;; :rev :newest
+            ))
 
 ;; Veldig vanskelig å bruke?
 (use-package undo-tree
@@ -891,8 +887,8 @@ current buffer, killing it."
           ("~/code/work" . 1)
           (,user-emacs-directory . 0)))
 
-   (setq magit-section-visibility-indicators
-         '((" ▶" . t) (" >" . t)))
+  (setq magit-section-visibility-indicators
+        '((" ▶" . t) (" >" . t)))
 
   (setq magit-list-refs-sortby "-creatordate"))
 
@@ -902,7 +898,7 @@ current buffer, killing it."
   :config
   (setq forge-topic-list-order '(updated . string>))
   (push '("ghe.nav.no" "ghe.nav.no/api/v3"
-        "ghe.nav.no" forge-github-repository)
+          "ghe.nav.no" forge-github-repository)
         forge-alist)
 
   )
@@ -920,8 +916,8 @@ current buffer, killing it."
   :custom-face
   (blamer-face ((t :foreground "#7a88cf"
                    :background "unspecified"
-                    :height 120
-                    :italic t)))
+                   :height 120
+                   :italic t)))
   :config
   (global-blamer-mode 1))
 
@@ -1042,9 +1038,9 @@ current buffer, killing it."
   :ensure t
   :config
   (setq org-projectile-projects-file "~/Dropbox/org/prosjekter.org")
-   (add-to-list 'org-capture-templates
-                (org-projectile-project-todo-entry
-                 :capture-character "l")))
+  (add-to-list 'org-capture-templates
+               (org-projectile-project-todo-entry
+                :capture-character "l")))
 
 (use-package jira
   :ensure t
@@ -1264,9 +1260,9 @@ current buffer, killing it."
   (setopt dashboard-set-heading-icons t)
   (setopt dashboard-set-file-icons t)
   (setopt dashboard-items '((recents  . 5)
-                          (projects . 10)
-                          ;; (bookmarks . 0)
-                          (agenda . 5)))
+                            (projects . 10)
+                            ;; (bookmarks . 0)
+                            (agenda . 5)))
   :config
   (dashboard-setup-startup-hook))
 
@@ -1421,7 +1417,7 @@ current buffer, killing it."
 (use-package markdown-mode
   :ensure t
   :mode ("\\.md[x]?$")
-;;  :ensure-system-package pandoc
+  ;;  :ensure-system-package pandoc
   :config
   (setq-default fill-column 120)
   (add-hook 'markdown-mode-hook 'auto-fill-mode nil t)
@@ -1435,10 +1431,10 @@ current buffer, killing it."
                         file))))
   (setq markdown-header-scaling 1)
   (setq markdown-command
-      (concat
-       "/usr/local/bin/pandoc"
-       " --from=markdown --to=html"
-       " --standalone --mathjax --highlight-style=pygments")))
+        (concat
+         "/usr/local/bin/pandoc"
+         " --from=markdown --to=html"
+         " --standalone --mathjax --highlight-style=pygments")))
 
 (use-package pandoc-mode
   :ensure t)
@@ -1579,7 +1575,7 @@ current buffer, killing it."
   :hook (scala-ts-mode . my/start-metals-lsp)
   :config
   (setq treesit-font-lock-level 4)
-)
+  )
 
 (defun my/start-metals-lsp ()
   "Start Metals through lsp-mode when the server is already installed."
@@ -1601,7 +1597,7 @@ current buffer, killing it."
   :ensure t
   :commands sbt-start sbt-command
   :custom
-   (sbt:default-command "testQuick")
+  (sbt:default-command "testQuick")
   :config
   ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
   ;; allows using SPACE when in the minibuffer
@@ -1638,8 +1634,8 @@ current buffer, killing it."
   ;; Maybe solves it...
   (dap-tooltip-mode -1)
   ;; (require 'dap-python)
-  ; should fix it also
-;  (dap-enable-mouse-support nil)
+                                        ; should fix it also
+                                        ;  (dap-enable-mouse-support nil)
   ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
   )
 
@@ -1781,6 +1777,13 @@ current buffer, killing it."
 (global-set-key (kbd "C-S-c <down>") 'shrink-window)
 
 
+;; https://www.rahuljuliato.com/posts/emacs-31-around-the-corner
+(use-package window
+  :ensure nil
+  :defer t
+  :bind (("C-x w f h" . window-layout-flip-leftright)
+         ("C-x w f v" . window-layout-flip-topdown)))
+
 ;; Yaml
 (use-package yaml-mode
   :ensure t
@@ -1828,6 +1831,7 @@ current buffer, killing it."
                            (name . "^\\*scratch\\*$")
                            (name . "^\\*Messages\\*$")))))))
 
+  (setopt ibuffer-human-readable-size t)
   (setq ibuffer-formats
         '((mark modified read-only " "
                 (name 30 30 :left :elide) ; change: 30s were originally 18s
@@ -2182,6 +2186,11 @@ See URL `http://stylelint.io/'."
   :bind (("<f2>" . 'vterm-toggle-insert-cd)
          (:map vterm-mode-map ("<f2>" . 'vterm-toggle))))
 
+(use-package ready-player
+  :ensure t
+  :config
+  (ready-player-mode +1))
+
 
 ;;(use-package claude-code-ide
 ;;  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :branch "main")
@@ -2199,18 +2208,6 @@ See URL `http://stylelint.io/'."
   :disabled
   :mode "\\.fnl$'"
   :ensure t)
-
-(use-package neotree
-  :disabled
-  :ensure t
-  :bind ("C-x t" . neotree-toggle)
-  :config
-  (setq neo-smart-open t)
-  (setq neo-theme 'icons)
-  (setq neo-window-fixed-size nil)
-  (setq neo-show-hidden-files t)
-  ;; https://github.crookster.org/macOS-Emacs-26-display-line-numbers-and-me/
-  (add-hook 'neo-after-create-hook (lambda (&rest _) (display-line-numbers-mode -1))))
 
 ;; Try Oz
 
