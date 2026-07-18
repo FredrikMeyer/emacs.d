@@ -84,26 +84,32 @@
       sentence-end-double-space nil
       line-move-visual nil)
 
+;; Changes all yes/no questions to y/n type
+(setopt use-short-answers t)
+
 ;; https://emacsredux.com/blog/2026/04/07/stealing-from-the-best-emacs-configs/
 (setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right)
+
+
 (setq bidi-inhibit-bpa t)
 
 (use-package treesit
-  :config
-  (setopt treesit-auto-install-grammar 'always))
+  :custom
+  (treesit-auto-install-grammer 'always)
+  (treesit-font-lock-level 4))
 
-(custom-set-variables '(calendar-week-start-day 1))
-(require 'calendar)
-(setq calendar-date-style 'iso)
-
-;; Changes all yes/no questions to y/n type
-(setopt use-short-answers t)
+(use-package calendar
+  :ensure nil
+  :custom
+  (calendar-week-start-day 1)
+  (calendar-date-style 'iso))
 
 (setq-default cursor-type 'bar)
 
 ;; Don't use hard tabs
 (setq-default indent-tabs-mode nil)
+(setq-default require-final-newline t)
 
 ;; https://emacsredux.com/blog/2026/03/15/isearch-lazy-count/
 (setopt isearch-lazy-count t)
@@ -133,13 +139,13 @@
   :ensure nil
   :hook (after-init . column-number-mode))
 
-(setopt c-default-style '((java-mode . "java")
-                          (awk-mode . "awk")
-                          (other . "stroustrup")))
+;; (setopt c-default-style '((java-mode . "java")
+;;                           (awk-mode . "awk")
+;;                           (other . "stroustrup")))
 
 ;; First try to indent the current line, and if the line
 ;; was already indented, then try `completion-at-point'
-(setopt tab-always-indent t
+(setopt tab-always-indent 'complete
         tab-first-completion nil)
 
 
@@ -172,7 +178,7 @@
 ;;   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
   ;;   exec-path-from-shell-arguments nil)
   :config
-  (setopt exec-path-from-shell-arguments '("-l" "-i"))
+  (setopt exec-path-from-shell-arguments '("-l"))
   (dolist (var '("GOPATH" "OPENAI_API_KEY" "JIRA_API_TOKEN"))
     (add-to-list 'exec-path-from-shell-variables var))
   (exec-path-from-shell-initialize)
@@ -190,17 +196,18 @@
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
   :ensure t
-  :config
-  (setq system-packages-use-sudo 'nil)
-  (setq system-packages-package-manager 'brew))
+  :custom
+  (system-packages-use-sudo 'nil)
+  (system-packages-package-manager 'brew))
 
 (use-package package-utils
   :ensure t)
 
 (use-package speedbar
   :bind (("C-x t s" . speedbar-window-mode))
-  :config
-  (setopt speedbar-show-unknown-files t))
+  :custom
+  (speedbar-show-unknown-files t)
+  (speedbar-prefer-window t))
 
 ;; HippieExpand: M-n for to complete
 ;; http://www.emacswiki.org/emacs/HippieExpand
@@ -218,6 +225,12 @@
              try-complete-lisp-symbol-partially
              try-complete-lisp-symbol)))
 
+(use-package ediff
+  :ensure nil
+  :config
+  (setopt ediff-window-setup-function 'ediff-setup-windows-plain)
+  (setopt ediff-split-window-function 'split-window-horizontally))
+
 ;; For some reason failed to install with use-package
 ;; Had to do M-x package-install pinentry
 ;; https://elpa.gnu.org/packages/pinentry.html
@@ -225,28 +238,37 @@
   :ensure t
   :hook (after-init . pinentry-start))
 
-(use-package ob-plantuml)
-(use-package ob-clojure)
-(use-package org-refile)
-(use-package org-goto)
+(use-package ob-plantuml
+  :after org)
+
+(use-package ob-clojure
+  :after org)
+
+(use-package org-refile
+  :after org)
+
+(use-package org-goto
+  :after org)
 
 ;; https://github.com/alphapapa/org-super-agenda/#installation
 (use-package org-super-agenda
   :ensure t
   :after org
-  :hook (after-init . org-super-agenda-mode))
+  :hook (org-mode . org-super-agenda-mode))
 
 (use-package htmlize :ensure t)
 
 ;; https://emacs.stackexchange.com/a/42158/20796
 (use-package pixel-scroll
+  :ensure nil
   :hook (after-init . pixel-scroll-precision-mode)
   :config
   ;; to not hijack arrow-up
   (setq auto-window-vscroll nil)
   )
 
-(use-package org-clock)
+(use-package org-clock
+  :after org)
 
 
 (use-package org
@@ -327,7 +349,7 @@
   (setq
    org-log-done 'time
    org-confirm-babel-evaluate nil
-   org-edit-src-content-indentation 0
+   org-src-content-indentation 0
    org-image-actual-width nil
    org-startup-indented t
    org-startup-with-inline-images t
@@ -357,21 +379,23 @@
               (add-hook 'after-save-hook 'org-preview-latex-fragment nil 'make-it-local)))
   (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
 
-  (org-babel-do-load-languages
-   'org-babel-load-languages '((python . t)
-                               (calc . t)
-                               (dot . t)
-                               (clojure . t)
-                               (shell . t)
-                               (sql . t)
-                               (latex . t)
-                               (java . t)
-                               (plantuml . t)
-                               (http . t)
-                               (js . t)
-                               (R .t)
-                               (haskell . t)
-                               (gnuplot . t)))
+  (with-eval-after-load 'org
+    (org-babel-do-load-languages
+     'org-babel-load-languages '((python . t)
+                                 (calc . t)
+                                 (dot . t)
+                                 (clojure . t)
+                                 (shell . t)
+                                 (sql . t)
+                                 (latex . t)
+                                 (java . t)
+                                 (plantuml . t)
+                                 (http . t)
+                                 (js . t)
+                                 (R .t)
+                                 (haskell . t)
+                                 (gnuplot . t))))
+
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
 
   (setq org-refile-targets '((nil :maxlevel . 3)
@@ -507,7 +531,13 @@
   (setq diary-file "~/.emacs.d/diary.google")
   )
 
+;; https://github.com/tbanel/orgaggregate#dates
+(use-package orgtbl-aggregate
+  :after org
+  :ensure t)
+
 (use-package holidays
+  :ensure nil
   :custom
   (holiday-bahai-holidays nil)
   (holiday-islamic-holidays nil)
@@ -529,24 +559,19 @@ current buffer, killing it."
 
   (add-to-list 'magic-mode-alist '("SQLite format 3\x00" . ct/sqlite-view-file-magically)))
 
-;; https://github.com/tbanel/orgaggregate#dates
-(use-package orgtbl-aggregate
-  :ensure t)
-
-(use-package shell-maker
-  :ensure t)
-
-(use-package acp
-  :vc (:url "https://github.com/xenodium/acp.el"))
 
 (use-package agent-shell
-  :vc (:url "https://github.com/xenodium/agent-shell")
-  :hook (agent-shell . agent-shell-completion-mode)
-  )
+  :ensure t
+  :ensure-system-package
+    ;; Add agent installation configs here
+    (
+     (claude-agent-acp . "npm install -g @agentclientprotocol/claude-agent-acp"))
+  :hook (agent-shell . agent-shell-completion-mode))
 
 
 (use-package org-ai
   :ensure t
+  :disabled
   :commands (org-ai-mode
              org-ai-global-mode)
   :custom
@@ -576,6 +601,7 @@ current buffer, killing it."
 
 (use-package buffer-box
   :ensure t
+  :commands (buffer-box)
   :vc (:url "https://github.com/rougier/buffer-box"
             :branch "master")
   )
@@ -586,14 +612,16 @@ current buffer, killing it."
             :branch master)
   :bind (:map gptel-mode-map
               (("C-x m" . 'gptel-menu)))
+  :custom
+  (gptel-default-mode 'org-mode)
+  (gptel-api-key '(lambda () (getenv "OPENAI_API_KEY")))
   :config
-  (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
-  (setopt gptel-default-mode 'org-mode)
-  (setopt gptel-api-key '(lambda () (getenv "OPENAI_API_KEY"))))
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response))
 
 
 (use-package gptel-magit
   :ensure t
+  :after gptel
   :hook (magit-mode . gptel-magit-install))
 
 (use-package magit-gh
@@ -646,9 +674,12 @@ current buffer, killing it."
 ;; works to expand/contract region.
 (use-package easy-kill
   :ensure t
-  :config
-  (global-set-key [remap kill-ring-save] #'easy-kill)
-  (global-set-key [remap mark-sexp] #'easy-mark))
+  :bind ([remap kill-ring-save] . easy-kill)
+  :bind ([remap mark-sexp] . easy-mark)
+  ;; :config
+  ;; (global-set-key [remap kill-ring-save] #'easy-kill)
+  ;; (global-set-key [remap mark-sexp] #'easy-mark)
+  )
 
 ;; R
 (use-package ess
@@ -670,10 +701,6 @@ current buffer, killing it."
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
   (setq flycheck-checker-error-threshold 2000)
   )
-
-;; (use-package flycheck-posframe
-;;   :ensure t
-;;   :hook (flycheck-mode . flycheck-posframe-mode))
 
 (use-package flycheck-color-mode-line
   :ensure t
@@ -755,8 +782,12 @@ current buffer, killing it."
 
 
 ;; http://www.emacswiki.org/emacs/SavePlace
-(setq-default save-place t)
-(setq save-place-file (concat user-emacs-directory "places"))
+(use-package saveplace
+  :ensure nil
+  :custom
+  (save-place-file (concat user-emacs-directory "places"))
+  :config
+  (save-place-mode 1))
 
 ;; https://github.com/hrehfeld/emacs-smart-hungry-delete
 (use-package smart-hungry-delete
@@ -788,14 +819,18 @@ current buffer, killing it."
                '("scala" "scala"))
   )
 
+;; https://github.com/nlamirault/ripgrep.el
+(use-package ripgrep
+  :defer t
+  :ensure t)
+
 ;; https://github.com/dajva/rg.el
 (use-package rg
   :defer t
   :ensure t
   :ensure-system-package (rg . ripgrep)
   :config
-  (rg-enable-default-bindings)
-  (setq rg-executable "/opt/homebrew/bin/rg"))
+  (rg-enable-default-bindings))
 
 ;; https://github.com/domtronn/all-the-icons.el
 (use-package all-the-icons
@@ -827,15 +862,12 @@ current buffer, killing it."
   :after geiser
   :ensure t)
 
-(use-package ac-geiser
-  :after geiser
-  :ensure t)
-
 ;; https://github.com/TeMPOraL/nyan-mode
 (use-package nyan-mode
   :ensure t
+  :custom
+  (nyan-wavy-trail 1)
   :config
-  (setq nyan-wavy-trail 1)
   (nyan-mode))
 
 (use-package lean4-mode
@@ -881,22 +913,18 @@ current buffer, killing it."
   :custom
   (magit-section-heading
    ((t (:inherit modus-themes-bold :extend t :foreground "#193668" :weight ultra-heavy))))
-  :init
-  (setq magit-repository-directories
+  (magit-repository-directories
         `(("~/code" . 1)
           ("~/code/work" . 1)
           (,user-emacs-directory . 0)))
-
-  (setq magit-section-visibility-indicators
-        '((" ▶" . t) (" >" . t)))
-
-  (setq magit-list-refs-sortby "-creatordate"))
+  (magit-section-visibility-indicators
+   '((" ▶" . t) (" >" . t)))
+  (magit-list-refs-sortby "-creatordate"))
 
 (use-package forge
   :ensure t
   :after magit
   :config
-  (setq forge-topic-list-order '(updated . string>))
   (push '("ghe.nav.no" "ghe.nav.no/api/v3"
           "ghe.nav.no" forge-github-repository)
         forge-alist)
@@ -952,21 +980,21 @@ current buffer, killing it."
 
 ;; https://codeberg.org/pidu/git-timemachine
 (use-package git-timemachine
-  :ensure t)
+  :ensure t
+  :commands git-timemachine)
 
 
 ;; https://github.com/jdtsmith/speedrect
-(use-package speedrect
-  :load-path "~/.emacs.d/speedrect")
+;; (use-package speedrect
+;;   :load-path "~/.emacs.d/speedrect")
 
 ;; https://emacsredux.com/blog/2023/04/11/looking-up-words-in-a-dictionary/
 ;; https://www.manueluberti.eu/emacs/2021/07/31/dictionary/
 (use-package dictionary
+  :ensure nil
   :bind ("C-x C-l" . #'dictionary-lookup-definition)
-  :config
-  (setq dictionary-server "dict.org"))
-
-
+  :custom
+  (dictionary-server "dict.org"))
 
 (use-package ox-md
   :ensure nil
@@ -976,6 +1004,7 @@ current buffer, killing it."
 ;; https://github.com/snosov1/toc-org
 (use-package toc-org
   :ensure t
+  :after org
   :hook (org-mode . toc-org-mode))
 
 ;; (use-package org-bullets
@@ -984,11 +1013,12 @@ current buffer, killing it."
 
 (use-package org-superstar
   :ensure t
+  :after org
   :hook (org-mode . org-superstar-mode))
 
 ;; In order for org mode / gnuplot to work
 (use-package gnuplot
-  :defer t
+  :after org
   :ensure t)
 
 (use-package org-roam
@@ -1018,38 +1048,31 @@ current buffer, killing it."
 ;; https://github.com/org-roam/org-roam-ui
 (use-package org-roam-ui
   :ensure t
+  :after org-roam
   :commands (org-roam-ui-open))
 
 ;; https://github.com/abo-abo/org-download
 (use-package org-download
+  :after org
   :ensure t)
 
 ;; https://github.com/unhammer/org-rich-yank
 (use-package org-rich-yank
   :ensure t
+  :after org
   :demand t
   :bind (:map org-mode-map
               ("C-M-y" . org-rich-yank))) ;; doesn't work??
 
-;; https://github.com/IvanMalison/org-projectile
-(use-package org-projectile
-  :disabled
-  :defer t
-  :ensure t
-  :config
-  (setq org-projectile-projects-file "~/Dropbox/org/prosjekter.org")
-  (add-to-list 'org-capture-templates
-               (org-projectile-project-todo-entry
-                :capture-character "l")))
-
 (use-package jira
   :ensure t
+  :commands (jira-issues)
   :config
   (setq jira-base-url "https://nav.atlassian.net/")
   (setq jira-username "fredrik.meyer@nav.no") ;; Jira username (usually, an email)
   ;; API token for Jira
   ;; See https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
-  (setq jira-token   (getenv "JIRA_API_TOKEN"))
+  (setq jira-token (getenv "JIRA_API_TOKEN"))
   (setq jira-token-is-personal-access-token nil)
   (setq jira-api-version 3) ;; Version 2 is also allowed
   ;; (Optional) API token for JIRA TEMPO plugin
@@ -1106,45 +1129,51 @@ current buffer, killing it."
   :ensure t
   :hook (after-init . global-company-mode)
   :bind ("C-<tab>" . company-complete)
-  :custom (company-dabbrev-downcase nil)
-  :config
+  :custom
+  (company-dabbrev-downcase nil)
+  (company-idle-delay 0.1)
+  (company-show-quick-access t)
+  (company-minimum-prefix-length 1)
+
   ;; (define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common)
   ;; Don't set this to 0 if you want yasnippet to work well.
   ;; (add-to-list 'company-backends 'company-ispell)
-  (setq company-idle-delay 0.1)
-  (setq company-show-quick-access t)
-  (setq company-minimum-prefix-length 1))
+  )
 
 ;; Not sure if I need this??
-(use-package pos-tip
-  :ensure t)
+;; (use-package pos-tip
+;;   :ensure t)
 
 ;; https://github.com/company-mode/company-quickhelp
-(use-package company-quickhelp
-  :after company pos-tip
-  :ensure t
-  :config
-  (company-quickhelp-mode))
-
-;; https://github.com/sebastiencs/company-box
-;; (use-package company-box
+;; (use-package company-quickhelp
+;;   :after company pos-tip
 ;;   :ensure t
-;;   :hook (company-mode . company-box-mode))
+;;   :config
+;;   (company-quickhelp-mode))
+
+
 
 (use-package json-mode
   :mode "\\.json\\'"
   :bind (("C-c C-b" . 'json-pretty-print-buffer))
   :ensure t)
 
+;; https://github.com/prettier/prettier-emacs
 (use-package prettier-js
   :defer t
   :ensure t)
+
+(use-package copilot
+  :ensure t
+  :hook (prog-mode . copilot-mode))
 
 
 (use-package web-mode
   :ensure t
   :after (add-node-modules-path)
-  :mode ("\\.[t|j]sx?$" "\\.tsx?$\\'" "\\.html?\\'")
+  ;; TS/TSX now handled by typescript-ts-mode / tsx-ts-mode (tree-sitter) below.
+  ;; :mode ("\\.[t|j]sx?$" "\\.tsx?$\\'" "\\.html?\\'")
+  :mode ("\\.jsx?$" "\\.html?\\'")
   :bind (:map web-mode-map
               ("C-c f" . prettier-js)
               ("C-c u" . tide-references))
@@ -1159,7 +1188,7 @@ current buffer, killing it."
 
   (add-hook 'web-mode-hook
             (lambda ()
-              (yas-activate-extra-mode 'js2-mode)
+              ;; (yas-activate-extra-mode 'js2-mode)
               (prettier-js-mode 1)
               (add-hook 'before-save-hook 'prettier-js nil t)
               (when (locate-dominating-file default-directory ".eslintrc.js")
@@ -1167,14 +1196,15 @@ current buffer, killing it."
                 )
               (electric-indent-mode nil)
               ;; (add-hook 'after-save-hook #'eslint-fix-file-and-revert)
-              (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                (setup-tide-mode)
-                ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
-                )
-              (when (string-equal "ts" (file-name-extension buffer-file-name))
-                (setup-tide-mode)
-                ;; (flycheck-add-next-checker 'typescript-tide 'javascript-eslint)
-                )
+              ;; TS/TSX handled by typescript-ts-mode / tsx-ts-mode now.
+              ;; (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              ;;   (setup-tide-mode)
+              ;;   ;; (flycheck-add-next-checker 'tsx-tide 'javascript-eslint)
+              ;;   )
+              ;; (when (string-equal "ts" (file-name-extension buffer-file-name))
+              ;;   (setup-tide-mode)
+              ;;   ;; (flycheck-add-next-checker 'typescript-tide 'javascript-eslint)
+              ;;   )
 
               (when (equal web-mode-content-type "html")
                 ;; (flycheck-add-mode 'html-tidy 'web-mode)
@@ -1188,50 +1218,82 @@ current buffer, killing it."
   :mode ("\\.epub$" . nov-mode)
   :ensure t)
 
-(use-package jest
-  :disabled
-  :ensure t
-  :defer t)
-
 (use-package justl
+  :disabled
   :ensure t
   :custom
   (justl-executable "/opt/homebrew/bin/just"))
 
-(use-package typescript-mode
-  :ensure t)
+;; Superseded by typescript-ts-mode / tsx-ts-mode + lsp-mode below.
+;; (use-package typescript-mode
+;;   :after web-mode
+;;   :ensure t)
 
-(use-package tide
-  :bind (("C-c r" . tide-rename-symbol)
-         ("C-c C-p" . tide-references))
-  :after (typescript-mode company flycheck)
-  :commands setup-tide-mode
-  :ensure t
-  :config
-  (setq tide-always-show-documentation t
-        tide-completion-detailed t)
-  (flycheck-add-next-checker 'tsx-tide 'javascript-eslint 'append)
-  (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
-  (flycheck-add-mode 'javascript-tide 'web-mode)
-  (defun setup-tide-mode ()
-    (tide-setup)
-    ;; (flycheck-add-mode 'typescript-tide 'web-mode)
-    (tide-hl-identifier-mode +1)
-    ))
+;; (use-package tide
+;;   :bind (("C-c r" . tide-rename-symbol)
+;;          ("C-c C-p" . tide-references))
+;;   :after (typescript-mode company flycheck)
+;;   :commands setup-tide-mode
+;;   :ensure t
+;;   :config
+;;   (setq tide-always-show-documentation t
+;;         tide-completion-detailed t)
+;;   (flycheck-add-next-checker 'tsx-tide 'javascript-eslint 'append)
+;;   (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
+;;   (flycheck-add-mode 'javascript-tide 'web-mode)
+;;   (defun setup-tide-mode ()
+;;     (tide-setup)
+;;     ;; (flycheck-add-mode 'typescript-tide 'web-mode)
+;;     (tide-hl-identifier-mode +1)
+;;     ))
 
-(use-package helm-system-packages
-  :disabled
-  :ensure t)
+;; --- TypeScript: tree-sitter (typescript-ts-mode / tsx-ts-mode) + lsp-mode ---
+;; Replaces the tide setup commented out above.
+;; Language server:  npm i -g typescript-language-server typescript
+(add-to-list 'treesit-language-source-alist
+             '(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+(add-to-list 'treesit-language-source-alist
+             '(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+
+(defun my/ensure-treesit-grammar (lang)
+  "Install the tree-sitter grammar for LANG if it is not already available."
+  (unless (treesit-language-available-p lang)
+    (treesit-install-language-grammar lang)))
+
+(defun my/start-typescript-lsp ()
+  "Ensure tree-sitter grammars, then start lsp for a TypeScript buffer.
+Grammar install is done lazily here (not at startup) so it only runs
+when a TS file is opened, and only if a grammar is missing."
+  (my/ensure-treesit-grammar 'typescript)
+  (my/ensure-treesit-grammar 'tsx)
+  (if (executable-find "typescript-language-server")
+      (lsp-deferred)
+    (message "typescript-language-server not found; install with: npm i -g typescript-language-server typescript")))
+
+(use-package typescript-ts-mode
+  :mode (("\\.ts\\'" . typescript-ts-mode)
+         ("\\.tsx\\'" . tsx-ts-mode))
+  :hook ((typescript-ts-mode . my/start-typescript-lsp)
+         (tsx-ts-mode . my/start-typescript-lsp)
+         (typescript-ts-mode . prettier-js-mode)
+         (tsx-ts-mode . prettier-js-mode))
+  :bind (:map typescript-ts-base-mode-map
+              ("C-c f" . prettier-js)
+              ("C-c r" . lsp-rename)
+              ("C-c C-p" . lsp-find-references))
+  :custom
+  (typescript-ts-indent-offset 2))
 
 (use-package plantuml-mode
   :ensure t
   :mode ("\\.plantuml\\'" "\\.puml\\'")
   :bind (("C-c C-c" . plantuml-preview))
+  :custom
+  (plantuml-executable-path "/opt/homebrew/bin/plantuml")
+  (plantuml-jar-path "/opt/homebrew/Cellar/plantuml/1.2026.1/libexec/plantuml.jar")
+  (plantuml-default-exec-mode 'executable)
   :config
-  (setq plantuml-executable-path "/opt/homebrew/bin/plantuml")
-  (setq plantuml-output-type "png")
-  (setq plantuml-jar-path "/opt/homebrew/Cellar/plantuml/1.2026.1/libexec/plantuml.jar")
-  (setq plantuml-default-exec-mode 'executable))
+  (setq plantuml-output-type "png"))
 
 ;; https://github.com/alexmurray/flycheck-plantuml
 (use-package flycheck-plantuml
@@ -1242,27 +1304,19 @@ current buffer, killing it."
 
 ;; https://github.com/k1LoW/emacs-ansible
 (use-package ansible
+  :after yaml-mode
   :ensure t)
-
-(use-package vue-mode
-  :disabled
-  :ensure t
-  :mode "\\.vue\\'"
-  :config
-  (setq mmm-typescript-mode-submode-hook #'setup-vue-with-ts)
-  (set-face-background 'mmm-default-submode-face nil))
-
 
 ;; https://github.com/emacs-dashboard/emacs-dashboard
 (use-package dashboard
   :ensure t
-  :init
-  (setopt dashboard-set-heading-icons t)
-  (setopt dashboard-set-file-icons t)
-  (setopt dashboard-items '((recents  . 5)
+  :custom
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (dashboard-items '((recents  . 5)
                             (projects . 10)
                             ;; (bookmarks . 0)
-                            (agenda . 5)))
+                            ))
   :config
   (dashboard-setup-startup-hook))
 
@@ -1314,37 +1368,6 @@ current buffer, killing it."
 (use-package ruby-mode
   :mode "\\.rb\\'"
   :ensure t)
-
-(use-package ruby-electric
-  :ensure t
-  :disabled
-  :hook ruby-mode)
-
-;; https://github.com/JoshCheek/seeing_is_believing
-(use-package seeing-is-believing
-  :ensure t
-  :disabled)
-
-(use-package inf-ruby
-  :ensure t
-  :disabled
-  :hook (ruby-mode . inf-ruby-minor-mode))
-
-(use-package rbenv
-  :ensure t
-  :disabled
-  :init
-  ;; (setq rbenv-installation-dir nil)
-  (setq rbenv-executable "/usr/local/bin/rbenv")
-  )
-
-(use-package robe
-  :ensure t
-  :disabled
-  :hook (ruby-mode . robe-mode)
-  :config
-  (eval-after-load 'company
-    '(push 'company-robe company-backends)))
 
 ;; Haskell
 (use-package haskell-mode
@@ -1439,6 +1462,12 @@ current buffer, killing it."
 (use-package pandoc-mode
   :ensure t)
 
+(use-package markdown-ts-mode
+  :ensure nil
+  :defer t
+  :config
+  (setopt markdown-ts-inline-images t))
+
 ;; https://github.com/TobiasZawada/texfrag
 (use-package texfrag
   :disabled ;; some error??
@@ -1449,9 +1478,11 @@ current buffer, killing it."
 (use-package pdf-tools
   :ensure t
   :mode "\\.pdf\\'"
+  :bind (:map pdf-view-mode-map
+              ("C-s" . isearch-forward))
+  :custom
+  (pdf-view-display-size 'fit-page)
   :config
-  (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
-  (setq pdf-view-display-size 'fit-page)
   ;; (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
   ;; (define-key pdf-view-mode-map (kbd "h") 'pdf-annot-add-highlight-markup-annotation)
   ;; (define-key pdf-view-mode-map (kbd "t") 'pdf-annot-add-text-annotation)
@@ -1463,9 +1494,9 @@ current buffer, killing it."
 
 ;; https://github.com/org-noter/org-noter?tab=readme-ov-file
 (use-package org-noter
+  :after org
+  :commands (org-noter)
   :ensure t)
-
-(use-package djvu :ensure t)
 
 ;; Automatically refreshes PDF
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -1473,6 +1504,7 @@ current buffer, killing it."
 ;; Requires `brew install ghostscript`
 
 (use-package lsp-ui
+  :after lsp-mode
   :ensure t)
 
 (use-package lsp-mode
@@ -1483,20 +1515,19 @@ current buffer, killing it."
          (lsp-mode . lsp-completion-mode)
          (kotlin-mode . lsp)
          )
+  :custom
+  (lsp-modeline-code-actions-segments '(count icon name))
+  (lsp-idle-delay 0.8)
+  (lsp-file-watch-threshold 7000)
+  (lsp-response-timeout 20)
+  (lsp-enable-file-watchers t)
   :init
-  (setq lsp-modeline-code-actions-segments '(count icon name))
 
   (setenv "JAVA_HOME" "/Users/fredrikmeyer/.jenv/versions/21")
-  ;; (setopt lsp-clients-kotlin-server-executable nil)
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
   (setq read-process-output-max (* 5 1024 1024)) ;; 5mb
   (setq gc-cons-threshold 100000000)
-  (setq lsp-idle-delay 0.8)
-
-  (setq lsp-file-watch-threshold 7000)
-  (setq lsp-response-timeout 20)
-  (setq lsp-enable-file-watchers t)
 
   (setq lsp-signature-doc-lines 5)
   (setq lsp-signature-render-documentation t)
@@ -1539,21 +1570,23 @@ current buffer, killing it."
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
-  ;; (add-hook 'python-mode-hook #'lsp)
-
-  (require 'lsp-rust)
-  (setq lsp-rust-server 'rust-analyzer)
 
   (setq lsp-lens-enable 't)
   )
 
+(use-package lsp-rust
+  :after lsp
+  :custom
+  (lsp-rust-server 'rust-analyzer))
+
 (use-package lsp-java
   :ensure t
   :hook (java-mode . lsp)
-  :config
-  (setq lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true"
-                          "-Xmx4G" "-Xms100m"))
-  (setq lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.44.0/jdt-language-server-1.44.0-202501221502.tar.gz"))
+  :custom
+  (lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true"
+                     "-Xmx4G" "-Xms100m"))
+  (lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.44.0/jdt-language-server-1.44.0-202501221502.tar.gz")
+  )
 
 (use-package lsp-json
   :after lsp
@@ -1564,18 +1597,12 @@ current buffer, killing it."
               (setq js-indent-level 2)))
   (add-hook 'json-mode-hook #'lsp))
 
-;; (use-package scala-mode
-;;   :ensure t
-;;   :mode "\\.s\\(cala\\|bt\\)$"
-;;   :hook (scala-mode . my/start-metals-lsp))
-
 (use-package scala-ts-mode
   :ensure t
   :mode "\\.s\\(cala\\|bt\\)$"
   :hook (scala-ts-mode . my/start-metals-lsp)
-  :config
-  (setq treesit-font-lock-level 4)
-  )
+  :bind (:map scala-ts-mode-map
+              ("<backtab>" . delete-horizontal-space)))
 
 (defun my/start-metals-lsp ()
   "Start Metals through lsp-mode when the server is already installed."
@@ -1588,23 +1615,25 @@ current buffer, killing it."
 (use-package lsp-metals
   :ensure t
   :defer t
-  :init
-  (setq lsp-metals-server-command "metals"
-        lsp-metals-java-home (getenv "JAVA_HOME")
-        lsp-metals-inlay-hints-enable-type-parameters nil))
+  :custom
+  (lsp-metals-server-command "metals")
+  (lsp-metals-java-home (getenv "JAVA_HOME"))
+  (lsp-metals-inlay-hints-enable-type-parameters nil))
 
 (use-package sbt-mode
   :ensure t
   :commands sbt-start sbt-command
   :custom
   (sbt:default-command "testQuick")
-  :config
+  ;; :config
   ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
   ;; allows using SPACE when in the minibuffer
-  (substitute-key-definition
-   'minibuffer-complete-word
-   'self-insert-command
-   minibuffer-local-completion-map))
+  ;; (substitute-key-definition
+  ;;  'minibuffer-complete-word
+  ;;  'self-insert-command
+  ;;  minibuffer-local-completion-map)
+
+  )
 
 (defun kotlin-lsp-server-start-fun (port)
   (list "kotlin-lsp" "--socket" (number-to-string port)))
@@ -1624,50 +1653,25 @@ current buffer, killing it."
    )
   )
 
-(use-package dap-mode
-  :disabled
-  :ensure t
-  :after lsp-mode
-  :hook ((lsp-mode . dap-mode)
-         (lsp-mode . dap-ui-mode))
-  :config
-  ;; Maybe solves it...
-  (dap-tooltip-mode -1)
-  ;; (require 'dap-python)
-                                        ; should fix it also
-                                        ;  (dap-enable-mouse-support nil)
-  ;; Will break tooltips: https://github.com/emacs-lsp/dap-mode/issues/314
-  )
-
 
 (use-package company-auctex
   :ensure t
   :after latex-mode
   :hook (latex-mode . (lambda () (company-auctex-init)))
-  :config
+  ;; :config
   ;; (add-hook 'latex-mode-hook (company-auctex-init))
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t))
-
-;; Tabs and ribbons for the mode line
-;; https://github.com/tarsius/moody
-(use-package moody
-  :defer t
-  :ensure t
-  :disabled
-  :config
-  (setq x-underline-at-descent-line t)
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode))
+  ;; (setq TeX-auto-save t)
+  ;; (setq TeX-parse-self t)
+  )
 
 (use-package doom-modeline
   :ensure t
   :hook (after-init . doom-modeline-mode)
-  :config
-  (setq doom-modeline-buffer-encoding nil)
-  (setq doom-modeline-minor-modes nil)
-  (setq doom-modeline-icon t)
-  (setq doom-modeline-buffer-file-name-style 'buffer-name))
+  :custom
+  (doom-modeline-buffer-encoding nil)
+  (doom-modeline-minor-modes nil)
+  (doom-modeline-icon t)
+  (doom-modeline-buffer-file-name-style 'buffer-name))
 
 ;; https://github.com/johanvts/emacs-fireplace
 (use-package fireplace
@@ -1680,6 +1684,7 @@ current buffer, killing it."
   :bind (("M-o" . ace-window)))
 
 (use-package spacemacs-theme
+  :disabled
   :ensure t
   )
 
@@ -1691,12 +1696,12 @@ current buffer, killing it."
 
 (use-package modus-themes
   :ensure t
+  :custom
+  (modus-themes-headings '((1 . (rainbow variable-pitch 1.1))
+                           (2 . (rainbow semibold 1))
+                           (t . (rainbow))
+                           ))
   :config
-  (setq modus-themes-headings '((1 . (rainbow variable-pitch 1.1))
-                                (2 . (rainbow semibold 1))
-                                (t . (rainbow))
-                                ))
-
   (load-theme 'modus-operandi t))
 
 (use-package solarized-theme
@@ -1733,25 +1738,17 @@ current buffer, killing it."
   :ensure t
   :hook (prog-mode . yas-minor-mode)
   :hook (org-mode . yas-minor-mode)
-  :init
-  (add-to-list 'yas-snippet-dirs  "~/.emacs.d/snippets")
+  :custom
+  (yas-snippet-dirs '("~/.emacs.d/snippets"))
   )
 
 (use-package ivy-yasnippet
   :ensure t
   :after yasnippet)
 
-(use-package devdocs
-  :bind ("C-h #" . 'devdocs-lookup)
-  :ensure t)
-
 (use-package yasnippet-snippets
   :ensure t
-  ;; :disabled
-  :after yasnippet
-  :init
-  ;; (yas-load-directory yasnippet-snippets-dir)
-  )
+  :after yasnippet)
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
@@ -1771,18 +1768,15 @@ current buffer, killing it."
 ;; Winner Mode is a global minor mode. When activated, it allows you to “undo” (and “redo”) changes in the window configuration with the key commands ‘C-c left’ and ‘C-c right’
 (winner-mode t)
 
-(global-set-key (kbd "C-S-c <left>") 'shrink-window-horizontally)
-(global-set-key (kbd "C-S-c <right>") 'enlarge-window-horizontally)
-(global-set-key (kbd "C-S-c <up>") 'enlarge-window)
-(global-set-key (kbd "C-S-c <down>") 'shrink-window)
-
-
-;; https://www.rahuljuliato.com/posts/emacs-31-around-the-corner
 (use-package window
   :ensure nil
-  :defer t
-  :bind (("C-x w f h" . window-layout-flip-leftright)
-         ("C-x w f v" . window-layout-flip-topdown)))
+  :bind (
+         ("C-S-c <up>" . 'enlarge-window)
+         ("C-S-c <down>" . 'shrink-window)
+         ;; ;; https://www.rahuljuliato.com/posts/emacs-31-around-the-corner
+         ("C-x w f h" . window-layout-flip-leftright)
+         ("C-x w f v" . window-layout-flip-topdown)
+         ))
 
 ;; Yaml
 (use-package yaml-mode
@@ -1802,47 +1796,65 @@ current buffer, killing it."
               ("i" . dired-subtree-insert)
               (";" . dired-subtree-remove)
               ("<tab>" . dired-subtree-toggle))
-  :config
-  (setq dired-subtree-use-backgrounds nil))
+  :custom
+  (dired-subtree-use-backgrounds nil))
 
-(use-package casual-dired
+(use-package casual
   :ensure t
+  :after org
   :bind (:map dired-mode-map
-              ("C-x c" . 'casual-dired-tmenu)))
+              ("C-x c" . 'casual-dired-tmenu)
+              ("C-x s" . 'casual-dired-sort-by-tmenu)
+              :map org-mode-map
+              ("C-x c" . 'casual-org-tmenu)
+              :map org-agenda-mode-map
+              ("C-x c" . 'casual-agenda-tmenu)
+              ))
+
+(use-package embark
+  :ensure t
+  :bind (("C-." . embark-act)
+         ("C-;" . embark-dwim)))
 
 ;; Se på https://github.com/purcell/ibuffer-projectile?
 (use-package ibuffer
   :bind ("C-x C-b" . ibuffer)
+  :custom
+  (ibuffer-saved-filter-groups
+   (quote (("default"
+            ("dired" (mode . dired-mode))
+            ("PDF" (mode . pdf-view-mode))
+            ("python" (mode . python-mode))
+            ("elips" (or (mode . emacs-lisp-mode)
+                       (mode . lisp-interaction-mode)))
+            ("markdown" (mode . markdown-mode))
+            ("org" (or (mode . org-mode)
+                       (mode . org-agenda-mode)
+                       ))
+            ("go" (mode . go-mode))
+            ("web" (mode . web-mode))
+            ("emacs" (or
+                      (name . "^\\*scratch\\*$")
+                      (name . "^\\*Messages\\*$")))))))
+  (ibuffer-human-readable-size t)
+  (ibuffer-formats
+   '((mark modified read-only " "
+           (name 30 30 :left :elide) ; change: 30s were originally 18s
+           " "
+           (size 9 -1 :right)
+           " "
+           (mode 16 16 :left :elide)
+           " " filename-and-process)
+     (mark " "
+           (name 16 -1)
+           " " filename)))
   :config
   ;; Shows a list of buffers
   (defalias 'list-buffers  'ibuffer)
-  (setq ibuffer-saved-filter-groups
-        (quote (("default"
-                 ("dired" (mode . dired-mode))
-                 ("PDF" (mode . pdf-view-mode))
-                 ("python" (mode . python-mode))
-                 ("markdown" (mode . markdown-mode))
-                 ("org" (or (mode . org-mode)
-                            (mode . org-agenda-mode)
-                            ))
-                 ("go" (mode . go-mode))
-                 ("web" (mode . web-mode))
-                 ("emacs" (or
-                           (name . "^\\*scratch\\*$")
-                           (name . "^\\*Messages\\*$")))))))
-
-  (setopt ibuffer-human-readable-size t)
-  (setq ibuffer-formats
-        '((mark modified read-only " "
-                (name 30 30 :left :elide) ; change: 30s were originally 18s
-                " "
-                (size 9 -1 :right)
-                " "
-                (mode 16 16 :left :elide)
-                " " filename-and-process)
-          (mark " "
-                (name 16 -1)
-                " " filename))))
+  (add-hook 'ibuffer-mode-hook
+          (lambda ()
+            (ibuffer-switch-to-saved-filter-groups "default")))
+  )
 
 (use-package dired
   :custom
@@ -1854,12 +1866,9 @@ current buffer, killing it."
   (when (string= system-type "darwin")
     (setq dired-use-ls-dired nil)))
 
-(add-hook 'ibuffer-mode-hook
-          (lambda ()
-            (ibuffer-switch-to-saved-filter-groups "default")))
-
-;; Indent region better:
-(global-set-key (kbd "M-i") 'indent-region)
+(use-package emacs
+  :ensure nil
+  :bind (("M-i" . 'indent-region)))
 
 
 ;; https://www.emacswiki.org/emacs/AutoIndentation
@@ -1893,10 +1902,22 @@ current buffer, killing it."
 
 
 ;; shell scripts
-(setq-default sh-basic-offset 2)
-(setq-default sh-indentation 2)
+(use-package sh-script
+  :ensure nil
+  :custom
+  (sh-basic-offset 2))
 
-(setq sgml-quick-keys 'close)
+(use-package sgml-mode
+  :ensure nil
+  :custom
+  (sgml-quick-keys 'close))
+
+(use-package repeat
+  :ensure nil
+  :custom
+  (repeat-exit-timeout 5)
+  :init
+  (repeat-mode t))
 
 ;; eldoc-mode shows documentation in the minibuffer when writing code
 ;; http://www.emacswiki.org/emacs/ElDoc
@@ -1938,12 +1959,24 @@ current buffer, killing it."
                                                "backups"))))
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-(use-package fm-common-lisp)
+;; (use-package fm-common-lisp)
 (use-package fm-python)
+
+;; (use-package vertico
+;;   :ensure t
+;;   :init
+;;   (vertico-mode))
+
+
+
+;; (use-package all-the-icons-completion
+;;   :ensure t
+;;   :hook )
+
 (use-package fm-swiper)
 ;; (use-package cfn-lint)
 (use-package fm-clojure)
-(use-package fm-rust)
+;; (use-package fm-rust)
 (use-package flycheck-ruff)
 
 (define-minor-mode sticky-buffer-mode

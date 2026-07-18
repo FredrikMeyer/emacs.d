@@ -114,11 +114,11 @@
 (use-package clj-refactor
   :ensure t
   :after yasnippet
-  :config
-  (add-hook 'clojure-mode #'my-clojure-mode-hook)
+  :hook (clojure-mode . #'my-clojure-mode-hook)
   )
 
 (use-package clojure-snippets
+  :after clojure-mode
   :ensure t)
 
 (provide 'fm-clojure)

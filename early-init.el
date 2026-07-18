@@ -15,8 +15,11 @@
 ;; (set-face-attribute 'default nil
                     ;; :height 140
                     ;; :weight 'normal
-                    ;; :family "Jetbrains Mono"
-                    ;; )
+;; :family "Jetbrains Mono";; )
+
+;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
+(setenv "LSP_USE_PLISTS" "true")
+
 
 ;; Removes tool-bar
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))

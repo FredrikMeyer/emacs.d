@@ -45,6 +45,16 @@
    ("C-h o" . counsel-describe-symbol)
    ("<backspace>" . 'ivy-backward-delete-char))
   :config
+  (setq counsel-rg-base-command
+        '("rg"
+          "--hidden"
+          "--glob" "!.git"
+          "--max-columns" "240"
+          "--with-filename"
+          "--no-heading"
+          "--line-number"
+          "--color" "never"
+          "%s"))
   (setq counsel-describe-function-function #'helpful-callable)
   (setq counsel-describe-variable-function #'helpful-variable)
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) "")
