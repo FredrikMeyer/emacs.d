@@ -659,8 +659,10 @@ current buffer, killing it."
   (xref-show-definitions-function #'xref-show-definitions-completing-read))
 
 (use-package which-key
-  :ensure t
+  :ensure nil
   :hook (after-init . which-key-mode)
+  :custom
+  (which-key-sort-order 'which-key-description-order)
   :config
   (which-key-setup-side-window-bottom))
 
@@ -817,6 +819,8 @@ current buffer, killing it."
         projectile-create-missing-test-files t)
   (add-to-list 'projectile-other-file-alist
                '("scala" "scala"))
+  (projectile-mode 1)
+  (projectile-session-mode 1)
   )
 
 ;; https://github.com/nlamirault/ripgrep.el
@@ -1870,6 +1874,19 @@ when a TS file is opened, and only if a grammar is missing."
   :ensure nil
   :bind (("M-i" . 'indent-region)))
 
+(use-package warnings
+  :ensure nil
+  :custom
+  (warning-minimum-level :error))
+
+(use-package keyfreq
+  :ensure t
+  :init
+  (keyfreq-mode 1)
+  (keyfreq-autosave-mode 1))
+
+
+;; (setq prefix-help-command 'embark-prefix-help-command) ;; C-h is help, C-x C-h is prefix help
 
 ;; https://www.emacswiki.org/emacs/AutoIndentation
 (electric-indent-mode 1)
@@ -1966,7 +1983,7 @@ when a TS file is opened, and only if a grammar is missing."
 ;;   :ensure t
 ;;   :init
 ;;   (vertico-mode))
-
+;; https://github.com/jdtsmith/kind-icon
 
 
 ;; (use-package all-the-icons-completion
@@ -2281,6 +2298,7 @@ See URL `http://stylelint.io/'."
     ("B" "Minor Bindings" which-key-show-full-minor-mode-keymap)
     ("d" "Descbinds" describe-bindings) ; or embark-bindings
     ("t" "Top Bindings  " which-key-show-top-level)
+    ("P" "Personal Bindings" describe-personal-keybindings)
     ]
    ["Describe"
     ("C" "Command" helpful-command)
@@ -2351,3 +2369,34 @@ See URL `http://stylelint.io/'."
    ]
   )
 (global-set-key (kbd "C-S-h") 'hrm-help-transient)
+
+
+;;; A curated "favorites" transient — useful commands I keep forgetting exist.
+;;; Unlike which-key (organized by keymap), this is MY greatest-hits list.
+;;; Add/remove entries freely as you notice things you forget to use.
+;;; Bound to C-c SPC.
+(transient-define-prefix my/favorites-transient ()
+  "Handy commands I tend to forget."
+  ["Favorites"
+   ["Edit / Select"
+    ("e" "Expand region" er/expand-region)
+    ("m" "Multiple cursors (lines)" mc/edit-lines)
+    ;; ("r" "..." ...)
+    ]
+   ["Act / Navigate"
+    ("a" "Embark act" embark-act)
+    ("." "Embark dwim" embark-dwim)
+    ;; ("g" "..." ...)
+    ]
+   ["Windows / Buffers"
+    ("bu" "Buffer move up"    buf-move-up)
+    ("bd" "Buffer move down"  buf-move-down)
+    ("bl" "Buffer move left"  buf-move-left)
+    ("br" "Buffer move right" buf-move-right)
+    ]
+   ["Tools"
+    ("d" "Casual dired menu" casual-dired-tmenu)
+    ;; ("t" "..." ...)
+    ]
+   ])
+(global-set-key (kbd "C-c SPC") 'my/favorites-transient)

@@ -25,7 +25,7 @@
         '((counsel-ag . ivy--regex-plus)
           (counsel-rg . ivy--regex-plus)
           (swiper-isearch . ivy--regex-plus)
-          (counsel-projectile-find-file . ivy--regex-plus)
+          ;; (counsel-projectile-find-file . ivy--regex-plus)
           (counsel-M-x . ivy--regex-plus)
           (t . ivy--regex-plus))))
 
@@ -99,11 +99,12 @@
 
 ;; https://github.com/asok/all-the-icons-ivy
 (use-package all-the-icons-ivy-rich
-  :hook (counsel-projectile-mode . all-the-icons-ivy-rich-mode)
+  ;; :hook (counsel-projectile-mode . all-the-icons-ivy-rich-mode)
   :ensure t)
 
 ; https://github.com/ericdanan/counsel-projectile
 (use-package counsel-projectile
+  :disabled
   :defer 1
   :ensure t
   :hook (ivy-mode . counsel-projectile-mode))
