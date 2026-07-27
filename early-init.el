@@ -20,6 +20,9 @@
 ;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
 (setenv "LSP_USE_PLISTS" "true")
 
+;; don't resize the frame in response to font/UI changes during
+;; startup - it's expensive and pointless before the frame is visible
+(setq frame-inhibit-implied-resize t)
 
 ;; Removes tool-bar
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))

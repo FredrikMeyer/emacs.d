@@ -143,10 +143,6 @@
 ;;                           (awk-mode . "awk")
 ;;                           (other . "stroustrup")))
 
-;; First try to indent the current line, and if the line
-;; was already indented, then try `completion-at-point'
-(setopt tab-always-indent 'complete
-        tab-first-completion nil)
 
 
 ;; Don't show whitespaces in minibuffer
@@ -154,7 +150,7 @@
           (lambda () (setq-local show-trailing-whitespace nil)))
 
 (setopt indicate-empty-lines 't)
-(setopt auth-sources '(concat (getenv "HOME") "/.authinfo"))
+(setopt auth-sources '("~/.authinfo"))
 
 (defun add-auto-mode (mode &rest patterns)
   "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
@@ -586,19 +582,6 @@ current buffer, killing it."
   (setopt org-ai-openai-api-token (getenv "OPENAI_API_KEY"))
   )
 
-;; https://github.com/rejeep/prodigy.el
-(use-package prodigy
-  :ensure t
-  :config
-  (prodigy-define-service
-    :name "Jekyll serve"
-    :command "bundle"
-    :args '("exec" "jekyll" "serve" "-l")
-    :cwd "~/code/FredrikMeyer.github.io/"
-    :port 4000
-    )
-  )
-
 (use-package buffer-box
   :ensure t
   :commands (buffer-box)
@@ -732,12 +715,6 @@ current buffer, killing it."
   :ensure t
   :mode ("\\.http\\'" . restclient-mode))
 
-(use-package company-restclient
-  :ensure t
-  :after restclient
-  :config
-  (add-to-list 'company-backends 'company-restclient))
-
 
 (defun switch-tab (n)
   "Switch to tab number N, or create a new one if it does not exist."
@@ -814,19 +791,27 @@ current buffer, killing it."
                ("C-c p" . 'projectile-command-map)))
   :config
   (setq projectile-project-compilation-cmd ""
-        projectile-completion-system 'ivy
+        projectile-completion-system 'default
         projectile-enable-caching nil
         projectile-create-missing-test-files t)
   (add-to-list 'projectile-other-file-alist
                '("scala" "scala"))
+
+  (defun my/test-at-point-vitest-command (_test-name file-name)
+    (format "npx vitest run %s"
+            (shell-quote-argument
+             (format "%s:%d" file-name (line-number-at-pos)))))
+
+  (let ((rule '(:node-types ("call_expression")
+                :name-fn projectile-test-at-point-jest-name
+                :command-fn my/test-at-point-vitest-command)))
+    (dolist (mode '(js-ts-mode typescript-ts-mode tsx-ts-mode))
+      (setf (alist-get mode projectile-test-at-point-rules) rule)))
+
   (projectile-mode 1)
   (projectile-session-mode 1)
   )
-
-;; https://github.com/nlamirault/ripgrep.el
-(use-package ripgrep
-  :defer t
-  :ensure t)
+(add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
 ;; https://github.com/dajva/rg.el
 (use-package rg
@@ -866,14 +851,6 @@ current buffer, killing it."
   :after geiser
   :ensure t)
 
-;; https://github.com/TeMPOraL/nyan-mode
-(use-package nyan-mode
-  :ensure t
-  :custom
-  (nyan-wavy-trail 1)
-  :config
-  (nyan-mode))
-
 (use-package lean4-mode
   :commands lean4-mode
   :vc (:url "https://github.com/leanprover-community/lean4-mode.git"
@@ -881,16 +858,6 @@ current buffer, killing it."
             ;; Or, if you prefer the bleeding edge version of Lean4-Mode:
             ;; :rev :newest
             ))
-
-;; Veldig vanskelig å bruke?
-(use-package undo-tree
-  :disabled
-  :ensure t
-  :init
-  (global-undo-tree-mode)
-  :config
-  ;; Try reset original map
-  (define-key undo-tree-map (kbd "C-x u") nil))
 
 ;; https://github.com/misohena/el-easydraw
 ;; [​[edraw:file=./example.edraw.svg]​]
@@ -1068,23 +1035,8 @@ current buffer, killing it."
   :bind (:map org-mode-map
               ("C-M-y" . org-rich-yank))) ;; doesn't work??
 
-(use-package jira
-  :ensure t
-  :commands (jira-issues)
-  :config
-  (setq jira-base-url "https://nav.atlassian.net/")
-  (setq jira-username "fredrik.meyer@nav.no") ;; Jira username (usually, an email)
-  ;; API token for Jira
-  ;; See https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
-  (setq jira-token (getenv "JIRA_API_TOKEN"))
-  (setq jira-token-is-personal-access-token nil)
-  (setq jira-api-version 3) ;; Version 2 is also allowed
-  ;; (Optional) API token for JIRA TEMPO plugin
-  ;; See https://apidocs.tempo.io/
-  ;; (setq jira-tempo-token "foobar123123")
-  )
-
 (use-package treemacs
+  :disabled
   :ensure t
   :bind
   (:map global-map
@@ -1096,6 +1048,7 @@ current buffer, killing it."
         ("C-x t M-t" . treemacs-find-tag)))
 
 (use-package treemacs-projectile
+  :disabled
   :after treemacs projectile
   :ensure t)
 
@@ -1129,33 +1082,16 @@ current buffer, killing it."
   :config
   (global-hl-todo-mode t))
 
-(use-package company
+(use-package corfu
   :ensure t
-  :hook (after-init . global-company-mode)
-  :bind ("C-<tab>" . company-complete)
+  :init
+  (global-corfu-mode)
+  (corfu-popupinfo-mode +1)
   :custom
-  (company-dabbrev-downcase nil)
-  (company-idle-delay 0.1)
-  (company-show-quick-access t)
-  (company-minimum-prefix-length 1)
-
-  ;; (define-key company-mode-map [remap indent-for-tab-command] #'company-indent-or-complete-common)
-  ;; Don't set this to 0 if you want yasnippet to work well.
-  ;; (add-to-list 'company-backends 'company-ispell)
+  (corfu-auto t)
+  (corfu-cycle t)
+  (corfu-popupinfo-delay '(0.5 . 0.1))
   )
-
-;; Not sure if I need this??
-;; (use-package pos-tip
-;;   :ensure t)
-
-;; https://github.com/company-mode/company-quickhelp
-;; (use-package company-quickhelp
-;;   :after company pos-tip
-;;   :ensure t
-;;   :config
-;;   (company-quickhelp-mode))
-
-
 
 (use-package json-mode
   :mode "\\.json\\'"
@@ -1165,10 +1101,14 @@ current buffer, killing it."
 ;; https://github.com/prettier/prettier-emacs
 (use-package prettier-js
   :defer t
+  :custom
+  (prettier-js-show-errors 'echo)
   :ensure t)
 
 (use-package copilot
   :ensure t
+  :custom
+  (copilot-idle-delay 0.5)
   :hook (prog-mode . copilot-mode))
 
 
@@ -1180,7 +1120,8 @@ current buffer, killing it."
   :mode ("\\.jsx?$" "\\.html?\\'")
   :bind (:map web-mode-map
               ("C-c f" . prettier-js)
-              ("C-c u" . tide-references))
+              ;; ("C-c u" . tide-references)
+              )
   :config
   (setq web-mode-indentation-params '(("lineup-calls" . 2)))
   (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?$\\'")))
@@ -1217,39 +1158,11 @@ current buffer, killing it."
               ))
   (setq web-mode-enable-auto-quoting nil))
 
-;; https://depp.brause.cc/nov.el/
-(use-package nov
-  :mode ("\\.epub$" . nov-mode)
-  :ensure t)
-
 (use-package justl
   :disabled
   :ensure t
   :custom
   (justl-executable "/opt/homebrew/bin/just"))
-
-;; Superseded by typescript-ts-mode / tsx-ts-mode + lsp-mode below.
-;; (use-package typescript-mode
-;;   :after web-mode
-;;   :ensure t)
-
-;; (use-package tide
-;;   :bind (("C-c r" . tide-rename-symbol)
-;;          ("C-c C-p" . tide-references))
-;;   :after (typescript-mode company flycheck)
-;;   :commands setup-tide-mode
-;;   :ensure t
-;;   :config
-;;   (setq tide-always-show-documentation t
-;;         tide-completion-detailed t)
-;;   (flycheck-add-next-checker 'tsx-tide 'javascript-eslint 'append)
-;;   (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)
-;;   (flycheck-add-mode 'javascript-tide 'web-mode)
-;;   (defun setup-tide-mode ()
-;;     (tide-setup)
-;;     ;; (flycheck-add-mode 'typescript-tide 'web-mode)
-;;     (tide-hl-identifier-mode +1)
-;;     ))
 
 ;; --- TypeScript: tree-sitter (typescript-ts-mode / tsx-ts-mode) + lsp-mode ---
 ;; Replaces the tide setup commented out above.
@@ -1274,19 +1187,38 @@ when a TS file is opened, and only if a grammar is missing."
       (lsp-deferred)
     (message "typescript-language-server not found; install with: npm i -g typescript-language-server typescript")))
 
+(defun my/disable-rainbow-delimiters-in-jsx ()
+    (rainbow-delimiters-mode -1))
+
 (use-package typescript-ts-mode
   :mode (("\\.ts\\'" . typescript-ts-mode)
          ("\\.tsx\\'" . tsx-ts-mode))
   :hook ((typescript-ts-mode . my/start-typescript-lsp)
          (tsx-ts-mode . my/start-typescript-lsp)
          (typescript-ts-mode . prettier-js-mode)
-         (tsx-ts-mode . prettier-js-mode))
+         (tsx-ts-mode . prettier-js-mode)
+         (tsx-ts-mode . my/disable-rainbow-delimiters-in-jsx)
+         )
   :bind (:map typescript-ts-base-mode-map
               ("C-c f" . prettier-js)
               ("C-c r" . lsp-rename)
-              ("C-c C-p" . lsp-find-references))
+              ("C-c u" . lsp-find-references)
+              )
   :custom
   (typescript-ts-indent-offset 2))
+
+(use-package lsp-eslint
+    :ensure nil
+    :after lsp-mode
+    :custom
+    (lsp-eslint-enable t)
+    (lsp-eslint-package-manager "yarn")
+    (lsp-eslint-run "onType")
+    (lsp-eslint-validate
+     '("javascript"
+       "javascriptreact"
+       "typescript"
+       "typescriptreact")))
 
 (use-package plantuml-mode
   :ensure t
@@ -1380,12 +1312,7 @@ when a TS file is opened, and only if a grammar is missing."
   :ensure t
   :config
   (add-hook 'haskell-mode-hook 'haskell-mode)
-  (setq haskell-process-type 'stack-ghci)
-  (add-hook 'haskell-mode-hook
-            (lambda ()
-              (set (make-local-variable 'company-backends)
-                   (append '((company-capf company-dabbrev-code))
-                           company-backends)))))
+  (setq haskell-process-type 'stack-ghci))
 
 ;; Go
 ;; https://github.com/dominikh/go-mode.el
@@ -1435,15 +1362,13 @@ when a TS file is opened, and only if a grammar is missing."
   :bind (("C-h k" . 'helpful-key)
          ("C-c C-d" . 'helpful-at-point)
          ("C-h x" . 'helpful-command)
+         ("C-h v" . 'helpful-variable)
+         ("C-h f" . 'helpful-callable)
          )
-  :after counsel
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable))
+  )
 
 (use-package markdown-mode
   :ensure t
-  :mode ("\\.md[x]?$")
   ;;  :ensure-system-package pandoc
   :config
   (setq-default fill-column 120)
@@ -1466,10 +1391,32 @@ when a TS file is opened, and only if a grammar is missing."
 (use-package pandoc-mode
   :ensure t)
 
+ (defun markdown-ts-insert-link (url text &optional title)
+    (interactive
+     (let* ((region (when (use-region-p)
+                      (buffer-substring-no-properties
+                       (region-beginning)
+                       (region-end))))
+            (url (read-string "URL: "))
+            (text (read-string "Link text: " region))
+            (title (read-string "Title: ")))
+       (list url text (unless (string-empty-p title) title))))
+    (when (use-region-p)
+      (delete-region (region-beginning) (region-end)))
+    (insert
+     (format "[%s](%s%s)"
+             text
+             url
+             (if title (format " \"%s\"" title) ""))))
+
 (use-package markdown-ts-mode
   :ensure nil
-  :defer t
+  :mode ("\\.md[x]?\\'" . markdown-ts-mode)
+  :bind (:map markdown-ts-mode-map
+              ("C-c C-l" . markdown-ts-link))
   :config
+  (add-hook 'markdown-ts-mode-hook 'auto-fill-mode nil t)
+  (add-hook 'markdown-ts-mode-hook 'visual-line-mode)
   (setopt markdown-ts-inline-images t))
 
 ;; https://github.com/TobiasZawada/texfrag
@@ -1525,6 +1472,7 @@ when a TS file is opened, and only if a grammar is missing."
   (lsp-file-watch-threshold 7000)
   (lsp-response-timeout 20)
   (lsp-enable-file-watchers t)
+  (lsp-completion-provider :none)
   :init
 
   (setenv "JAVA_HOME" "/Users/fredrikmeyer/.jenv/versions/21")
@@ -1657,17 +1605,6 @@ when a TS file is opened, and only if a grammar is missing."
    )
   )
 
-
-(use-package company-auctex
-  :ensure t
-  :after latex-mode
-  :hook (latex-mode . (lambda () (company-auctex-init)))
-  ;; :config
-  ;; (add-hook 'latex-mode-hook (company-auctex-init))
-  ;; (setq TeX-auto-save t)
-  ;; (setq TeX-parse-self t)
-  )
-
 (use-package doom-modeline
   :ensure t
   :hook (after-init . doom-modeline-mode)
@@ -1677,10 +1614,6 @@ when a TS file is opened, and only if a grammar is missing."
   (doom-modeline-icon t)
   (doom-modeline-buffer-file-name-style 'buffer-name))
 
-;; https://github.com/johanvts/emacs-fireplace
-(use-package fireplace
-  :commands (fireplace)
-  :ensure t)
 
 ;; https://github.com/abo-abo/ace-window
 (use-package ace-window
@@ -1691,12 +1624,6 @@ when a TS file is opened, and only if a grammar is missing."
   :disabled
   :ensure t
   )
-
-(use-package leuven-theme
-  :ensure t
-  :disabled
-  :config
-  (load-theme 'leuven t))
 
 (use-package modus-themes
   :ensure t
@@ -1745,10 +1672,6 @@ when a TS file is opened, and only if a grammar is missing."
   :custom
   (yas-snippet-dirs '("~/.emacs.d/snippets"))
   )
-
-(use-package ivy-yasnippet
-  :ensure t
-  :after yasnippet)
 
 (use-package yasnippet-snippets
   :ensure t
@@ -1872,12 +1795,24 @@ when a TS file is opened, and only if a grammar is missing."
 
 (use-package emacs
   :ensure nil
-  :bind (("M-i" . 'indent-region)))
+  :bind (("M-i" . 'indent-region))
+  :custom
+  (enable-recursive-minibuffers t)
+  ;; First try to indent the current line, and if the line
+  ;; was already indented, then try `completion-at-point'
+  (tab-always-indent 'complete)
+  (tab-first-completion nil)
+  (read-extended-command-predicate #'command-completion-default-include-p))
 
 (use-package warnings
   :ensure nil
   :custom
   (warning-minimum-level :error))
+
+(use-package savehist
+    :ensure nil
+    :init
+    (savehist-mode))
 
 (use-package keyfreq
   :ensure t
@@ -1975,24 +1910,79 @@ when a TS file is opened, and only if a grammar is missing."
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory
                                                "backups"))))
 
-(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+
 ;; (use-package fm-common-lisp)
-(use-package fm-python)
 
-;; (use-package vertico
-;;   :ensure t
-;;   :init
-;;   (vertico-mode))
+
+(use-package vertico
+  :ensure t
+  :custom
+  (vertico-cycle t)
+  :init
+  (vertico-mode))
+
+(use-package vertico-directory
+  :after vertico
+  :ensure nil
+  :bind (:map vertico-map
+              ("RET" . vertico-directory-enter)
+              ("DEL" . vertico-directory-delete-char)
+              ("M-DEL" . vertico-directory-delete-word)))
+
+(use-package marginalia
+  :ensure t
+  :after vertico
+  :init
+  (marginalia-mode))
+
 ;; https://github.com/jdtsmith/kind-icon
+(use-package kind-icon
+  :ensure t
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+(use-package all-the-icons-completion
+  :ensure t
+  :init
+  (all-the-icons-completion-mode)
+  :hook
+  (marginalia-mode . all-the-icons-completion-marginalia-setup))
+
+(use-package orderless
+   :custom
+   (completion-styles '(orderless basic))
+   (completion-category-overrides '((file (styles partial-completion))))
+  :ensure t)
+
+(use-package consult
+  :ensure t
+  :custom
+  (consult-narrow-key "<")
+  :bind (("C-s" . consult-line)
+         ("C-x b" . consult-buffer)
+         ("M-g o" . consult-outline)
+         ("M-s r" . consult-ripgrep)
+         ))
+
+(use-package consult-xref
+  :ensure nil
+  :after consult
+  :custom
+  (xref-show-xrefs-function #'consult-xref)
+  )
 
 
-;; (use-package all-the-icons-completion
-;;   :ensure t
-;;   :hook )
 
-(use-package fm-swiper)
+
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+
+
+;; (use-package fm-swiper)
 ;; (use-package cfn-lint)
 (use-package fm-clojure)
+(use-package fm-python)
+(use-package fm-diverse)
 ;; (use-package fm-rust)
 (use-package flycheck-ruff)
 
@@ -2187,7 +2177,7 @@ See URL `http://stylelint.io/'."
   ;; To disable collection of benchmark data after init is done.
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
-;; Cheatsheet: http://www.emacswiki.org/emacs/PareditCheatsheet
+
 ;; More at http://www.emacswiki.org/emacs/ParEdit
 (use-package paredit
   :disabled

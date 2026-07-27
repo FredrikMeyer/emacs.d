@@ -24,7 +24,7 @@
   (setq ivy-re-builders-alist
         '((counsel-ag . ivy--regex-plus)
           (counsel-rg . ivy--regex-plus)
-          (swiper-isearch . ivy--regex-plus)
+          ;; (swiper-isearch . ivy--regex-plus)
           ;; (counsel-projectile-find-file . ivy--regex-plus)
           (counsel-M-x . ivy--regex-plus)
           (t . ivy--regex-plus))))
@@ -58,12 +58,16 @@
   (setq counsel-describe-function-function #'helpful-callable)
   (setq counsel-describe-variable-function #'helpful-variable)
   (setf (alist-get 'counsel-M-x ivy-initial-inputs-alist) "")
-  (define-key minibuffer-local-map (kbd "C-r") 'counsel-expression-history))
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-expression-history)
 
-(use-package counsel-osx-app
-  :ensure t
-  :bind ("S-M-SPC" . counsel-osx-app)
-  :commands counsel-osx-app)
+  (defun my/projectile-counsel-rg ()
+    "Search the current Projectile project with `counsel-rg'."
+    (interactive)
+    (let ((default-directory (projectile-project-root)))
+      (counsel-rg)))
+
+  (with-eval-after-load 'projectile
+    (define-key projectile-command-map (kbd "s r") #'my/projectile-counsel-rg)))
 
 
 ;; https://github.com/tumashu/ivy-posframe
@@ -81,13 +85,6 @@
          (after-init . prescient-persist-mode))
   :custom
   (prescient-history-length 50))
-
-(use-package swiper
-  :ensure t
-  :after ivy
-  :bind (("C-s" . swiper-isearch)
-	 ("C-r" . swiper-isearch)
-	 ("C-x C-f" . counsel-find-file)))
 
 ;; https://github.com/Yevgnen/ivy-rich
 (use-package ivy-rich

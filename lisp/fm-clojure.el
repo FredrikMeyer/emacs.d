@@ -53,8 +53,7 @@
   :ensure t
   :bind (:map cider-mode-map ("C-c f" . 'cider-format-buffer))
   :hook ((cider-mode . eldoc-mode)
-         (cider-mode . company-mode)
-         (cider-repl-mode . company-mode))
+         )
   :config
   ;; go right to the REPL buffer when it's finished connecting
   (setq cider-repl-pop-to-buffer-on-connect 'display-only)
