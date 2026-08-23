@@ -25,8 +25,7 @@ See URL `https://beta.ruff.rs/docs/'."
             (id (one-or-more (any alpha)) (one-or-more digit)) " "
             (message (one-or-more not-newline))
             line-end))
-  :modes (python-mode python-ts-mode)
-  :next-checkers ((warning . python-mypy)))
+  :modes (python-mode python-ts-mode))
 
 (add-to-list 'flycheck-checkers 'python-ruff)
 

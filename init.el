@@ -61,8 +61,8 @@
       custom-file (expand-file-name "custom.el" user-emacs-directory))
 
 ;; try not using custom-file
-;; (when (file-exists-p custom-file)
-;;   (load custom-file))
+(when (file-exists-p custom-file)
+  (load custom-file))
 
 (unbind-key "C-x C-z") ;; unbind the very annoying suspend-frame
 (unbind-key "C-z")
@@ -249,8 +249,8 @@
 ;; https://github.com/alphapapa/org-super-agenda/#installation
 (use-package org-super-agenda
   :ensure t
-  :after org
-  :hook (org-mode . org-super-agenda-mode))
+  :after (org)
+  :hook (org-agenda-mode . org-super-agenda-mode))
 
 (use-package htmlize :ensure t)
 
@@ -676,13 +676,19 @@ current buffer, killing it."
   :init
   (setq flycheck-display-errors-delay 0.2)
   (setq eldoc-idle-delay 0.1)
+  :hook (flycheck-mode . flycheck-annotate-mode)
   :config
   (global-flycheck-mode)
 
   (add-hook 'flycheck-mode-hook 'add-node-modules-path)
   (flycheck-add-mode 'javascript-eslint 'web-mode)
 
-  (setq flycheck-eslint-args "--cache \*\*/\_.tsx?")
+  (require 'lsp-diagnostics)
+  (lsp-diagnostics-lsp-checker-if-needed)
+  (flycheck-add-next-checker 'lsp 'javascript-eslint)
+  (flycheck-add-next-checker 'lsp 'python-ruff)
+
+  (setq flycheck-eslint-args '("--cache"))
   (setq flycheck-html-tidy-executable "/usr/local/Cellar/tidy-html5/5.8.0/bin/tidy")
   (setq flycheck-checker-error-threshold 2000)
   )
@@ -690,6 +696,14 @@ current buffer, killing it."
 (use-package flycheck-color-mode-line
   :ensure t
   :hook (flycheck-mode . flycheck-color-mode-line-mode))
+
+(use-package jinx
+  :ensure t
+  :custom
+  (jinx-languages "en nb")
+  :bind (:map jinx-mode-map (("C-$" . jinx-correct)
+                             ("C-¢" . jinx-languages))))
+
 
 ;; TODO: bytt ut med denne en gang? https://github.com/aaronjensen/eslintd-fix
 (defun eslint-fix-file ()
@@ -789,11 +803,12 @@ current buffer, killing it."
   :bind (:map projectile-mode-map
               (("M-p" . 'projectile-command-map)
                ("C-c p" . 'projectile-command-map)))
+  :custom
+  (projectile-completion-system 'default)
+  (projectile-enable-caching nil)
+  (projectile-create-missing-test-files t)
   :config
-  (setq projectile-project-compilation-cmd ""
-        projectile-completion-system 'default
-        projectile-enable-caching nil
-        projectile-create-missing-test-files t)
+  (setq projectile-project-compilation-cmd "")
   (add-to-list 'projectile-other-file-alist
                '("scala" "scala"))
 
@@ -1108,7 +1123,7 @@ current buffer, killing it."
 (use-package copilot
   :ensure t
   :custom
-  (copilot-idle-delay 0.5)
+  (copilot-idle-delay 1)
   :hook (prog-mode . copilot-mode))
 
 
@@ -1211,7 +1226,7 @@ when a TS file is opened, and only if a grammar is missing."
     :ensure nil
     :after lsp-mode
     :custom
-    (lsp-eslint-enable t)
+    (lsp-eslint-enable nil)
     (lsp-eslint-package-manager "yarn")
     (lsp-eslint-run "onType")
     (lsp-eslint-validate
@@ -1460,16 +1475,18 @@ when a TS file is opened, and only if a grammar is missing."
 
 (use-package lsp-mode
   :ensure t
-  :init (setq lsp-keymap-prefix "C-c l")
+  :init
+  (setq lsp-keymap-prefix "C-c l")
   :hook ((lsp-mode . lsp-enable-which-key-integration)
          (sh-mode . lsp)
+         (rust-mode . lsp)
          (lsp-mode . lsp-completion-mode)
          (kotlin-mode . lsp)
          )
   :custom
   (lsp-modeline-code-actions-segments '(count icon name))
   (lsp-idle-delay 0.8)
-  (lsp-file-watch-threshold 7000)
+  (lsp-file-watch-threshold 1000)
   (lsp-response-timeout 20)
   (lsp-enable-file-watchers t)
   (lsp-completion-provider :none)
@@ -1509,17 +1526,56 @@ when a TS file is opened, and only if a grammar is missing."
   ;; try??
   (setq lsp-tcp-connection-timeout 5)
   :config
+  (setq lsp-file-watch-ignored-directories
+          (append
+           '("[/\\\\]\\.git\\'"
+             "[/\\\\]\\.jj\\'"
+             "[/\\\\]\\.hg\\'"
+
+             ;; JS/TS/Next/Vite/etc.
+             "[/\\\\]node_modules\\'"
+             "[/\\\\]\\.yarn\\'"
+             "[/\\\\]\\.turbo\\'"
+             "[/\\\\]\\.next\\'"
+             "[/\\\\]out\\'"
+             "[/\\\\]dist\\'"
+             "[/\\\\]coverage\\'"
+             "[/\\\\]test-results\\'"
+             "[/\\\\]playwright-report\\'"
+
+             ;; Python
+             "[/\\\\]\\.venv\\'"
+             "[/\\\\]venv\\'"
+             "[/\\\\]__pycache__\\'"
+             "[/\\\\]\\.pytest_cache\\'"
+             "[/\\\\]\\.mypy_cache\\'"
+             "[/\\\\]\\.ruff_cache\\'"
+             "[/\\\\]\\.tox\\'"
+             "[/\\\\]\\.nox\\'"
+             "[/\\\\]site-packages\\'"
+             "[/\\\\]\\.pyenv\\'"
+
+             ;; Build/cache output
+             "[/\\\\]\\.cache\\'"
+             "[/\\\\]\\.parcel-cache\\'"
+             "[/\\\\]\\.jekyll-cache\\'"
+             "[/\\\\]_site\\'"
+             "[/\\\\]_build\\'"
+             "[/\\\\]build\\'"
+             "[/\\\\]target\\'"
+             "[/\\\\]\\.gradle\\'"
+
+             ;; Local/generated/large data dirs seen in your logs
+             "[/\\\\]tmp\\'"
+             "[/\\\\]temp\\'"
+             "[/\\\\]test-fixtures\\'"
+             "[/\\\\]fixtures\\'"
+             "[/\\\\]export-[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\'"
+             "[/\\\\]books\\'"
+             "[/\\\\]data\\'")
+           lsp-file-watch-ignored-directories))
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
   (local-set-key (kbd "M-.") 'lsp-find-definition)
-
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]docs\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]site\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.pytest_cache\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]__pycache__\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.mypy_cache\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\]\_build")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]build/lib\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.cache\\'")
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
 
@@ -1604,6 +1660,13 @@ when a TS file is opened, and only if a grammar is missing."
     )
    )
   )
+
+(use-package applescript-mode
+    :ensure t
+    :mode (("\\.applescript\\'" . applescript-mode)
+           ("\\.scpt\\'" . applescript-mode))
+    :interpreter ("osascript" . applescript-mode)
+    :hook (applescript-mode . font-lock-mode))
 
 (use-package doom-modeline
   :ensure t
@@ -1952,7 +2015,8 @@ when a TS file is opened, and only if a grammar is missing."
 (use-package orderless
    :custom
    (completion-styles '(orderless basic))
-   (completion-category-overrides '((file (styles partial-completion))))
+   (completion-category-overrides '((file (styles partial-completion))
+                                    (project-file (styles orderless))))
   :ensure t)
 
 (use-package consult
@@ -1963,6 +2027,8 @@ when a TS file is opened, and only if a grammar is missing."
          ("C-x b" . consult-buffer)
          ("M-g o" . consult-outline)
          ("M-s r" . consult-ripgrep)
+         :map org-mode-map
+         ("C-c C-j" . consult-org-heading)
          ))
 
 (use-package consult-xref
@@ -1983,8 +2049,8 @@ when a TS file is opened, and only if a grammar is missing."
 (use-package fm-clojure)
 (use-package fm-python)
 (use-package fm-diverse)
-;; (use-package fm-rust)
-(use-package flycheck-ruff)
+(use-package fm-rust)
+;; (use-package flycheck-ruff)
 
 (define-minor-mode sticky-buffer-mode
   "Make the current window always display this buffer."
@@ -2166,47 +2232,12 @@ See URL `http://stylelint.io/'."
 
 ;; DISABLED PACKAGES
 
-(use-package use-package-ensure-system-package
-  :disabled
-  :ensure t)
-
 (use-package benchmark-init
   :disabled
   :ensure t
   :config
   ;; To disable collection of benchmark data after init is done.
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
-
-
-;; More at http://www.emacswiki.org/emacs/ParEdit
-(use-package paredit
-  :disabled
-  :defer t
-  :ensure t
-  :config
-  (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-  (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-  (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-  (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-  (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-
-  (dolist (m '(emacs-lisp-mode-hook
-	       racket-mode-hook
-	       racket-repl-mode-hook))
-    (add-hook m #'paredit-mode))
-  (bind-keys :map paredit-mode-map
-	     ("{"   . paredit-open-curly)
-	     ("}"   . paredit-close-curly))
-  (unless terminal-frame
-    (bind-keys :map paredit-mode-map
-	       ("M-[" . paredit-wrap-square)
-	       ("M-{" . paredit-wrap-curly))))
-
-(use-package paredit-everywhere
-  :disabled
-  :defer t
-  :ensure t
-  :hook (prog-mode . paredit-everywhere-mode))
 
 (use-package vterm
   :ensure t
@@ -2231,14 +2262,6 @@ See URL `http://stylelint.io/'."
   :config
   (ready-player-mode +1))
 
-
-;;(use-package claude-code-ide
-;;  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :branch "main")
-;;  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
-;;  :config
-;,  (setopt claude-code-ide-cli-path "/opt/homebrew/bin/claude")
-;;  (claude-code-ide-emacs-tools-setup))
-
 (use-package prolog-mode
   :disabled
   :ensure t
@@ -2248,33 +2271,6 @@ See URL `http://stylelint.io/'."
   :disabled
   :mode "\\.fnl$'"
   :ensure t)
-
-;; Try Oz
-
-;; (setq my-oz-home "/Applications/Mozart2.app/Contents/Resources")
-
-;; (when (file-directory-p my-oz-home)
-;;   (setenv "OZHOME" my-oz-home)
-;; )
-
-;; ;; (setq my-mozart-elisp "/usr/share/mozart/elisp")
-;; (setq my-mozart-elisp "/Applications/Mozart2.app/Contents/Resources/share/mozart/elisp")
-
-;; (when (file-directory-p my-mozart-elisp)
-;;   (add-to-list 'load-path my-mozart-elisp)
-;;   (load "mozart")
-;;   (add-to-list 'auto-mode-alist '("\\.oz\\'" . oz-mode))
-;;   (add-to-list 'auto-mode-alist '("\\.ozg\\'" . oz-gump-mode))
-;;   (autoload 'run-oz "oz" "" t)
-;;   (autoload 'oz-mode "oz" "" t)
-;;   (autoload 'oz-gump-mode "oz" "" t)
-;;   (autoload 'oz-new-buffer "oz" "" t)
-;; )
-
-;; (eval-after-load "oz-mode"
-;;   '(progn
-;;     (define-key oz-mode-map (kbd "C-x SPC") 'rectangle-mark-mode)
-;; ))
 
 ;; https://www.reddit.com/r/emacs/comments/1mdi8vu/a_transient_for_help/
 ;;; A Help Transient on C-S-h

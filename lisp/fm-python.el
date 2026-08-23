@@ -18,10 +18,13 @@
   :defer t
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
-                         (lsp)
-                         (flycheck-add-next-checker 'lsp 'python-mypy)))
+                         (lsp-deferred)))
   :init
-  (setq lsp-pyright-typechecking-mode "basic")
+  (setq lsp-pyright-multi-root nil)
+  :custom
+  
+  (lsp-pyright-type-checking-mode "basic")
+
   )
 
 
@@ -29,7 +32,6 @@
   :ensure t
   :bind (:map python-mode-map
               ("C-c t" . 'python-pytest-dispatch))
-  ;; :hook (python-mode . python-pytest-mode)
   :config
   (setq python-pytest-executable "python -m pytest -o log_cli=true")
 
