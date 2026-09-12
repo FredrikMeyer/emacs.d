@@ -1464,6 +1464,14 @@ when a TS file is opened, and only if a grammar is missing."
   :commands (org-noter)
   :ensure t)
 
+(use-package org-draw
+  :ensure t
+  :commands (org-draw org-draw-edit org-draw-setup))
+
+(use-package nand2tetris
+  :mode ("\\.hdl\\'" . nand2tetris-mode)
+  :ensure t)
+
 ;; Automatically refreshes PDF
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 ;; (add-hook 'doc-view-mode-hook (lambda () (linum-mode 0)))
@@ -1804,7 +1812,11 @@ when a TS file is opened, and only if a grammar is missing."
 (use-package embark
   :ensure t
   :bind (("C-." . embark-act)
+         ("C-:" . embark-collect)
          ("C-;" . embark-dwim)))
+
+(use-package embark-consult
+  :ensure t)
 
 ;; Se på https://github.com/purcell/ibuffer-projectile?
 (use-package ibuffer
@@ -1858,7 +1870,9 @@ when a TS file is opened, and only if a grammar is missing."
 
 (use-package emacs
   :ensure nil
-  :bind (("M-i" . 'indent-region))
+  :bind (("M-i" . 'indent-region)
+         ("M-r" . 'query-replace)
+         )
   :custom
   (enable-recursive-minibuffers t)
   ;; First try to indent the current line, and if the line
@@ -2026,10 +2040,9 @@ when a TS file is opened, and only if a grammar is missing."
   :bind (("C-s" . consult-line)
          ("C-x b" . consult-buffer)
          ("M-g o" . consult-outline)
-         ("M-s r" . consult-ripgrep)
-         :map org-mode-map
-         ("C-c C-j" . consult-org-heading)
-         ))
+         ("M-s r" . consult-ripgrep))
+  :hook (org-mode . (lambda ()
+                      (keymap-local-set "C-c C-j" #'consult-org-heading))))
 
 (use-package consult-xref
   :ensure nil
