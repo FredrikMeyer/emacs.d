@@ -25,15 +25,18 @@
 
 (use-package jira
   :ensure t
+  :custom
+  (jira-base-url "https://nav.atlassian.net/")
+  (jira-username "fredrik.meyer@nav.no") ;; Jira username (usually, an email)
+  (jira-token (getenv "JIRA_API_TOKEN"))
+  (jira-token-is-personal-access-token nil)
+  (jira-api-version 3) ;; Version 2 is also allowed
   :commands (jira-issues)
   :config
-  (setq jira-base-url "https://nav.atlassian.net/")
-  (setq jira-username "fredrik.meyer@nav.no") ;; Jira username (usually, an email)
+
   ;; API token for Jira
   ;; See https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
-  (setq jira-token (getenv "JIRA_API_TOKEN"))
-  (setq jira-token-is-personal-access-token nil)
-  (setq jira-api-version 3) ;; Version 2 is also allowed
+  
   ;; (Optional) API token for JIRA TEMPO plugin
   ;; See https://apidocs.tempo.io/
   ;; (setq jira-tempo-token "foobar123123")

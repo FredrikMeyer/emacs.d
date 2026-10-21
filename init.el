@@ -174,8 +174,8 @@
 ;;   exec-path-from-shell-variables '("PATH" "MANPATH" "WORKON_HOME")
   ;;   exec-path-from-shell-arguments nil)
   :config
-  (setopt exec-path-from-shell-arguments '("-l"))
-  (dolist (var '("GOPATH" "OPENAI_API_KEY" "JIRA_API_TOKEN"))
+  (setopt exec-path-from-shell-arguments '("-l" "-i"))
+  (dolist (var '("GOPATH" "OPENAI_API_KEY" "JIRA_API_TOKEN" "JUNIE_API_TOKEN"))
     (add-to-list 'exec-path-from-shell-variables var))
   (exec-path-from-shell-initialize)
   ;; (exec-path-from-shell-copy-env "PATH")
@@ -266,6 +266,13 @@
 (use-package org-clock
   :after org)
 
+(use-package org-block-capf
+  :after org
+  :hook (org-mode . org-block-capf-add-to-completion-at-point-functions)
+  :vc (:url "https://github.com/xenodium/org-block-capf"
+            :branch "main"
+            :rev "newest")
+  )
 
 (use-package org
   :defer t
@@ -338,7 +345,6 @@
 
   (setopt org-src-fontify-natively t
           org-src-tab-acts-natively nil
-          org-hide-emphasis-markers t
           org-hide-emphasis-markers nil
           ;; The default value was buggy.
           org-fold-core-style 'overlays)
@@ -502,7 +508,7 @@
            (file+headline "~/Dropbox/org/notater.org" "Notes")
            "* %?")
           ("C" "Tanke" entry (file+headline "~/Dropbox/org/notater.org" "Tanker") "* %?\n%U" :empty-lines-after 1)
-          ("d" "Dagbok" entry (file+headline "~/Dropbox/org/dagbok.org" "2024")  "** %<%Y-%m-%d>\n%?" :prepend t)
+          ("d" "Dagbok" entry (file+headline "~/Dropbox/org/dagbok.org" "2026")  "** %<%Y-%m-%d>\n%?" :prepend t)
           ("g" "Ting å gjøre" entry (file+headline "~/Dropbox/org/notater.org" "Ting å jobbe på")
            "* TODO [#B] %?" :empty-lines-after 1)
           ("c" "Privat todo" entry (file+headline "~/Dropbox/org/notater.org" "Planlegging")
@@ -518,7 +524,6 @@
            "** TODO %?\n%U" :empty-lines 1)))
 
 
-  (require 'org-tempo)
   (require 'ox-md)
   (require 'ox-extra)
   (require 'org-habit)
@@ -558,11 +563,23 @@ current buffer, killing it."
 
 (use-package agent-shell
   :ensure t
+  :bind (("C-c C-w" . 'agent-shell)
+         :map agent-shell-mode-map
+         ("C-<tab>" . 'agent-shell-cycle-session-mode))
   :ensure-system-package
     ;; Add agent installation configs here
     (
      (claude-agent-acp . "npm install -g @agentclientprotocol/claude-agent-acp"))
-  :hook (agent-shell . agent-shell-completion-mode))
+    :hook (agent-shell . agent-shell-completion-mode)
+    :config
+    (setq agent-shell-github-acp-command
+      '("cplt" "-y" "--agent" "copilot" "--" "--acp" "--stdio"))
+    )
+
+(use-package agent-shell-dashboard
+  :vc (:url "https://github.com/wandersoncferreira/agent-shell-dashboard"
+            :branch main)
+  )
 
 
 (use-package org-ai
@@ -676,7 +693,7 @@ current buffer, killing it."
   :init
   (setq flycheck-display-errors-delay 0.2)
   (setq eldoc-idle-delay 0.1)
-  :hook (flycheck-mode . flycheck-annotate-mode)
+  ;; :hook (flycheck-mode . flycheck-annotate-mode)
   :config
   (global-flycheck-mode)
 
@@ -754,7 +771,8 @@ current buffer, killing it."
     (global-unset-key (kbd (format "C-%d" n)))
     (global-unset-key (kbd (format "M-%d" n))))
   :config
-  (tab-bar-mode t))
+  (tab-bar-mode t)
+  (keymap-unset tab-bar-mode-map "C-<tab>"))
 
 
 ;; https://www.emacswiki.org/emacs/WindMove
@@ -796,6 +814,10 @@ current buffer, killing it."
          ("C-!" . anzu-query-replace-regexp))
   :hook (after-init . global-anzu-mode))
 
+(defun my/projectile-session-current-project-root ()
+  (alist-get 'projectile-root
+             (cdr (assq 'current-tab (tab-bar-tabs)))))
+
 ;; https://docs.projectile.mx/projectile/index.html
 (use-package projectile
   :ensure t
@@ -808,7 +830,6 @@ current buffer, killing it."
   (projectile-enable-caching nil)
   (projectile-create-missing-test-files t)
   :config
-  (setq projectile-project-compilation-cmd "")
   (add-to-list 'projectile-other-file-alist
                '("scala" "scala"))
 
@@ -825,8 +846,21 @@ current buffer, killing it."
 
   (projectile-mode 1)
   (projectile-session-mode 1)
+
+  (defun my/projectile-session-project-file-p (buffer)
+    (when-let* ((file (buffer-file-name buffer))
+                (root (my/projectile-session-current-project-root)))
+      (projectile-project-buffer-p buffer root)))
+
+  (setq projectile-session-buffer-serializers
+        '((my/projectile-session-project-file-p
+           . (projectile-session--serialize-file
+              . projectile-session--deserialize-file))))
   )
-(add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+
+
+(use-package ansi-color
+  :hook (compilation-filter . ansi-color-compilation-filter))
 
 ;; https://github.com/dajva/rg.el
 (use-package rg
@@ -1106,7 +1140,11 @@ current buffer, killing it."
   (corfu-auto t)
   (corfu-cycle t)
   (corfu-popupinfo-delay '(0.5 . 0.1))
+  (corfu-auto-trigger "<")
+  (corfu-auto-prefix 3)
   )
+
+
 
 (use-package json-mode
   :mode "\\.json\\'"
@@ -1118,6 +1156,7 @@ current buffer, killing it."
   :defer t
   :custom
   (prettier-js-show-errors 'echo)
+  (prettier-js-use-modules-bin t)
   :ensure t)
 
 (use-package copilot
@@ -1186,6 +1225,8 @@ current buffer, killing it."
              '(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
 (add-to-list 'treesit-language-source-alist
              '(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+(add-to-list 'treesit-language-source-alist
+             '(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
 
 (defun my/ensure-treesit-grammar (lang)
   "Install the tree-sitter grammar for LANG if it is not already available."
@@ -1202,16 +1243,26 @@ when a TS file is opened, and only if a grammar is missing."
       (lsp-deferred)
     (message "typescript-language-server not found; install with: npm i -g typescript-language-server typescript")))
 
+(defun my/start-javascript-lsp ()
+  "Ensure the JavaScript tree-sitter grammar, then start its LSP server."
+  (my/ensure-treesit-grammar 'javascript)
+  (if (executable-find "typescript-language-server")
+      (lsp-deferred)
+    (message "typescript-language-server not found; install with: npm i -g typescript-language-server typescript")))
+
 (defun my/disable-rainbow-delimiters-in-jsx ()
     (rainbow-delimiters-mode -1))
 
 (use-package typescript-ts-mode
   :mode (("\\.ts\\'" . typescript-ts-mode)
-         ("\\.tsx\\'" . tsx-ts-mode))
+         ("\\.tsx\\'" . tsx-ts-mode)
+         ("\\.mjs\\'" . js-ts-mode))
   :hook ((typescript-ts-mode . my/start-typescript-lsp)
          (tsx-ts-mode . my/start-typescript-lsp)
+         (js-ts-mode . my/start-javascript-lsp)
          (typescript-ts-mode . prettier-js-mode)
          (tsx-ts-mode . prettier-js-mode)
+         (js-ts-mode . prettier-js-mode)
          (tsx-ts-mode . my/disable-rainbow-delimiters-in-jsx)
          )
   :bind (:map typescript-ts-base-mode-map
@@ -1428,7 +1479,7 @@ when a TS file is opened, and only if a grammar is missing."
   :ensure nil
   :mode ("\\.md[x]?\\'" . markdown-ts-mode)
   :bind (:map markdown-ts-mode-map
-              ("C-c C-l" . markdown-ts-link))
+              ("C-c C-l" . markdown-ts-insert-link))
   :config
   (add-hook 'markdown-ts-mode-hook 'auto-fill-mode nil t)
   (add-hook 'markdown-ts-mode-hook 'visual-line-mode)
@@ -1499,8 +1550,6 @@ when a TS file is opened, and only if a grammar is missing."
   (lsp-enable-file-watchers t)
   (lsp-completion-provider :none)
   :init
-
-  (setenv "JAVA_HOME" "/Users/fredrikmeyer/.jenv/versions/21")
 
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
   (setq read-process-output-max (* 5 1024 1024)) ;; 5mb
@@ -1597,11 +1646,25 @@ when a TS file is opened, and only if a grammar is missing."
 
 (use-package lsp-java
   :ensure t
-  :hook (java-mode . lsp)
+  :hook (java-mode . lsp-deferred)
+  :init
+  ;; Java 25 made compact source files and instance `main` methods permanent.
+  ;; Keep JDT LS on that JDK so a standalone file such as `void main() {}`
+  ;; gets the same analysis as a conventional project.
+  (defvar my/java-lsp-jdk-home
+    (string-trim (shell-command-to-string "/usr/libexec/java_home -v 25")))
+  (when (file-directory-p my/java-lsp-jdk-home)
+    (setenv "JAVA_HOME" my/java-lsp-jdk-home))
   :custom
+  ;; Install a current JDT LS separately from the previously cached 1.44
+  ;; server.  The current server understands Java 25 source features.
+  (lsp-java-server-install-dir
+   (expand-file-name "eclipse.jdt.ls-1.57/" lsp-server-install-dir))
+  (lsp-java-java-path
+   (expand-file-name "bin/java" my/java-lsp-jdk-home))
   (lsp-java-vmargs '("-XX:+UseParallelGC" "-XX:GCTimeRatio=4" "-XX:AdaptiveSizePolicyWeight=90" "-Dsun.zip.disableMemoryMapping=true"
                      "-Xmx4G" "-Xms100m"))
-  (lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.44.0/jdt-language-server-1.44.0-202501221502.tar.gz")
+  (lsp-java-jdt-download-url "https://www.eclipse.org/downloads/download.php?file=/jdtls/milestones/1.57.0/jdt-language-server-1.57.0-202602261110.tar.gz")
   )
 
 (use-package lsp-json
@@ -2029,7 +2092,7 @@ when a TS file is opened, and only if a grammar is missing."
 (use-package orderless
    :custom
    (completion-styles '(orderless basic))
-   (completion-category-overrides '((file (styles partial-completion))
+   (completion-category-overrides '((file (styles orderless))
                                     (project-file (styles orderless))))
   :ensure t)
 

@@ -5,6 +5,59 @@
 
 ;;; Code:
 
+(require 'subr-x)
+
+(defun fm-python--project-root ()
+  "Return the current Python project root, if any."
+  (or (when-let* ((project (project-current nil)))
+        (project-root project))
+      (locate-dominating-file default-directory ".python-version")
+      (locate-dominating-file default-directory ".venv")))
+
+(defun fm-python--project-venv-python (project-root)
+  "Return PROJECT-ROOT's local virtualenv Python, if it exists."
+  (let ((python (expand-file-name
+                 (if (eq system-type 'windows-nt)
+                     "Scripts/python.exe"
+                   "bin/python")
+                 (expand-file-name ".venv" project-root))))
+    (when (file-executable-p python)
+      python)))
+
+(defun fm-python--pyenv-python (project-root)
+  "Return the pyenv Python named by PROJECT-ROOT/.python-version, if it exists."
+  (let* ((python-version-file (expand-file-name ".python-version" project-root))
+         (pyenv-root (file-name-as-directory
+                      (or (getenv "PYENV_ROOT")
+                          (expand-file-name "~/.pyenv")))))
+    (when (file-readable-p python-version-file)
+      (let* ((version-name (string-trim
+                            (with-temp-buffer
+                              (insert-file-contents python-version-file)
+                              (buffer-string))))
+             (python (expand-file-name
+                      (format "versions/%s/bin/python" version-name)
+                      pyenv-root)))
+        (when (file-executable-p python)
+          python)))))
+
+(defun fm-python-configure-project-environment ()
+  "Configure Python and pyright to use the current project's interpreter."
+  (when-let* ((project-root (fm-python--project-root))
+              (python (or (fm-python--project-venv-python project-root)
+                          (fm-python--pyenv-python project-root))))
+    (setq-local python-shell-interpreter python)
+    (setq-local lsp-pyright-python-executable-cmd python)
+    (let ((python-bin-dir (file-name-directory python)))
+      (setq-local exec-path (cons python-bin-dir
+                                  (remove python-bin-dir exec-path))))))
+
+(defun fm-python-start-lsp ()
+  "Start pyright after configuring the project Python interpreter."
+  (require 'lsp-pyright)
+  (fm-python-configure-project-environment)
+  (lsp-deferred))
+
 (use-package flycheck-pycheckers
   :defer 2
   :disabled
@@ -16,13 +69,10 @@
 (use-package lsp-pyright
   :ensure t
   :defer t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp-deferred)))
+  :hook ((python-mode python-ts-mode) . fm-python-start-lsp)
   :init
   (setq lsp-pyright-multi-root nil)
   :custom
-  
   (lsp-pyright-type-checking-mode "basic")
 
   )
