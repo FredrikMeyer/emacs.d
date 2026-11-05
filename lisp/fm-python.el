@@ -87,7 +87,7 @@
 
   (add-hook 'python-mode-hook
             (lambda ()
-              (when-let ((r (locate-dominating-file default-directory ".pyroot")))
+              (when-let* ((r (locate-dominating-file default-directory ".pyroot")))
                 (setq python-pytest-executable
                       (concat "PYTHONPATH=" r " " "python -m pytest -o log_cli=true"))))))
 

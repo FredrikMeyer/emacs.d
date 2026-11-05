@@ -10,18 +10,18 @@
                 clojure-snippets consult copilot corfu dashboard dired-preview dired-subtree djvu docker dockerfile-mode
                 doom-modeline dumb-jump easy-kill edraw-org el-easydraw embark embark-consult ess exec-path-from-shell
                 expand-region fireplace flycheck-clj-kondo flycheck-color-mode-line flycheck-plantuml flycheck-posframe
-                forge frame-local geiser-racket git-commit git-gutter git-link git-messenger git-timemachine glsl-mode
-                gnuplot go-mode gptel-magit graphviz-dot-mode helpful hl-todo htmlize hydra image+ inflections
+                forge frame-local geiser-racket ghostel git-commit git-gutter git-link git-messenger git-timemachine
+                glsl-mode gnuplot go-mode gptel-magit graphviz-dot-mode helpful hl-todo htmlize hydra image+ inflections
                 ivy-posframe ivy-prescient jinja2-mode jinx jira js2-mode json-mode justl k8s-mode keyfreq kind-icon
-                know-your-http-well kotlin-mode kubernetes kv lean4-mode lsp-java lsp-metals lsp-pyright lsp-ui magit-gh
-                marginalia mathjax mcp mermaid-mode minions modus-themes multiple-cursors nand2tetris nand2tetris-mode
-                nov nyan-mode ob-http orderless org-ai org-block-capf org-contrib org-download org-draw org-modern
-                org-noter org-rich-yank org-roam-ui org-super-agenda org-superstar orgtbl-aggregate package-utils
-                pandoc-mode pdf-tools peep-dired pfuture phi-search pinentry pkg-info popwin prettier-js prodigy
-                projectile py-autopep8 py-isort python-black python-pytest pyvenv racket-mode rainbow-delimiters
-                ready-player restclient rg rust-mode sbt-mode scala-ts-mode slime smart-hungry-delete smartparens
-                spacemacs-theme system-packages toc-org try undo-tree vertico virtualenvwrapper vterm-toggle web-mode
-                whisper-api yasnippet-snippets))
+                know-your-http-well kotlin-mode kubernetes kv lean4-mode lsp-java lsp-metals lsp-pyright lsp-treemacs
+                lsp-ui magit-gh marginalia mathjax mcp mermaid-mode minions mise modus-themes multiple-cursors
+                nand2tetris nand2tetris-mode nov nyan-mode ob-http orderless org-ai org-block-capf org-contrib
+                org-download org-draw org-modern org-noter org-rich-yank org-roam-ui org-super-agenda org-superstar
+                orgtbl-aggregate package-utils pandoc-mode pdf-tools peep-dired pfuture phi-search pinentry pkg-info
+                popwin prettier-js prodigy projectile py-autopep8 py-isort python-black python-pytest pyvenv racket-mode
+                rainbow-delimiters ready-player restclient rg rust-mode sbt-mode scala-ts-mode slime smart-hungry-delete
+                smartparens spacemacs-theme system-packages toc-org try undo-tree vertico virtualenvwrapper vterm-toggle
+                web-mode whisper-api yasnippet-snippets))
  '(package-vc-selected-packages
    '((org-block-capf :url "https://github.com/xenodium/org-block-capf")
      (agent-shell-dashboard :url "https://github.com/wandersoncferreira/agent-shell-dashboard" :branch "main")))

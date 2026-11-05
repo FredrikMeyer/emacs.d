@@ -99,6 +99,11 @@
   (treesit-auto-install-grammer 'always)
   (treesit-font-lock-level 4))
 
+(use-package mouse
+  ;; https://oylenshpeegul.gitlab.io/blog/posts/20230129/
+  :hook (after-init . context-menu-mode)
+)
+
 (use-package calendar
   :ensure nil
   :custom
@@ -233,6 +238,9 @@
 (use-package pinentry
   :ensure t
   :hook (after-init . pinentry-start))
+
+(use-package mise
+  :ensure t)
 
 (use-package ob-plantuml
   :after org)
@@ -573,7 +581,12 @@ current buffer, killing it."
     :hook (agent-shell . agent-shell-completion-mode)
     :config
     (setq agent-shell-github-acp-command
-      '("cplt" "-y" "--agent" "copilot" "--" "--acp" "--stdio"))
+          '("cplt" "-y" "--agent" "copilot" "--" "--acp" "--stdio"))
+    (setopt agent-shell-mcp-servers
+        '(((name . "com.jetbrains/intellij")
+           (type . "sse")
+           (url . "http://127.0.0.1:64342/sse")
+           (headers . ()))))
     )
 
 (use-package agent-shell-dashboard
@@ -678,9 +691,6 @@ current buffer, killing it."
   :ensure t
   :bind ([remap kill-ring-save] . easy-kill)
   :bind ([remap mark-sexp] . easy-mark)
-  ;; :config
-  ;; (global-set-key [remap kill-ring-save] #'easy-kill)
-  ;; (global-set-key [remap mark-sexp] #'easy-mark)
   )
 
 ;; R
@@ -852,8 +862,21 @@ current buffer, killing it."
                 (root (my/projectile-session-current-project-root)))
       (projectile-project-buffer-p buffer root)))
 
+  (defun my/projectile-session-serialize-magit (_buffer)
+    (list :root default-directory))
+
+  (defun my/projectile-session-deserialize-magit (record)
+    (when-let ((root (plist-get record :root)))
+      (when (file-directory-p root)
+        (let ((default-directory root))
+          (magit-status-setup-buffer root)))))
+
   (setq projectile-session-buffer-serializers
-        '((my/projectile-session-project-file-p
+        '((magit-mode
+           . (my/projectile-session-serialize-magit
+              . my/projectile-session-deserialize-magit))
+          ((lambda (buffer)
+             (my/projectile-session-project-file-p buffer))
            . (projectile-session--serialize-file
               . projectile-session--deserialize-file))))
   )
@@ -1450,9 +1473,10 @@ when a TS file is opened, and only if a grammar is missing."
   (setq markdown-header-scaling 1)
   (setq markdown-command
         (concat
-         "/usr/local/bin/pandoc"
+         "/opt/homebrew/bin/pandoc"
          " --from=markdown --to=html"
-         " --standalone --mathjax --highlight-style=pygments")))
+         " --standalone --mathjax --highlight-style=pygments"
+         " -V linkcolor=\"#0366d6\"")))
 
 (use-package pandoc-mode
   :ensure t)
@@ -1540,8 +1564,10 @@ when a TS file is opened, and only if a grammar is missing."
          (sh-mode . lsp)
          (rust-mode . lsp)
          (lsp-mode . lsp-completion-mode)
-         (kotlin-mode . lsp)
+         (kotlin-mode . lsp-deferred)
          )
+  :bind ((:map lsp-mode-map
+               ("M-." . 'lsp-find-definition)))
   :custom
   (lsp-modeline-code-actions-segments '(count icon name))
   (lsp-idle-delay 0.8)
@@ -1577,7 +1603,6 @@ when a TS file is opened, and only if a grammar is missing."
   ;; Todo: only for Clojure mode later
   ;; (setq lsp-completion-enable nil)
 
-  ;; Kotlin
 
 
   ;; try??
@@ -1632,11 +1657,10 @@ when a TS file is opened, and only if a grammar is missing."
              "[/\\\\]data\\'")
            lsp-file-watch-ignored-directories))
   (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-  (local-set-key (kbd "M-.") 'lsp-find-definition)
 
   (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
 
-  (setq lsp-lens-enable 't)
+  ;; (setq lsp-lens-enable 't)
   )
 
 (use-package lsp-rust
@@ -1644,9 +1668,28 @@ when a TS file is opened, and only if a grammar is missing."
   :custom
   (lsp-rust-server 'rust-analyzer))
 
+(defvar my/lsp-java-package-directory
+  (car (directory-files (expand-file-name "elpa" user-emacs-directory)
+                        t
+                        "\\`lsp-java-[0-9.]+\\'"
+                        t))
+  "Directory containing the installed lsp-java package.")
+
+(when my/lsp-java-package-directory
+  (add-to-list 'load-path my/lsp-java-package-directory))
+
+(defun my/start-java-lsp ()
+  "Load the JDT LS client before starting LSP for a Java buffer."
+  (require 'lsp-java)
+  (lsp-deferred))
+
+(use-package lsp-treemacs
+  :ensure t)
+
 (use-package lsp-java
   :ensure t
-  :hook (java-mode . lsp-deferred)
+  :hook ((java-mode . my/start-java-lsp)
+         (java-ts-mode . my/start-java-lsp))
   :init
   ;; Java 25 made compact source files and instance `main` methods permanent.
   ;; Keep JDT LS on that JDK so a standalone file such as `void main() {}`
@@ -1876,7 +1919,13 @@ when a TS file is opened, and only if a grammar is missing."
   :ensure t
   :bind (("C-." . embark-act)
          ("C-:" . embark-collect)
-         ("C-;" . embark-dwim)))
+         ("C-h B" . embark-bindings)
+         ("C-;" . embark-dwim))
+  :init
+  ;; https://emacsredux.com/blog/2026/07/14/all-aboard-embark/
+  ;; press C-h after any prefix (say C-x) and instead of the regular
+  ;; help buffer you get a completing-read over all the bindings in it, which you can narrow and execute directly.
+  (setq prefix-help-command #'embark-prefix-help-command))
 
 (use-package embark-consult
   :ensure t)
@@ -1960,8 +2009,6 @@ when a TS file is opened, and only if a grammar is missing."
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1))
 
-
-;; (setq prefix-help-command 'embark-prefix-help-command) ;; C-h is help, C-x C-h is prefix help
 
 ;; https://www.emacswiki.org/emacs/AutoIndentation
 (electric-indent-mode 1)
@@ -2115,7 +2162,12 @@ when a TS file is opened, and only if a grammar is missing."
   )
 
 
+(use-package ghostel
+  :ensure t
+  :bind (("C-x m" . ghostel)))
 
+(use-package ghostel-compile
+  :hook (after-init . ghostel-compile-global-mode))
 
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
@@ -2306,7 +2358,8 @@ See URL `http://stylelint.io/'."
   :error-parser flycheck-parse-stylelint
   :modes (scss-mode))
 
-;; DISABLED PACKAGES
+
+
 
 (use-package benchmark-init
   :disabled
