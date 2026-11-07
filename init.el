@@ -31,9 +31,9 @@
 (eval-when-compile
   (require 'use-package))
 
-(setq use-package-compute-statistics t)
-
-(setq use-package-verbose nil)
+(setopt use-package-verbose nil
+        use-package-expand-minimally nil
+        use-package-compute-statistics t)
 
 (setopt user-full-name "Fredrik Meyer"
         user-mail-address "hrmeyer@gmail.com")
@@ -95,9 +95,20 @@
 (setq bidi-inhibit-bpa t)
 
 (use-package treesit
+  :defer t
   :custom
   (treesit-auto-install-grammer 'always)
-  (treesit-font-lock-level 4))
+  (treesit-font-lock-level 4)
+  :config
+  ;; --- TypeScript: tree-sitter (typescript-ts-mode / tsx-ts-mode) + lsp-mode ---
+  ;; Replaces the tide setup commented out above.
+  ;; Language server:  npm i -g typescript-language-server typescript
+  (add-to-list 'treesit-language-source-alist
+               '(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+  (add-to-list 'treesit-language-source-alist
+               '(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+  (add-to-list 'treesit-language-source-alist
+               '(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")))
 
 (use-package mouse
   ;; https://oylenshpeegul.gitlab.io/blog/posts/20230129/
@@ -187,13 +198,6 @@
   ;; (exec-path-from-shell-copy-env "OPENAI_API_KEY")
   )
 
-;; From the docs: Set it to nil, if you use Control* or Proxy* options in
-;;your ssh configuration. (I do)
-;; (use-package tramp-sh
-;;   :ensure nil
-;;   :init
-;;   (setq tramp-use-ssh-controlmaster-options nil))
-
 ;; https://gitlab.com/jabranham/system-packages
 (use-package system-packages
   :ensure t
@@ -227,6 +231,7 @@
              try-complete-lisp-symbol)))
 
 (use-package ediff
+  :defer t
   :ensure nil
   :config
   (setopt ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -260,7 +265,8 @@
   :after (org)
   :hook (org-agenda-mode . org-super-agenda-mode))
 
-(use-package htmlize :ensure t)
+(use-package htmlize :ensure t
+  :commands (htmlize-file htmlize-buffer))
 
 ;; https://emacs.stackexchange.com/a/42158/20796
 (use-package pixel-scroll
@@ -555,6 +561,7 @@
   (holiday-christian-holidays nil))
 
 (use-package sqlite-mode
+  :defer t
   :config
   ;; from here https://christiantietze.de/posts/2024/01/emacs-sqlite-mode-open-sqlite-files-automatically/
   (defun ct/sqlite-view-file-magically ()
@@ -590,6 +597,7 @@ current buffer, killing it."
     )
 
 (use-package agent-shell-dashboard
+  :commands (agent-shell-dashboard)
   :vc (:url "https://github.com/wandersoncferreira/agent-shell-dashboard"
             :branch main)
   )
@@ -667,9 +675,11 @@ current buffer, killing it."
 
 (use-package dumb-jump
   :ensure t
-  :hook ('xref-backend-functions . #'dumb-jump-xref-activate)
-  :custom
-  (xref-show-definitions-function #'xref-show-definitions-completing-read))
+  :config
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+  (setq dumb-jump-force-searcher 'rg)
+  ;; use completion-read instead of a separate buffer with candidates
+  (setq xref-show-definitions-function #'xref-show-definitions-completing-read))
 
 (use-package which-key
   :ensure nil
@@ -830,6 +840,7 @@ current buffer, killing it."
 
 ;; https://docs.projectile.mx/projectile/index.html
 (use-package projectile
+  :defer t
   :ensure t
   :ensure-system-package fd
   :bind (:map projectile-mode-map
@@ -1035,6 +1046,7 @@ current buffer, killing it."
 ;; https://www.manueluberti.eu/emacs/2021/07/31/dictionary/
 (use-package dictionary
   :ensure nil
+  :defer t
   :bind ("C-x C-l" . #'dictionary-lookup-definition)
   :custom
   (dictionary-server "dict.org"))
@@ -1241,16 +1253,6 @@ current buffer, killing it."
   :custom
   (justl-executable "/opt/homebrew/bin/just"))
 
-;; --- TypeScript: tree-sitter (typescript-ts-mode / tsx-ts-mode) + lsp-mode ---
-;; Replaces the tide setup commented out above.
-;; Language server:  npm i -g typescript-language-server typescript
-(add-to-list 'treesit-language-source-alist
-             '(typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-(add-to-list 'treesit-language-source-alist
-             '(tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
-(add-to-list 'treesit-language-source-alist
-             '(javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src"))
-
 (defun my/ensure-treesit-grammar (lang)
   "Install the tree-sitter grammar for LANG if it is not already available."
   (unless (treesit-language-available-p lang)
@@ -1447,6 +1449,7 @@ when a TS file is opened, and only if a grammar is missing."
 
 ;; https://github.com/Wilfred/helpful
 (use-package helpful
+  :defer t
   :ensure t
   :bind (("C-h k" . 'helpful-key)
          ("C-c C-d" . 'helpful-at-point)
@@ -1684,9 +1687,11 @@ when a TS file is opened, and only if a grammar is missing."
   (lsp-deferred))
 
 (use-package lsp-treemacs
+  :defer t
   :ensure t)
 
 (use-package lsp-java
+  :defer t
   :ensure t
   :hook ((java-mode . my/start-java-lsp)
          (java-ts-mode . my/start-java-lsp))
@@ -1856,6 +1861,7 @@ when a TS file is opened, and only if a grammar is missing."
 
 ;; https://github.com/magnars/multiple-cursors.el
 (use-package multiple-cursors
+  :defer t
   :bind (("C-S-c C-S-c" . 'mc/edit-lines)
          ("C->" . 'mc/mark-next-like-this)
          ("C-<" . 'mc/mark-previous-like-this)
